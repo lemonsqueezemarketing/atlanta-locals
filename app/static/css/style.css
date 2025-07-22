@@ -36,28 +36,18 @@ nav.nav {
 /* Mobile Modal Menu */
 .nav-modal {
   display: none;
-  flex-direction: column;
   background-color: #fff;
-  position: absolute;
   width: 100%;
-  top: 60px;
   left: 0;
   z-index: 1000;
-  padding: 1rem 0.5rem;
   border-top: 1px solid #ccc;
-}
-
-.nav-modal.show,
-.nav-modal.active {
-  display: flex !important;
 }
 
 .nav-modal .nav-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
   padding: 1rem;
+  gap: 1rem;
 }
 
 .nav-modal a {
@@ -66,57 +56,74 @@ nav.nav {
   color: #7A3B4E;
   font-weight: 500;
   font-size: 1.1rem;
-  border-radius: 6px;
 }
 
-.nav-modal a:hover {
-  background-color: #f5f5f5;
+.nav-modal.active {
+  display: flex !important;
+  position: absolute;
+  top: 60px;
 }
 
-/* Desktop Menu Layout */
+/* Desktop Navigation */
+.desktop-only .nav-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
 @media (min-width: 768px) {
-  .nav-modal {
-    display: flex !important;
-    flex-direction: row;
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block;
+  }
+
+  .nav-modal.desktop-only {
     position: static;
-    justify-content: space-between;
-    align-items: center;
+    display: block !important;
+    background: transparent;
     border: none;
-    padding: 0;
   }
 
-  .nav-modal a {
-    margin: 0 1rem;
+  .nav-modal.desktop-only a {
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
   }
 
-  .nav-left {
-    display: none;
+  .nav-modal.desktop-only .profile-dropdown {
+    position: relative;
   }
 
-  .nav-content {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+  .nav-modal.desktop-only .dropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
   }
 }
 
-/* Mobile Only & Toggle Display */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .mobile-only {
     display: block;
   }
 
-  .tablet-only,
   .desktop-only {
-    display: none;
-  }
-
-  .nav-left {
-    display: block;
+    display: none !important;
   }
 
   .nav-modal {
     display: none;
+    flex-direction: column;
+    position: absolute;
+    width: 100%;
+  }
+
+  .nav-modal.active {
+    display: flex !important;
   }
 }
 
