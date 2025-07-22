@@ -1,13 +1,12 @@
-console.log('main.js loaded for /home route');
+// static/js/main.js
 
-// Toggle mobile nav modal
 document.addEventListener("DOMContentLoaded", () => {
-  const menuToggle = document.getElementById("menu-toggle");
-  const navModal = document.getElementById("nav-modal");
+  const toggleButton = document.getElementById("menu-toggle");
+  const modal = document.getElementById("mobile-nav-modal");
 
-  if (menuToggle && navModal) {
-    menuToggle.addEventListener("click", () => {
-      navModal.style.display = navModal.style.display === "block" ? "none" : "block";
+  if (toggleButton && modal) {
+    toggleButton.addEventListener("click", () => {
+      modal.classList.toggle("active");
     });
   }
 });

@@ -3,19 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>{% if title %}{{ title }}{% else %}ATL Local{% endif %}</title>
   <meta name="description" content="{% if description %}{{ description }}{% else %}Discover Atlanta’s best restaurants, services, events and news from local businesses and creators.{% endif %}">
   <meta name="keywords" content="{% if keywords %}{{ keywords }}{% else %}atlanta search, atlanta locals, atl local business, atlanta restaurants, atl events, teaz social{% endif %}">
   <meta name="author" content="The Atlanta Locals" />
-
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
   {% include 'partials/nav.html' %}
   {% block content %}{% endblock %}
-
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

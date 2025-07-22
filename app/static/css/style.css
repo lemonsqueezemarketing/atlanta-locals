@@ -33,47 +33,110 @@ nav.nav {
   height: 40px;
 }
 
-/* Modal Navigation */
+/* Mobile Modal Menu */
 .nav-modal {
   display: none;
-  position: fixed;
+  flex-direction: column;
+  background-color: #fff;
+  position: absolute;
+  width: 100%;
   top: 60px;
   left: 0;
-  right: 0;
-  background: white;
-  z-index: 10;
-  border-bottom: 1px solid #ccc;
+  z-index: 1000;
   padding: 1rem;
+  border-top: 1px solid #ccc;
 }
 
-.nav-modal .nav-content {
-  display: flex;
-  justify-content: space-between;
+.nav-modal.show {
+  display: flex !important;
+}
+
+/* Active Modal Toggle */
+.nav-modal.active {
+  display: flex !important;
 }
 
 .nav-modal a {
-  display: block;
   margin: 0.5rem 0;
+  text-decoration: none;
   color: #7A3B4E;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Desktop Menu Layout */
+@media (min-width: 768px) {
+  .nav-modal {
+    display: flex !important;
+    flex-direction: row;
+    position: static;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-modal a {
+    margin: 0 1rem;
+  }
+
+  .nav-left {
+    display: none;
+  }
+
+  .nav-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Mobile Only & Toggle Display */
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+
+  .tablet-only,
+  .desktop-only {
+    display: none;
+  }
+
+  .nav-left {
+    display: block;
+  }
+
+  .nav-modal {
+    display: none;
+  }
 }
 
 /* Branding */
 .hero-branding {
   text-align: center;
   padding: 2rem 1rem;
-  /* background: url("../images/atlanta-locals-logo.png") no-repeat center 30%; */
-  /* background-size: 120px; */
 }
 
+.branding-logo {
+  margin-bottom: 1rem;
+}
+
+.branding-logo img {
+  width: 40vw;
+  max-width: 140px;
+  min-width: 80px;
+  height: auto;
+}
 
 .atl-brand-title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
+  font-weight: 700;
   color: #7A3B4E;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .subtitle {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #2B2B2B;
 }
 
@@ -138,51 +201,30 @@ nav.nav {
   color: #7A3B4E;
 }
 
-.branding-logo {
-  margin-bottom: 1rem;
+/* Profile Dropdown */
+.profile-dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-.branding-logo img {
-  width: 40vw;
-  max-width: 140px;
-  min-width: 80px;
-  height: auto;
+.profile-dropdown img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
-
-.atl-brand-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
+.profile-dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 20;
+  padding: 0.5rem;
+  border-radius: 6px;
 }
 
-.subtitle {
-  font-size: 1.2rem;
-  color: #2B2B2B;
+.profile-dropdown:hover .dropdown-content {
+  display: block;
 }
-
-
-@media (min-width: 768px) {
-  .nav-modal {
-    display: block !important;
-    position: static;
-    border: none;
-    padding: 0;
-    margin-top: 0;
-  }
-
-  .nav-content {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .nav-modal a {
-    margin: 0 1rem;
-  }
-
-  .nav-left {
-    display: none;
-  }
-}
-

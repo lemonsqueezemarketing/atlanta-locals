@@ -1,26 +1,40 @@
 <nav class="nav">
-    <div class="nav-left">
+    <div class="nav-left mobile-only">
       <button id="menu-toggle">☰</button>
     </div>
     <div class="nav-right">
-      <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Logo" class="logo" />
+      <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Local Logo" class="logo">
     </div>
   </nav>
-
-  <!-- Mobile Nav Modal -->
-  <div class="nav-modal" id="nav-modal">
+  
+  <div id="mobile-nav-modal" class="nav-modal mobile-only">
     <div class="nav-content">
-      <div class="left-menu">
-        <a href="#">About</a>
-        <a href="#">Shop</a>
-      </div>
-      <div class="center-menu">
-        <a href="#">Book</a>
-        <a href="#">Events</a>
-        <a href="#">News</a>
-      </div>
-      <div class="right-logo">
-        <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Logo" />
+      <a href="/shop">Shop</a>
+      <a href="/book">Book</a>
+      <div class="profile-dropdown">
+        <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="Profile Icon">
+        <div class="dropdown-content">
+          <a href="/login">Sign In</a>
+          <a href="/logout">Log Out</a>
+        </div>
       </div>
     </div>
   </div>
+  
+  <div class="nav-modal desktop-only">
+    <div class="nav-content">
+      <a href="/about">About</a>
+      <a href="/shop">Shop</a>
+      <a href="/book">Book</a>
+      <a href="/events">Events</a>
+      <a href="/news">News</a>
+      <div class="profile-dropdown">
+        <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="Profile Icon">
+        <div class="dropdown-content">
+          <a href="/login">Sign In</a>
+          <a href="/logout">Log Out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
