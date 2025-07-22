@@ -1,5 +1,40 @@
+/* Base Atlanta Locals Theme */
+
 body {
-    background-color: #f5f5f5;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
+  background-color: #F2E9E4;
+  font-family: 'Poppins', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  color: #2B2B2B;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #7A3B4E;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+a {
+  color: #7A3B4E;
+  text-decoration: none;
+}
+
+button {
+  background-color: #7A3B4E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #A86C7A;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
