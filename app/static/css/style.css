@@ -1,40 +1,149 @@
-/* Base Atlanta Locals Theme */
-
+/* Global Styles */
 body {
   background-color: #F2E9E4;
-  font-family: 'Poppins', 'Segoe UI', 'Helvetica Neue', sans-serif;
-  color: #2B2B2B;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
   margin: 0;
   padding: 0;
+  color: #2B2B2B;
 }
 
-h1 {
-  font-size: 2rem;
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Navigation */
+nav.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #ccc;
+}
+
+.nav-left button {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-right img.logo {
+  height: 40px;
+}
+
+/* Modal Navigation */
+.nav-modal {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: white;
+  z-index: 10;
+  border-bottom: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.nav-modal .nav-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.nav-modal a {
+  display: block;
+  margin: 0.5rem 0;
   color: #7A3B4E;
+}
+
+/* Branding */
+.hero-branding {
   text-align: center;
-  margin-top: 2rem;
+  padding: 2rem 1rem;
+  background: url("../images/atlanta-locals-logo.png") no-repeat center 30%;
+  background-size: 120px;
 }
 
-a {
+.atl-brand-title {
+  font-size: 2.5rem;
   color: #7A3B4E;
-  text-decoration: none;
+  margin-bottom: 0.5rem;
 }
 
-button {
+.subtitle {
+  font-size: 1rem;
+  color: #2B2B2B;
+}
+
+/* Search Box */
+.search-box {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.search-box input {
+  width: 90%;
+  max-width: 500px;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 40px;
+  margin-bottom: 1rem;
+}
+
+.button-group button {
   background-color: #7A3B4E;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 40px;
+  margin: 0 0.5rem;
+  font-size: 1rem;
   cursor: pointer;
 }
 
-button:hover {
+.button-group button:hover {
   background-color: #A86C7A;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+/* News Section */
+.news-feature {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.news-feature img {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+}
+
+.news-headline {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Weather Section */
+.weather-info {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #FFF;
+}
+
+.weather-info h2 {
+  margin-bottom: 0.5rem;
+  color: #7A3B4E;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .nav-modal {
+    display: none !important;
+  }
+
+  .nav-content {
+    flex-direction: row;
+  }
 }
