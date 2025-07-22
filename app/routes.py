@@ -32,5 +32,5 @@ def book():
 
 @main.route('/digital-products')
 def digital_products():
-    return 'Atlanta Digital Products Marketplace View'
+    return render_template('digital_products/index.html')
 
