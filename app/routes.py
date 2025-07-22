@@ -12,7 +12,7 @@ def search_map():
 
 @main.route('/directory')
 def directory():
-    return 'Atlanta Business Directory View'
+    return render_template('directory/index.html')
 
 @main.route('/news')
 def news():
