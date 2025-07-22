@@ -16,7 +16,7 @@ def directory():
 
 @main.route('/news')
 def news():
-    return 'Atlanta News & Events View'
+    return render_template('news/index.html')
 
 @main.route('/blog')
 def blog():
