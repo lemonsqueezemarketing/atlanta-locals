@@ -20,7 +20,7 @@ def news():
 
 @main.route('/blog')
 def blog():
-    return 'Atlanta Local Edu Hub Blog View'
+    return render_template('blog/index.html')
 
 @main.route('/shop')
 def shop():
