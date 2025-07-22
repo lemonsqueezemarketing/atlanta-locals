@@ -24,7 +24,7 @@ def blog():
 
 @main.route('/shop')
 def shop():
-    return 'Atlanta Local Commerce Shop View'
+    return render_template('shop/index.html')
 
 @main.route('/book')
 def book():
