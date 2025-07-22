@@ -1,20 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'base.html' %}
 
-  <title>Atlanta Locals | Discover Local Businesses & Culture</title>
-  <meta name="description" content="Explore the best local businesses, events, and culture in Atlanta. Built by Atlanta, for Atlanta locals." />
-  <meta name="keywords" content="Atlanta local search, Atlanta businesses, restaurants, news, blog, commerce, events" />
-  <meta name="author" content="Atlanta Locals App Team" />
+{% block title %}Home | ATL Local{% endblock %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% block content %}
 
-  <h1>Welcome to the Atlanta Locals App (Home)</h1>
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
+<!-- Search Section -->
+<section class="search-box">
+  <input type="text" placeholder="Search Atlanta businesses, services, events..." />
+  <div class="button-group">
+    <button>Atlanta Local Search</button>
+    <button>Atlanta Local Directories</button>
+  </div>
+</section>
+
+<!-- News Section -->
+<section class="news-feature">
+  <img src="{{ url_for('static', filename='images/teaz-social-resize.png') }}" alt="Teaz Social News">
+  <p class="news-headline">Teaz Social Hosting More Live Events This Month</p>
+</section>
+
+<!-- Weather Section -->
+<section class="weather-info">
+  <h2>Atlanta Weather</h2>
+  <p>Current temperature and forecast coming soon.</p>
+</section>
+
+{% endblock %}

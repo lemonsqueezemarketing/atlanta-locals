@@ -1,0 +1,26 @@
+<nav class="nav">
+    <div class="nav-left">
+      <button id="menu-toggle">☰</button>
+    </div>
+    <div class="nav-right">
+      <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Logo" class="logo" />
+    </div>
+  </nav>
+
+  <!-- Mobile Nav Modal -->
+  <div class="nav-modal" id="nav-modal">
+    <div class="nav-content">
+      <div class="left-menu">
+        <a href="#">About</a>
+        <a href="#">Shop</a>
+      </div>
+      <div class="center-menu">
+        <a href="#">Book</a>
+        <a href="#">Events</a>
+        <a href="#">News</a>
+      </div>
+      <div class="right-logo">
+        <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Logo" />
+      </div>
+    </div>
+  </div>
