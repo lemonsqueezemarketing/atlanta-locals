@@ -28,7 +28,7 @@ def shop():
 
 @main.route('/book')
 def book():
-    return 'Atlanta Services Booking View'
+    return render_template('book/index.html')
 
 @main.route('/digital-products')
 def digital_products():
