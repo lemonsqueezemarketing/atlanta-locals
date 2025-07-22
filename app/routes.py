@@ -8,7 +8,7 @@ def home():
 
 @main.route('/search-map')
 def search_map():
-    return 'Search Atlanta Map View'
+    return render_template('search_map/index.html')
 
 @main.route('/directory')
 def directory():
