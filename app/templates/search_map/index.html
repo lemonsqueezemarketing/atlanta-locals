@@ -1,20 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{# templates/search_map/index.html #}
+{% extends 'base.html' %}
 
-  <title>Atlanta Search Map | Find Local Spots Nearby</title>
-  <meta name="description" content="Explore Atlanta with our custom search map to discover restaurants, real estate, auto services, hotels, and more." />
-  <meta name="keywords" content="Atlanta map search, local atlanta business, atlanta restaurants, real estate, things to do" />
-  <meta name="author" content="Atlanta Locals App Team" />
+{% block head %}
+  {{ super() }}
+  <!-- Optional: Custom CSS for Search Map -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/search-map.css') }}">
+{% endblock %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-
+{% block content %}
   <h1>Atlanta Search Map</h1>
+{% endblock %}
 
+{% block scripts %}
+  {{ super() }}
+  <!-- Optional: Custom JS for Search Map -->
   <script src="{{ url_for('static', filename='js/search-map.js') }}"></script>
-</body>
-</html>
+{% endblock %}
