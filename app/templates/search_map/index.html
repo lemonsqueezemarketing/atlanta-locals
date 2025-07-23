@@ -22,87 +22,85 @@
   <p class="subtitle">Atlanta’s Own Search Engine</p>
 </section>
 
-  <!-- SEARCH BAR ROW -->
-  <div class="search-map-bar-container">
-    <div class="search-map-bar">
-      <span class="search-icon">
-        <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" />
-      </span>
-      <input type="text" class="search-map-input" placeholder="Search Atlanta" />
-      <span class="direction-icon">
-        <img src="{{ url_for('static', filename='images/directions-icon.svg') }}" alt="Navigate Icon" />
-      </span>
-    </div>
-  </div>
-<!-- MAP ROW -->
-  <div class="map-layout-container">
-    <!-- MAP AREA -->
-    <div class="map-layout">
-      <!-- LEFT SIDEBAR -->
-      <div class="map-sidebar">
-        <div class="map-icon"><img src="{{ url_for('static', filename='images/saved.svg') }}" alt="Saved" /></div>
-        <div class="map-icon"><img src="{{ url_for('static', filename='images/recents.svg') }}" alt="Recents" /></div>
-        <div class="map-icon"><img src="{{ url_for('static', filename='images/atlanta.svg') }}" alt="Atlanta" /></div>
-        <div class="map-icon"><img src="{{ url_for('static', filename='images/midtown.svg') }}" alt="Midtown" /></div>
-      </div>
-
-<!-- MAP MAIN CONTENT -->
-<div class="map-main">
-  <!-- TOP BUTTONS -->
-  <div class="map-top-buttons">
-    <button>Saved</button>
-    <button>Recents</button>
-    <button>Atlanta Real Estate</button>
-    <button>Atlanta Auto</button>
-    <button>Hotels</button>
-    <button>Things To Do</button>
-    <button>Transit</button>
-    <button>More</button>
-  </div>
-
-  <!-- LIVE MAP -->
-  <div id="map" class="map-area">
-    <!-- Leaflet map will render here -->
-    <div class="map-bottom-left">
-      <img src="{{ url_for('static', filename='images/layers.svg') }}" alt="Layers" />
-    </div>
-
-    <div class="map-bottom-right">
-      <img src="{{ url_for('static', filename='images/settings.svg') }}" alt="Settings" />
-      <img src="{{ url_for('static', filename='images/locate.svg') }}" alt="Locate" />
-    </div>
-  </div>
-
-    <!-- SEARCH INPUT + FILTER SECTION -->
-  <div class="map-search-filters">
-
-    <!-- First Row: Input + Button -->
-    <div class="map-search-row">
-      <div class="map-search-col col-8">
-        <div class="map-search-input-wrapper">
-          <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" class="map-search-icon" />
-          <input type="text" placeholder="Enter address or business" class="map-search-input" />
-        </div>
-      </div>
-      <div class="map-search-col col-4">
-        <button class="map-search-btn">Search</button>
-      </div>
-    </div>
-
-    <!-- Second Row: Checkboxes -->
-    <div class="map-search-checkboxes">
-      <label><input type="checkbox" /> Atlanta Best Restaurants</label>
-      <label><input type="checkbox" /> Atlanta Homes for Sale</label>
-      <label><input type="checkbox" /> Atlanta Cars for Sale</label>
-      <label><input type="checkbox" /> Atlanta Best Business Professionals</label>
-    </div>
-
-  </div>
-
+<!-- SEARCH BAR ROW -->
+<div class="search-map-bar-container">
+  <form class="search-map-bar" onsubmit="return false;">
+    <span class="search-icon">
+      <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" />
+    </span>
+    <input type="text" class="search-map-input" placeholder="Search Atlanta" />
+    <span class="direction-icon" role="button" tabindex="0">
+      <img src="{{ url_for('static', filename='images/directions-icon.svg') }}" alt="Navigate Icon" />
+    </span>
+  </form>
 </div>
 
+<!-- MAP ROW -->
+<div class="map-layout-container">
+  <!-- MAP AREA -->
+  <div class="map-layout">
+    <!-- LEFT SIDEBAR -->
+    <div class="map-sidebar">
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/saved.svg') }}" alt="Saved" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/recents.svg') }}" alt="Recents" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/atlanta.svg') }}" alt="Atlanta" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/midtown.svg') }}" alt="Midtown" /></div>
+    </div>
 
+    <!-- MAP MAIN CONTENT -->
+    <div class="map-main">
+      <!-- TOP BUTTONS -->
+      <div class="map-top-buttons">
+        <button>Saved</button>
+        <button>Recents</button>
+        <button>Atlanta Real Estate</button>
+        <button>Atlanta Auto</button>
+        <button>Hotels</button>
+        <button>Things To Do</button>
+        <button>Transit</button>
+        <button>More</button>
+      </div>
+
+      <!-- LIVE MAP -->
+      <div id="map" class="map-area">
+        <!-- Leaflet map will render here -->
+        <div class="map-bottom-left">
+          <img src="{{ url_for('static', filename='images/layers.svg') }}" alt="Layers" />
+        </div>
+
+        <div class="map-bottom-right">
+          <img src="{{ url_for('static', filename='images/settings.svg') }}" alt="Settings" />
+          <img src="{{ url_for('static', filename='images/locate.svg') }}" alt="Locate" />
+        </div>
+      </div>
+
+      <!-- SEARCH INPUT + FILTER SECTION -->
+      <div class="map-search-filters">
+        <!-- First Row: Input + Button -->
+        <form class="map-search-row" onsubmit="return false;">
+          <div class="map-search-col col-8">
+            <div class="map-search-input-wrapper">
+              <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" class="map-search-icon" />
+              <input type="text" placeholder="Enter address or business" class="map-search-input" />
+            </div>
+          </div>
+          <div class="map-search-col col-4">
+            <button class="map-search-btn" type="submit">Search</button>
+          </div>
+        </form>
+
+        <!-- Second Row: Checkboxes -->
+        <div class="map-search-checkboxes">
+          <label><input type="checkbox" /> Atlanta Best Restaurants</label>
+          <label><input type="checkbox" /> Atlanta Homes for Sale</label>
+          <label><input type="checkbox" /> Atlanta Cars for Sale</label>
+          <label><input type="checkbox" /> Atlanta Best Business Professionals</label>
+        </div>
+      </div>
+    </div>
   </div>
+</div>
+
 <!-- EXPLORE ATLANTA SECTION -->
 <div class="explore-atlanta-section">
   <h2 class="explore-title">Explore Atlanta’s Best</h2>
@@ -131,8 +129,6 @@
     </div>
   </div>
 </div>
-
-
 {% endblock %}
 
 {% block scripts %}
