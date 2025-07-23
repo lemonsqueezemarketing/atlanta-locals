@@ -25,7 +25,9 @@ def home():
     return render_template('home/index.html', news=news, weather=weather)
 
 
-
+@main.route('/about')
+def about():
+    return render_template('home/about.html')
 
 @main.route('/search-map')
 def search_map():
@@ -54,4 +56,8 @@ def book():
 @main.route('/digital-products')
 def digital_products():
     return render_template('digital_products/index.html')
+
+@main.route('/events')
+def events():
+    return render_template('home/about.html')
 
