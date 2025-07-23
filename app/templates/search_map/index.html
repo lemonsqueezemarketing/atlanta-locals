@@ -1,18 +1,23 @@
-{# templates/search_map/index.html #}
 {% extends 'base.html' %}
+
+{% block title %}Atlanta Search Map{% endblock %}
 
 {% block head %}
   {{ super() }}
-  <!-- Optional: Custom CSS for Search Map -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/search-map.css') }}">
 {% endblock %}
 
 {% block content %}
-  <h1>Atlanta Search Map</h1>
+  <div class="search-map-wrapper">
+    <div class="search-map-bar">
+      <img src="{{ url_for('static', filename='images/search-icon.svg') }}" class="search-icon" alt="Search Icon">
+      <input type="text" class="search-map-input" placeholder="Search Atlanta">
+      <img src="{{ url_for('static', filename='images/directions-icon.svg') }}" class="nav-icon" alt="Navigate Icon">
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
   {{ super() }}
-  <!-- Optional: Custom JS for Search Map -->
   <script src="{{ url_for('static', filename='js/search-map.js') }}"></script>
 {% endblock %}
