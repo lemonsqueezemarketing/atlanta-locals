@@ -8,12 +8,12 @@ def home():
         {
             "title": "Teaz Social Expands with More Live Events",
             "summary": "Atlanta's favorite social tea lounge is now hosting weekly open mic nights, live DJs, and community mixers.",
-            "image": "/static/images/teaz-social-resize.png"
+            "image": "/story_tea.png"
         },
         {
             "title": "Mike Launches the ATL Local App",
             "summary": "Founder Mike officially launches ATL Local, a new community-driven search engine built for Atlantans by Atlantans.",
-            "image": "/static/images/atlanta-locals-logo-new.png"
+            "image": "/story_mike_atl_local.png"
         }
     ]
     weather = {

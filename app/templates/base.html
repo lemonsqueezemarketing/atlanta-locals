@@ -33,6 +33,7 @@
   <script>
     const newsData = {{ news | default([]) | tojson }};
     const weatherData = {{ weather | default({}) | tojson }};
+    const STATIC_URL = "{{ url_for('static', filename='') }}";
   </script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   {% block scripts %}{% endblock %}
