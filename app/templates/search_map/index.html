@@ -8,13 +8,18 @@
 {% endblock %}
 
 {% block content %}
-  <div class="search-map-wrapper">
-    <div class="search-map-bar">
-      <img src="{{ url_for('static', filename='images/search-icon.svg') }}" class="search-icon" alt="Search Icon">
-      <input type="text" class="search-map-input" placeholder="Search Atlanta">
-      <img src="{{ url_for('static', filename='images/directions-icon.svg') }}" class="nav-icon" alt="Navigate Icon">
-    </div>
+<div class="search-map-bar-container">
+  <div class="search-map-bar">
+    <span class="search-icon">
+      <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search">
+    </span>
+    <input type="text" class="search-map-input" placeholder="Search Atlanta">
+    <span class="direction-icon">
+      <img src="{{ url_for('static', filename='images/directions-icon.svg') }}" alt="Navigate">
+    </span>
   </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
