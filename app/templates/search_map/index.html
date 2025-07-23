@@ -8,6 +8,19 @@
 {% endblock %}
 
 {% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
 
   <!-- SEARCH BAR ROW -->
   <div class="search-map-bar-container">
@@ -59,10 +72,67 @@
       <img src="{{ url_for('static', filename='images/locate.svg') }}" alt="Locate" />
     </div>
   </div>
+
+    <!-- SEARCH INPUT + FILTER SECTION -->
+  <div class="map-search-filters">
+
+    <!-- First Row: Input + Button -->
+    <div class="map-search-row">
+      <div class="map-search-col col-8">
+        <div class="map-search-input-wrapper">
+          <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" class="map-search-icon" />
+          <input type="text" placeholder="Enter address or business" class="map-search-input" />
+        </div>
+      </div>
+      <div class="map-search-col col-4">
+        <button class="map-search-btn">Search</button>
+      </div>
+    </div>
+
+    <!-- Second Row: Checkboxes -->
+    <div class="map-search-checkboxes">
+      <label><input type="checkbox" /> Atlanta Best Restaurants</label>
+      <label><input type="checkbox" /> Atlanta Homes for Sale</label>
+      <label><input type="checkbox" /> Atlanta Cars for Sale</label>
+      <label><input type="checkbox" /> Atlanta Best Business Professionals</label>
+    </div>
+
+  </div>
+
 </div>
 
 
   </div>
+<!-- EXPLORE ATLANTA SECTION -->
+<div class="explore-atlanta-section">
+  <h2 class="explore-title">Explore Atlanta’s Best</h2>
+
+  <div class="explore-grid">
+    <!-- CARD 1 -->
+    <div class="explore-card">
+      <div class="explore-image">
+        <img src="{{ url_for('static', filename='images/story_bbq.png') }}" alt="Atlanta BBQ" />
+      </div>
+      <div class="explore-content">
+        <h3>Atlanta’s Best Bar-b-q Spots</h3>
+        <p>Discover the top BBQ joints in the city</p>
+      </div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="explore-card">
+      <div class="explore-image">
+        <img src="{{ url_for('static', filename='images/story_condos.png') }}" alt="Condos" />
+      </div>
+      <div class="explore-content">
+        <h3>Condos for Sale in Atlanta</h3>
+        <p>Explore the finest condos available</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 {% endblock %}
 
 {% block scripts %}

@@ -1,15 +1,38 @@
-
 {% extends 'base.html' %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-{% block title %}Atlanta Local  | About Us{% endblock %}
+{% block title %}Atlanta Search Map{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
 
 {% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
 
 
-<h1>About Us</h1>
+  <div class="about">
+    <h2 class="subtitle">About Us</h2>
 
-<script src="{{ url_for('static', filename='js/aboutjs') }}"></script>
+    </div>
+
+
 
 {% endblock %}
 
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/about.js') }}"></script>
+{% endblock %}

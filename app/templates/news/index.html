@@ -1,20 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'base.html' %}
 
-  <title>Atlanta Local News | Stay Informed on City Events</title>
-  <meta name="description" content="Catch up on the latest Atlanta local news, community updates, and events all in one place." />
-  <meta name="keywords" content="Atlanta news, local updates, atlanta community, events in atlanta" />
-  <meta name="author" content="Atlanta Locals App Team" />
+{% block title %}Atlanta Search Map{% endblock %}
 
+{% block head %}
+  {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% endblock %}
 
-  <h1>Atlanta News & Events</h1>
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
 
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
+
+
+  <div class="about">
+    <h2 class="subtitle">Atlanta Latest</h2>
+
+    </div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
   <script src="{{ url_for('static', filename='js/news.js') }}"></script>
-</body>
-</html>
+{% endblock %}

@@ -130,3 +130,157 @@
   z-index: 0;
 }
 
+
+/* Search Filters Section */
+.map-search-filters {
+  background: #f4f1ee;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* Flex Row (mobile first column stacking) */
+.map-search-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .map-search-row {
+    flex-direction: row;
+  }
+}
+
+.map-search-col {
+  width: 100%;
+}
+
+.col-8 {
+  flex: 2;
+}
+
+.col-4 {
+  flex: 1;
+}
+
+.map-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.map-search-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  font-family: inherit;
+  background: transparent;
+}
+
+.map-search-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+}
+
+/* Maroon search button */
+.map-search-btn {
+  width: 100%;
+  height: 100%;
+  background-color: #6d2232;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Checkbox row */
+.map-search-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.map-search-checkboxes label {
+  flex: 1 1 45%;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .map-search-checkboxes label {
+    flex: 1 1 30%;
+  }
+}
+
+/* Explore Section */
+.explore-atlanta-section {
+  padding: 2rem 1rem;
+  background: #f4f1ee;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.explore-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4a0e1b;
+  margin-bottom: 1.5rem;
+}
+
+/* Grid layout for cards */
+.explore-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .explore-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.explore-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.explore-content {
+  padding: 1rem;
+}
+
+.explore-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2d2d2d;
+}
+
+.explore-content p {
+  font-size: 0.95rem;
+  color: #555;
+}
