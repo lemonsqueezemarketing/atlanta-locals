@@ -26,17 +26,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const newsCard = document.createElement("div");
       newsCard.className = "news-card";
       newsCard.innerHTML = `
-        <div class="news-card-image" style="background-image: url('${item.image}');">
-          <div class="news-overlay">
-            <h3>${item.title}</h3>
-            <p>${item.summary}</p>
-          </div>
-        </div>
-      `;
+      <div class="news-card-title">${item.title}</div>
+      <div class="news-card-image" style="background-image: url('${item.image}');"></div>
+      <div class="news-card-description">${item.summary}</div>
+    `;
+    
       newsSection.appendChild(newsCard);
     });
   }
 });
+
+
   // Populate Weather Data section
 const weatherContainer = document.getElementById("weather-container");
 

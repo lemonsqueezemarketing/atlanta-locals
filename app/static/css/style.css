@@ -245,49 +245,52 @@ nav.nav {
   display: block;
 }
 
-/* Latest News Card */
+
+/* News Section Styling */
+/* News Section */
 .news-feature {
   padding: 2rem 1rem;
   text-align: center;
 }
 
+/* News Card Layout */
 .news-card {
-  display: inline-block;
-  width: 90%;
-  max-width: 600px;
-  margin: 0 auto;
+  background-color: #ffffff;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin: 1.5rem auto;
+  max-width: 600px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: left;
 }
 
+/* Title Head */
+.news-card-title {
+  background-color: #ffffff;
+  padding: 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2B2B2B;
+  border-bottom: 1px solid #eee;
+}
+
+/* Image Div */
 .news-card-image {
+  height: 250px;
   background-size: cover;
   background-position: center;
-  height: 250px;
-  position: relative;
 }
 
-.news-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  position: absolute;
-  bottom: 0;
+/* Description Div */
+.news-card-description {
+  background-color: #ffffff;
   padding: 1rem;
-  width: 100%;
-  box-sizing: border-box;
+  font-size: 1rem;
+  color: #555;
+  border-top: 1px solid #eee;
 }
 
-.news-overlay h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
 
-.news-overlay p {
-  margin-top: 0.25rem;
-  font-size: 0.95rem;
-}
 
 .weather-card {
   display: flex;
