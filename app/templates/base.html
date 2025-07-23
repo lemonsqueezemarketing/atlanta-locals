@@ -5,10 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>{% block title %}Atlanta Locals{% endblock %}</title>
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256‑…"
+  crossorigin=""
+>
+
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block head %}{% endblock %}
 </head>
+
 <body>
 
   {% include 'partials/nav.html' %}
@@ -16,6 +24,11 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+  <script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256‑…"
+  crossorigin=""
+></script>
 
   <script>
     const newsData = {{ news | default([]) | tojson }};
