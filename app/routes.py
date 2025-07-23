@@ -4,7 +4,28 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
-    return render_template('home/index.html')
+    news = [
+        {
+            "title": "Teaz Social Expands with More Live Events",
+            "summary": "Atlanta's favorite social tea lounge is now hosting weekly open mic nights, live DJs, and community mixers.",
+            "image": "/static/images/teaz-social-resize.png"
+        },
+        {
+            "title": "Mike Launches the ATL Local App",
+            "summary": "Founder Mike officially launches ATL Local, a new community-driven search engine built for Atlantans by Atlantans.",
+            "image": "/static/images/atlanta-locals-logo-new.png"
+        }
+    ]
+    weather = {
+        "icon": "/static/images/weather-sun.png",
+        "temperature": "87°F",
+        "condition": "Sunny",
+        "location": "Atlanta, GA"
+    }
+    return render_template('home/index.html', news=news, weather=weather)
+
+
+
 
 @main.route('/search-map')
 def search_map():

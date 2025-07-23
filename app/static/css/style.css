@@ -244,3 +244,80 @@ nav.nav {
 .profile-dropdown:hover .dropdown-content {
   display: block;
 }
+
+/* Latest News Card */
+.news-feature {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.news-card {
+  display: inline-block;
+  width: 90%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.news-card-image {
+  background-size: cover;
+  background-position: center;
+  height: 250px;
+  position: relative;
+}
+
+.news-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  position: absolute;
+  bottom: 0;
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.news-overlay h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.news-overlay p {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.weather-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  max-width: 320px;
+  margin: 0 auto;
+  gap: 1rem;
+}
+
+.weather-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.weather-details h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #7A3B4E;
+}
+
+.weather-details p {
+  margin: 0.25rem 0;
+  font-weight: 500;
+}
+
+.weather-details small {
+  color: #666;
+}

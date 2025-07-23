@@ -12,6 +12,10 @@
 <body>
   {% include 'partials/nav.html' %}
   {% block content %}{% endblock %}
+  <script>
+    const newsData = {{ news | default([]) | tojson }};
+    const weatherData = {{ weather | default({}) | tojson }};
+  </script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

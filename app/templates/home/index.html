@@ -9,7 +9,7 @@
   <div class="branding-logo">
     <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
   </div>
-  <h1 class="atl-brand-title">Atlanta Local</h1>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
   <p class="subtitle">Atlanta’s Own Search Engine</p>
 </section>
 
@@ -23,15 +23,15 @@
 </section>
 
 <!-- News Section -->
-<section class="news-feature">
-  <img src="{{ url_for('static', filename='images/teaz-social-resize.png') }}" alt="Teaz Social News">
-  <p class="news-headline">Teaz Social Hosting More Live Events This Month</p>
+<section id="latest-news" class="news-feature">
+  <h2>Latest News</h2>
+  <div id="news-container"></div>
 </section>
 
 <!-- Weather Section -->
-<section class="weather-info">
-  <h2>Atlanta Weather</h2>
-  <p>Current temperature and forecast coming soon.</p>
+<section id="weather" class="weather-info">
+  <h2>Today's Weather</h2>
+  <div id="weather-container"></div>
 </section>
 
 {% endblock %}

@@ -1,6 +1,7 @@
 // static/js/main.js
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Toggle mobile nav
   const toggleButton = document.getElementById("menu-toggle");
   const modal = document.getElementById("mobile-nav-modal");
   const menuIcon = document.getElementById("menu-icon");
@@ -15,4 +16,41 @@ document.addEventListener("DOMContentLoaded", () => {
       closeIcon.style.display = isActive ? "inline" : "none";
     });
   }
+
+  // Populate Latest News section
+  const newsSection = document.getElementById("news-container");
+
+  if (newsSection && typeof newsData !== 'undefined' && Array.isArray(newsData)) {
+    newsSection.innerHTML = ""; // Clear any existing placeholder
+    newsData.forEach(item => {
+      const newsCard = document.createElement("div");
+      newsCard.className = "news-card";
+      newsCard.innerHTML = `
+        <div class="news-card-image" style="background-image: url('${item.image}');">
+          <div class="news-overlay">
+            <h3>${item.title}</h3>
+            <p>${item.summary}</p>
+          </div>
+        </div>
+      `;
+      newsSection.appendChild(newsCard);
+    });
+  }
 });
+  // Populate Weather Data section
+const weatherContainer = document.getElementById("weather-container");
+
+if (weatherContainer && typeof weatherData === 'object') {
+  weatherContainer.innerHTML = `
+    <div class="weather-card">
+      <img src="${weatherData.icon}" alt="${weatherData.condition}" class="weather-icon" />
+      <div class="weather-details">
+        <h3>${weatherData.temperature}</h3>
+        <p>${weatherData.condition}</p>
+        <small>${weatherData.location}</small>
+      </div>
+    </div>
+  `;
+}
+console.log("News Data:", newsData);
+console.log("Weather Data:", weatherData);
