@@ -56,7 +56,6 @@
 </div>
 
 <!-- Secondary Story -->
-<!-- Secondary Story -->
 <div class="secondary-story">
   <div class="story-category">BUSINESS</div>
   <div class="secondary-content">
@@ -105,6 +104,141 @@
   </ul>
 </div>
 
+<!-- Latest News Section -->
+<section class="latest-news">
+  <div class="section-header">
+    <h2>Latest News</h2>
+    <p>Fresh stories and updates from around Atlanta</p>
+  </div>
+  <div class="news-grid">
+    <article class="news-card">
+      <img src="{{ url_for('static', filename='images/news1.jpg') }}" alt="News 1">
+      <div class="news-content">
+        <h3>City Council Approves New Park Plan</h3>
+        <p>The Atlanta City Council has greenlit a transformative green space project expected to launch this fall...</p>
+        <a href="#" class="read-more">Read More</a>
+      </div>
+    </article>
+    <article class="news-card">
+      <img src="{{ url_for('static', filename='images/news2.jpg') }}" alt="News 2">
+      <div class="news-content">
+        <h3>Meet the Chef Behind ATL's Hottest New Pop-Up</h3>
+        <p>Local flavor is going global as chef Amara’s Afro-Fusion kitchen stirs buzz across the BeltLine...</p>
+        <a href="#" class="read-more">Read More</a>
+      </div>
+    </article>
+    <article class="news-card">
+      <img src="{{ url_for('static', filename='images/news3.jpg') }}" alt="News 3">
+      <div class="news-content">
+        <h3>West End Mural Project Brings History to Life</h3>
+        <p>Dozens of artists are reviving Atlanta’s West End with powerful visual storytelling...</p>
+        <a href="#" class="read-more">Read More</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Featured Locals Section -->
+<section class="featured-locals">
+  <div class="section-header">
+    <h2>People of Atlanta</h2>
+    <p>Stories from the locals who shape our city</p>
+  </div>
+  <div class="locals-grid">
+    <div class="local-profile">
+      <img src="{{ url_for('static', filename='images/local1.jpg') }}" alt="Local 1">
+      <h3>Jordan M.</h3>
+      <p>“Running my mural business in ATL has changed my life.”</p>
+    </div>
+    <div class="local-profile">
+      <img src="{{ url_for('static', filename='images/local2.jpg') }}" alt="Local 2">
+      <h3>Sasha R.</h3>
+      <p>“West End gave me my first stage. I’ll never forget that.”</p>
+    </div>
+    <div class="local-profile">
+      <img src="{{ url_for('static', filename='images/local3.jpg') }}" alt="Local 3">
+      <h3>Andre B.</h3>
+      <p>“The BeltLine is where I launched my sneaker brand.”</p>
+    </div>
+  </div>
+</section>
+
+<!-- Upcoming Events Section -->
+<section class="upcoming-events">
+  <div class="section-header">
+    <h2>Upcoming Events</h2>
+    <p>Things to do in and around the city</p>
+  </div>
+  <div class="events-list">
+    <div class="event-item">
+      <div class="event-date">
+        <span class="month">AUG</span>
+        <span class="day">10</span>
+      </div>
+      <div class="event-info">
+        <h3>Grant Park Summer Market</h3>
+        <p>Local vendors, food trucks, and live music.</p>
+        <span class="event-meta">Grant Park • 11am–4pm</span>
+      </div>
+    </div>
+    <div class="event-item">
+      <div class="event-date">
+        <span class="month">AUG</span>
+        <span class="day">17</span>
+      </div>
+      <div class="event-info">
+        <h3>Midtown Mural Crawl</h3>
+        <p>Self-guided walking tour of new murals in Midtown.</p>
+        <span class="event-meta">Start at Piedmont & 10th • 1pm</span>
+      </div>
+    </div>
+    <div class="event-item">
+      <div class="event-date">
+        <span class="month">AUG</span>
+        <span class="day">23</span>
+      </div>
+      <div class="event-info">
+        <h3>Westside Bike Night</h3>
+        <p>Community ride with art stops and free gear giveaways.</p>
+        <span class="event-meta">West End Marta • 6pm</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter Signup Section -->
+<section class="newsletter-signup">
+  <div class="signup-container">
+    <h2>Stay in the Loop</h2>
+    <p>Get the latest Atlanta stories, events, and updates straight to your inbox.</p>
+    <form action="#" method="POST">
+      <input type="email" name="email" placeholder="Enter your email" required>
+      <button type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<!-- Footer Section -->
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-left">
+      <h3>Atlanta Locals</h3>
+      <p>Powered by Lemon Squeeze Marketing</p>
+    </div>
+    <div class="footer-right">
+      <ul class="footer-links">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Submit a Story</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <div class="social-icons">
+        <a href="#"><img src="{{ url_for('static', filename='icons/instagram.svg') }}" alt="Instagram"></a>
+        <a href="#"><img src="{{ url_for('static', filename='icons/facebook.svg') }}" alt="Facebook"></a>
+        <a href="#"><img src="{{ url_for('static', filename='icons/twitter.svg') }}" alt="Twitter"></a>
+      </div>
+    </div>
+  </div>
+</footer>
 
 {% endblock %}
 
