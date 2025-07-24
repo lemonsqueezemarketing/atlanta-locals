@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from .models import db, Property
 
 main = Blueprint('main', __name__)
 
@@ -64,4 +65,12 @@ def events():
 @main.route('/real-estate')
 def real_estate():
     return render_template('real_estate/index.html')
+
+@main.route('/api/test-properties')
+def test_properties():
+    properties = Property.query.all()
+    for p in properties:
+        print(p.title)
+    return f"{len(properties)} properties printed in console."
+
 
