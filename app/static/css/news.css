@@ -461,3 +461,20 @@ body {
     }
   }
   
+  
+  @media (min-width: 768px) {
+    .headline-image {
+      max-width: 700px;
+      margin: 0 auto;
+      display: block;
+    }
+  
+    .secondary-image img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  

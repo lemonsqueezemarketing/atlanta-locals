@@ -1,20 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Atlanta Business Directory | Browse Local Businesses</title>
-  <meta name="description" content="Discover Atlanta's local businesses across various categories. From restaurants to service providers, explore what the city has to offer." />
-  <meta name="keywords" content="Atlanta business directory, browse atlanta services, local business listings" />
-  <meta name="author" content="Atlanta Locals App Team" />
+{% extends 'base.html' %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% block title %}Atlanta Local Directory{% endblock %}
 
-  <h1>Atlanta Business Directory</h1>
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/directory.css') }}">
+{% endblock %}
 
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
+<section class="directory-hero">
+  <h1>Explore Atlanta Businesses</h1>
+  <p>Discover shops, services, restaurants, and more — curated for locals like you.</p>
+</section>
+
+<section class="category-filter">
+  <button class="category-btn active">All</button>
+  <button class="category-btn">Food</button>
+  <button class="category-btn">Health & Wellness</button>
+  <button class="category-btn">Events</button>
+  <button class="category-btn">Retail</button>
+  <button class="category-btn">Art</button>
+</section>
+
+<section class="business-grid">
+  <div class="business-card" data-category="Food">
+    <img src="{{ url_for('static', filename='images/placeholder-business.jpg') }}" alt="Business Photo">
+    <div class="business-info">
+      <h3>Slutty Vegan</h3>
+      <p>Iconic plant-based burgers in the heart of West End.</p>
+      <span class="tag">Food</span>
+    </div>
+  </div>
+
+  <div class="business-card" data-category="Health & Wellness">
+    <img src="{{ url_for('static', filename='images/placeholder-business.jpg') }}" alt="Business Photo">
+    <div class="business-info">
+      <h3>Healing ATL</h3>
+      <p>Holistic wellness center in East Atlanta.</p>
+      <span class="tag">Health & Wellness</span>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Want to see your business listed?</h2>
+  <a href="#" class="cta-button">Submit Your Business</a>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
   <script src="{{ url_for('static', filename='js/directory.js') }}"></script>
-</body>
-</html>
+{% endblock %}

@@ -59,5 +59,9 @@ def digital_products():
 
 @main.route('/events')
 def events():
-    return render_template('home/about.html')
+    return render_template('events/index.html')
+
+@main.route('/real-estate')
+def real_estate():
+    return render_template('real_estate/index.html')
 

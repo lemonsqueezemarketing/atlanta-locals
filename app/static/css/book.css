@@ -1,0 +1,156 @@
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+  }
+  
+  .book-hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    background-color: #7b1e1e;
+    color: #fff;
+  }
+  
+  .book-hero h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .book-hero p {
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .booking-search {
+    background-color: #fff;
+    padding: 1.5rem 1rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .booking-search form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    max-width: 700px;
+    width: 100%;
+  }
+  
+  .booking-search input[type="text"] {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  .booking-search button {
+    background-color: #7b1e1e;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .featured-pros {
+    padding: 2rem 1rem;
+    background-color: #fff;
+    text-align: center;
+  }
+  
+  .featured-pros h2 {
+    margin-bottom: 1.5rem;
+  }
+  
+  .pros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .pro-card {
+    background: #fdfdfd;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    text-align: left;
+  }
+  
+  .pro-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .pro-card h3 {
+    margin: 0.5rem 0 0.25rem;
+  }
+  
+  .pro-card p {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+  }
+  
+  .pro-card a {
+    color: #7b1e1e;
+    font-weight: bold;
+    text-decoration: underline;
+    font-size: 0.9rem;
+  }
+  
+  .how-it-works {
+    background-color: #fefefe;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  
+  .how-it-works h2 {
+    margin-bottom: 1rem;
+  }
+  
+  .how-it-works ol {
+    list-style: none;
+    padding: 0;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  
+  .how-it-works li {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 600px) {
+    .book-hero h1 {
+      font-size: 1.5rem;
+    }
+  
+    .booking-search form {
+      flex-direction: column;
+    }
+  
+    .booking-search input,
+    .booking-search button {
+      width: 100%;
+    }
+  
+    .pro-card {
+      text-align: center;
+    }
+  
+    .how-it-works ol {
+      text-align: left;
+    }
+  }
+  

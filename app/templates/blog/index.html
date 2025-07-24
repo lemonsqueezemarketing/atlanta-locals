@@ -1,20 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Atlanta Local Edu Blog | Business SEO & Commerce Tips</title>
-  <meta name="description" content="Your Atlanta hub for business SEO knowledge, local commerce insights, and digital growth strategies." />
-  <meta name="keywords" content="atlanta blog, local seo, business marketing, commerce education, grow atlanta business" />
-  <meta name="author" content="Atlanta Locals App Team" />
+{% extends 'base.html' %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% block title %}Atlanta Local Edu Hub | SEO for Small Business{% endblock %}
 
-  <h1>Atlanta Local Business Blog</h1>
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+{% endblock %}
 
-  <script src="{{ url_for('static', filename='js/blog.js') }}"></script>
-</body>
-</html>
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
+<section class="edu-hero">
+  <h1>Atlanta Local Edu Hub</h1>
+  <p>Your go-to resource for local SEO and small business success in Atlanta.</p>
+</section>
+
+<section class="featured-guides">
+  <h2>Start Here: Foundational Guides</h2>
+  <div class="guide-grid">
+    <div class="guide-card">
+      <h3>SEO Services Near Me: What Every ATL Business Needs</h3>
+      <p>Learn how to show up on Google when customers in Atlanta search for your service.</p>
+      <a href="#">Read More →</a>
+    </div>
+
+    <div class="guide-card">
+      <h3>SEO for Cleaning, Moving & Home Services</h3>
+      <p>Targeted local strategies for high-volume service industries in Atlanta neighborhoods.</p>
+      <a href="#">Read More →</a>
+    </div>
+
+    <div class="guide-card">
+      <h3>Keyword Guide: What Locals Actually Search</h3>
+      <p>From "best personal trainer in Atlanta" to "affordable web design" — here’s what converts.</p>
+      <a href="#">Read More →</a>
+    </div>
+  </div>
+</section>
+
+<section class="topic-categories">
+  <h2>Explore by Business Type</h2>
+  <div class="category-grid">
+    <a href="#" class="category-tile">Food & Beverage</a>
+    <a href="#" class="category-tile">Beauty & Wellness</a>
+    <a href="#" class="category-tile">Professional Services</a>
+    <a href="#" class="category-tile">Event Services</a>
+    <a href="#" class="category-tile">Health & Fitness</a>
+    <a href="#" class="category-tile">Retail & Ecommerce</a>
+  </div>
+</section>
+
+<section class="seo-library">
+  <h2>Atlanta SEO Knowledge Library</h2>
+  <ul class="seo-list">
+    <li><a href="#">How to Rank on Google Maps as a Local Business</a></li>
+    <li><a href="#">The 10 Most Searched Services in Atlanta Right Now</a></li>
+    <li><a href="#">Free SEO Tools for Entrepreneurs & Creators</a></li>
+    <li><a href="#">Blog SEO Tips for Local Bloggers</a></li>
+  </ul>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

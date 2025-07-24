@@ -1,0 +1,65 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Atlanta Local Events | Discover What's Happening{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+    <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+  </div>
+  
+  <!-- Branding Section -->
+  <section class="hero-branding">
+    <div class="branding-logo">
+      <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+    </div>
+    <h1 class="atl-brand-title">Atlanta Local News</h1>
+    <p class="subtitle">Your Trusted Source for Atlanta Stories</p>
+  </section>
+  
+
+  
+<section class="events-hero">
+  <h1>Discover Atlanta Events</h1>
+  <p>From headliners to house parties — explore what Atlanta locals are hosting near you.</p>
+</section>
+
+<section class="event-grid">
+  <div class="event-card">
+    <img src="{{ url_for('static', filename='images/placeholder-event.jpg') }}" alt="Live Music">
+    <div class="event-info">
+      <h3>Rooftop R&B: Live Sessions at Edgewood</h3>
+      <p>Sat, Aug 17 • 8:00 PM • Edgewood Rooftop</p>
+      <a href="#">Get Tickets</a>
+    </div>
+  </div>
+
+  <div class="event-card">
+    <img src="{{ url_for('static', filename='images/placeholder-event.jpg') }}" alt="Festival">
+    <div class="event-info">
+      <h3>West End House Party & Artist Showcase</h3>
+      <p>Sun, Aug 18 • 6:00 PM • Private Residence</p>
+      <a href="#">RSVP Free</a>
+    </div>
+  </div>
+
+  <div class="event-card">
+    <img src="{{ url_for('static', filename='images/placeholder-event.jpg') }}" alt="Networking">
+    <div class="event-info">
+      <h3>ATL Creators Mixer: Music, Tech, Film</h3>
+      <p>Thu, Aug 22 • 7:00 PM • Atlantic Station Hub</p>
+      <a href="#">Reserve Spot</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

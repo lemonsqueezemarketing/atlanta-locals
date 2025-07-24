@@ -1,10 +1,11 @@
+
 {% extends 'base.html' %}
 
-{% block title %}Atlanta Search Map{% endblock %}
+{% block title %}Atlanta Locals Shop{% endblock %}
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -21,18 +22,35 @@
   <h1 class="atl-brand-title">Atlanta Local Search</h1>
   <p class="subtitle">Atlanta’s Own Search Engine</p>
 </section>
+<section class="shop-hero">
+  <h1>Shop Atlanta Locals</h1>
+  <p>Support small businesses with every purchase.</p>
+</section>
 
+<section class="product-grid">
+  <div class="product-card">
+    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 1">
+    <h3>ATL Made Candle</h3>
+    <p class="price">$18.00</p>
+    <button>Add to Cart</button>
+  </div>
 
-  <div class="about">
-    <h2 class="subtitle">Shop Atlanta</h2>
+  <div class="product-card">
+    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 2">
+    <h3>Historic West End T-Shirt</h3>
+    <p class="price">$25.00</p>
+    <button>Add to Cart</button>
+  </div>
 
-    </div>
-
-
-
+  <div class="product-card">
+    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 3">
+    <h3>Black-Owned Coffee</h3>
+    <p class="price">$16.50</p>
+    <button>Add to Cart</button>
+  </div>
+</section>
 {% endblock %}
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/shop.js') }}"></script>
 {% endblock %}

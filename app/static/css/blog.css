@@ -1,0 +1,131 @@
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: #fafafa;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .edu-hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    background-color: #7b1e1e;
+    color: white;
+  }
+  
+  .edu-hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .edu-hero p {
+    font-size: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .featured-guides,
+  .topic-categories,
+  .seo-library {
+    padding: 2.5rem 1rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    background-color: white;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+  }
+  
+  .featured-guides h2,
+  .topic-categories h2,
+  .seo-library h2 {
+    margin-bottom: 1.5rem;
+    color: #222;
+    text-align: center;
+  }
+  
+  .guide-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .guide-card {
+    background-color: #f8f8f8;
+    padding: 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  
+  .guide-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .guide-card p {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    color: #444;
+  }
+  
+  .guide-card a {
+    font-weight: bold;
+    color: #7b1e1e;
+    text-decoration: none;
+  }
+  
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .category-tile {
+    display: block;
+    background-color: #eee;
+    color: #333;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s;
+  }
+  
+  .category-tile:hover {
+    background-color: #7b1e1e;
+    color: white;
+  }
+  
+  .seo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 800px;
+  }
+  
+  .seo-list li {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .seo-list a {
+    text-decoration: none;
+    color: #7b1e1e;
+    font-weight: 500;
+  }
+  
+  @media (max-width: 500px) {
+    .edu-hero h1 {
+      font-size: 1.6rem;
+    }
+  
+    .guide-card h3 {
+      font-size: 1rem;
+    }
+  
+    .guide-card p {
+      font-size: 0.9rem;
+    }
+  }
+  

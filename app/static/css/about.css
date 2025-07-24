@@ -1,0 +1,67 @@
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fafafa;
+  }
+  
+  .about-hero {
+    background-color: #7b1e1e;
+    color: white;
+    padding: 3rem 1rem 2rem;
+    text-align: center;
+  }
+  
+  .about-hero h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .about-hero p {
+    font-size: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .about-body {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  
+  .about-section {
+    margin-bottom: 2.5rem;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .about-section h2 {
+    color: #222;
+    margin-bottom: 0.75rem;
+  }
+  
+  .about-section p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  .founder-message {
+    border-left: 4px solid #7b1e1e;
+    background-color: #fff7f7;
+  }
+  
+  @media (max-width: 600px) {
+    .about-hero h1 {
+      font-size: 1.6rem;
+    }
+  
+    .about-section p {
+      font-size: 0.95rem;
+    }
+  }
+  

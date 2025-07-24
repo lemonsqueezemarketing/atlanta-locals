@@ -1,10 +1,11 @@
+
 {% extends 'base.html' %}
 
-{% block title %}Atlanta Search Map{% endblock %}
+{% block title %}About Atlanta Locals{% endblock %}
 
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -18,21 +19,59 @@
   <div class="branding-logo">
     <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
   </div>
-  <h1 class="atl-brand-title">Atlanta Local Search</h1>
-  <p class="subtitle">Atlanta’s Own Search Engine</p>
+  <h1 class="atl-brand-title">About Us</h1>
+  <p class="subtitle">Your Trusted Source for Atlanta Stories</p>
+</section>
+<section class="about-hero">
+  <h1>We’re Redefining Local Search in Atlanta</h1>
+  <p>Helping ATL locals connect with ATL businesses.</p>
 </section>
 
+<section class="about-body">
+  <div class="about-section">
+    <h2>The Problem</h2>
+    <p>
+      Even with the latest tools, apps, and technology, local business discovery is broken.
+      Many Atlanta locals struggle to find their favorite neighborhood businesses, simply because they don’t show up in search results.
+      Meanwhile, business owners are often overlooked online because they can't afford the $5,000+ per month required to compete with big-budget marketing teams.
+    </p>
+    <p>
+      This creates a circular challenge: locals can't find the businesses they love, and those businesses can’t afford to get found.
+    </p>
+  </div>
 
-  <div class="about">
-    <h2 class="subtitle">About Us</h2>
+  <div class="about-section founder-message">
+    <h2>A Word From the Founder</h2>
+    <p>
+      I sought out to fix this problem. Using my background in business, marketing, and technology, I made it my mission to help local businesses show up online — especially in local search results.
+      One of our winning use cases? <strong>Classic Fades Barbershop</strong>. (See full story.)
+    </p>
+    <p>
+      But even we hit a wall. To truly unleash the power of SEO, we needed a full team — designers, copywriters, developers, producers, marketers. And that requires capital.
+    </p>
+    <p>
+      But what if we streamlined the process?
+    </p>
+    <p>
+      After all, the purpose of Local SEO is to help real people discover real businesses. So, why not build a local search engine designed by ATL for ATL?
+    </p>
+  </div>
 
-    </div>
-
-
-
+  <div class="about-section">
+    <h2>The Solution</h2>
+    <p>
+      We’re building a custom local experience — powered by local directory APIs, supported by real people on the ground in Atlanta.
+    </p>
+    <p>
+      Our search engine is Atlanta-built, Atlanta-run. We don’t just market to small businesses, we connect with them — in person. We take the time to understand their challenges and create actual solutions.
+    </p>
+    <p>
+      This isn’t just SEO. It’s a local movement.
+    </p>
+  </div>
+</section>
 {% endblock %}
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/about.js') }}"></script>
 {% endblock %}
