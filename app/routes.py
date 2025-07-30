@@ -5,6 +5,31 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
+    businesses = [
+        {
+            "title": "Teaz Social Expands with More Live Events",
+            "summary": "Atlanta's favorite social tea lounge is now hosting weekly open mic nights, live DJs, and community mixers.",
+            "image": "/story_tea.png"
+        },
+        {
+            "title": "Mike Launches the ATL Local App",
+            "summary": "Founder Mike officially launches ATL Local, a new community-driven search engine built for Atlantans by Atlantans.",
+            "image": "/story_mike_atl_local.png"
+        }
+    ]
+    return render_template('directory/index.html', posts=businesses)
+
+
+@main.route('/about')
+def about():
+    return render_template('home/about.html')
+
+@main.route('/search-map')
+def search_map():
+    return render_template('search_map/index.html')
+
+@main.route('/directory')
+def directory():
     news = [
         {
             "title": "Teaz Social Expands with More Live Events",
@@ -24,19 +49,6 @@ def home():
         "location": "Atlanta, GA"
     }
     return render_template('home/index.html', news=news, weather=weather)
-
-
-@main.route('/about')
-def about():
-    return render_template('home/about.html')
-
-@main.route('/search-map')
-def search_map():
-    return render_template('search_map/index.html')
-
-@main.route('/directory')
-def directory():
-    return render_template('directory/index.html')
 
 @main.route('/news')
 def news():
