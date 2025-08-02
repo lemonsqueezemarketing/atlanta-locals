@@ -13,6 +13,15 @@
   <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
 </div>
 
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local News</h1>
+  <p class="subtitle">Your Trusted Source for Atlanta Stories</p>
+</section>
+
 <!-- Ad Campaign Div -->
 <div class="ad-campaign-bar">
   <a href="#" class="ad-campaign-link">How to Break Through Your Small Business Revenue Ceiling in 2 Days</a>
@@ -23,40 +32,63 @@
   <img src="{{ url_for('static', filename='images/ad_banner.webp') }}" alt="Ad Placeholder" />
 </div>
 
-
-<!-- Branding Section -->
-<section class="hero-branding">
-  <div class="branding-logo">
-    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+<!-- Main Story Section -->
+<div class="headline-story">
+  <div class="headline-image-container">
+    <img src="{{ url_for('static', filename='images/story_mike_atl_local.png') }}" alt="Mark Cuban" class="headline-image" />
+    <div class="headline-arrow">
+      <a href="#"><img src="{{ url_for('static', filename='images/right-arrow.svg') }}" alt="Read More"></a>
+    </div>
   </div>
-  <h1 class="atl-brand-title">Atlanta Local News</h1>
-  <p class="subtitle">Your Trusted Source for Atlanta Stories</p>
-</section>
-
-
-<!-- News Categories Sub-Header -->
-<div class="c-topics" style="border-top: 2px solid #800000; border-bottom: 2px solid #800000;">
-  <div class="topics-container">
-    <ul class="topics left-algn">
-      <li><a href="#" class="nav-itemText">Atlanta Business</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Shops</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Food & Restaurants</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Real Estate</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Auto</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Entertainment</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Health & Wellness</a></li>
-      <li><a href="#" class="nav-itemText">Atlanta Service Providers</a></li>
-    </ul>
+  <div class="headline-meta">
+    <span class="headline-category">Business News</span>
+  </div>
+  <h2 class="headline-title">
+    Mark Cuban Spends ‘Most’ of His Time Using His Decade-Old Communication Method. Here’s Why He Prefers It.
+  </h2>
+  <p class="headline-snippet">
+    Here’s how the tech billionaire gets his inbox from 1,000 emails to 20 in one day with barely any AI.
+  </p>
+  <div class="headline-author">
+    <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Author" class="author-image" />
+    <span class="author-name">BY John Doe</span>
   </div>
 </div>
 
-<!-- Main Story Section -->
-
-
 <!-- Secondary Story -->
+<div class="secondary-story">
+  <div class="story-category">BUSINESS</div>
+  <div class="secondary-content">
+    <div class="secondary-title">
+      How Atlanta Startups Are Reshaping the Tech Scene
+    </div>
+    <div class="secondary-description">
+      Local entrepreneurs are attracting national attention by transforming traditional industries with AI and automation.
+    </div>
+    <div class="secondary-author">
+      <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Author" class="author-img">
+      <span class="author-name">By Jane Doe</span>
+    </div>
+    <div class="secondary-image">
+      <img src="{{ url_for('static', filename='images/story_mike_atl_local.png') }}" alt="Secondary Story">
+    </div>
+  </div>
+</div>
 
 <!-- Third Story Block -->
-
+<div class="third-story">
+  <div class="third-image">
+    <img src="{{ url_for('static', filename='images/story_mike_atl_local.png') }}" alt="Third Story">
+  </div>
+  <div class="third-category">Atlanta Headlines</div>
+  <div class="third-title">
+    How AI is Helping SMBs in Food, Hiring, and Employee Management
+  </div>
+  <div class="third-author">
+    <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Author" class="author-img">
+    <span class="author-name">By John Smith</span>
+  </div>
+</div>
 
 <!-- Most Read Section -->
 <div class="most-read">

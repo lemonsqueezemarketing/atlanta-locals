@@ -114,6 +114,78 @@ body {
     border-radius: 6px;
     font-weight: bold;
   }
+/* App Icon Styling */
+.app-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.open-in-app-icon {
+  width: 50px;
+  height: 50px;
+}
+
+/* Updated Hero Styling */
+.directory-hero {
+  text-align: center;
+  padding: 2rem 1rem;
+  background-color: #7b1e1e;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Search Bar Container */
+.search-bar-container {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Input Field */
+.search-input {
+  width: 75%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 1rem;
+  outline: none;
+}
+
+/* Button */
+.search-button {
+  width: 25%;
+  padding: 0.75rem;
+  background-color: #fae3e3;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Responsive Mobile */
+@media (max-width: 480px) {
+  .search-bar-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .search-input,
+  .search-button {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-bar-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
   
   @media (max-width: 480px) {
     .directory-hero h1 {

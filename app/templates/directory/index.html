@@ -11,7 +11,7 @@
 {% block content %}
 <!-- Faint Background Image -->
 <div class="faint-background">
-  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+  <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Background" />
 </div>
 
 <!-- Branding Section -->
@@ -23,9 +23,24 @@
   <p class="subtitle">Atlanta’s Own Search Engine</p>
 </section>
 <section class="directory-hero">
+  <!-- Open in App Icon -->
+  <div class="app-icon-container">
+    <img src="{{ url_for('static', filename='images/open-in-app-icon.png') }}" alt="Open in App Icon" class="open-in-app-icon">
+  </div>
+
+  <!-- Hero Title -->
   <h1>Explore Atlanta Businesses</h1>
   <p>Discover shops, services, restaurants, and more — curated for locals like you.</p>
+
+  <!-- Search Bar -->
+  <div class="search-bar-container">
+    <form action="/search" method="GET">
+      <input type="text" name="query" placeholder="Try 'Vegan Burgers in West End'" class="search-input">
+      <button type="submit" class="search-button">Search</button>
+    </form>
+  </div>
 </section>
+
 
 <section class="category-filter">
   <button class="category-btn active">All</button>
@@ -38,7 +53,7 @@
 
 <section class="business-grid">
   <div class="business-card" data-category="Food">
-    <img src="{{ url_for('static', filename='images/placeholder-business.jpg') }}" alt="Business Photo">
+    <img src="{{ url_for('static', filename='images/story_condos.png') }}" alt="Business Photo">
     <div class="business-info">
       <h3>Slutty Vegan</h3>
       <p>Iconic plant-based burgers in the heart of West End.</p>
@@ -47,7 +62,7 @@
   </div>
 
   <div class="business-card" data-category="Health & Wellness">
-    <img src="{{ url_for('static', filename='images/placeholder-business.jpg') }}" alt="Business Photo">
+    <img src="{{ url_for('static', filename='images/story_condos.png') }}" alt="Business Photo">
     <div class="business-info">
       <h3>Healing ATL</h3>
       <p>Holistic wellness center in East Atlanta.</p>

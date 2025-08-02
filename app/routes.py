@@ -3,7 +3,14 @@ from .models import db, Property
 
 main = Blueprint('main', __name__)
 
+
 @main.route('/')
+@main.route('/home')
+@main.route('/news')
+def news():
+    return render_template('news/index.html')
+
+@main.route('/directory')
 def home():
     businesses = [
         {
@@ -50,9 +57,7 @@ def directory():
     }
     return render_template('home/index.html', news=news, weather=weather)
 
-@main.route('/news')
-def news():
-    return render_template('news/index.html')
+
 
 @main.route('/blog')
 def blog():
