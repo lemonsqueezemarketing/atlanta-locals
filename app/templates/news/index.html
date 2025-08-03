@@ -13,15 +13,6 @@
   <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
 </div>
 
-<!-- Ad Campaign Div -->
-<div class="ad-campaign-bar">
-  <a href="#" class="ad-campaign-link">How to Break Through Your Small Business Revenue Ceiling in 2 Days</a>
-</div>
-
-<!-- Ad Image Placeholder -->
-<div class="ad-placeholder">
-  <img src="{{ url_for('static', filename='images/ad_banner.webp') }}" alt="Ad Placeholder" />
-</div>
 
 
 <!-- Branding Section -->
@@ -32,6 +23,16 @@
   <h1 class="atl-brand-title">Atlanta Local News</h1>
   <p class="subtitle">Your Trusted Source for Atlanta Stories</p>
 </section>
+
+<!-- Ad Campaign Div -->
+<div class="ad-campaign-bar">
+  <a href="#" class="ad-campaign-link">How to Break Through Your Small Business Revenue Ceiling in 2 Days</a>
+</div>
+
+<!-- Ad Image Placeholder -->
+<div class="ad-placeholder">
+  <img src="{{ url_for('static', filename='images/ad_banner.webp') }}" alt="Ad Placeholder" />
+</div>
 
 
 <!-- News Categories Sub-Header -->
@@ -51,6 +52,18 @@
 </div>
 
 <!-- Main Story Section -->
+<section class="main-story">
+  <div class="main-story-image">
+    <img src="{{ url_for('static', filename='images/airplane_photo.png') }}" alt="Atlanta airport delays" />
+  </div>
+  <div class="main-story-content">
+    <h2 class="main-story-title">Atlanta airport sees continued delays, cancellations</h2>
+    <p class="main-story-description">
+      Most of the affected flights at Hartsfield-Jackson are operated by Delta, which has the highest number of arrivals and departures at the airport.
+    </p>
+    <a href="#" class="read-more-btn">Read More</a>
+  </div>
+</section>
 
 
 <!-- Secondary Story -->
@@ -80,7 +93,7 @@
   </div>
   <div class="news-grid">
     <article class="news-card">
-      <img src="{{ url_for('static', filename='images/news1.jpg') }}" alt="News 1">
+      <img src="{{ url_for('static', filename='images/airplane_photo.png') }}" alt="News 1">
       <div class="news-content">
         <h3>City Council Approves New Park Plan</h3>
         <p>The Atlanta City Council has greenlit a transformative green space project expected to launch this fall...</p>
@@ -88,7 +101,7 @@
       </div>
     </article>
     <article class="news-card">
-      <img src="{{ url_for('static', filename='images/news2.jpg') }}" alt="News 2">
+      <img src="{{ url_for('static', filename='images/airplane_photo.png') }}" alt="News 2">
       <div class="news-content">
         <h3>Meet the Chef Behind ATL's Hottest New Pop-Up</h3>
         <p>Local flavor is going global as chef Amara’s Afro-Fusion kitchen stirs buzz across the BeltLine...</p>
@@ -96,7 +109,7 @@
       </div>
     </article>
     <article class="news-card">
-      <img src="{{ url_for('static', filename='images/news3.jpg') }}" alt="News 3">
+      <img src="{{ url_for('static', filename='images/airplane_photo.png') }}" alt="News 3">
       <div class="news-content">
         <h3>West End Mural Project Brings History to Life</h3>
         <p>Dozens of artists are reviving Atlanta’s West End with powerful visual storytelling...</p>
@@ -114,17 +127,17 @@
   </div>
   <div class="locals-grid">
     <div class="local-profile">
-      <img src="{{ url_for('static', filename='images/local1.jpg') }}" alt="Local 1">
+      <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="Local 1">
       <h3>Jordan M.</h3>
       <p>“Running my mural business in ATL has changed my life.”</p>
     </div>
     <div class="local-profile">
-      <img src="{{ url_for('static', filename='images/local2.jpg') }}" alt="Local 2">
+      <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="Local 2">
       <h3>Sasha R.</h3>
       <p>“West End gave me my first stage. I’ll never forget that.”</p>
     </div>
     <div class="local-profile">
-      <img src="{{ url_for('static', filename='images/local3.jpg') }}" alt="Local 3">
+      <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="Local 3">
       <h3>Andre B.</h3>
       <p>“The BeltLine is where I launched my sneaker brand.”</p>
     </div>
@@ -191,7 +204,7 @@
   <div class="footer-content">
     <div class="footer-left">
       <h3>Atlanta Locals</h3>
-      <p>Powered by Lemon Squeeze Marketing</p>
+      <p>Powered by Xpert Biz Intelligence</p>
     </div>
     <div class="footer-right">
       <ul class="footer-links">
