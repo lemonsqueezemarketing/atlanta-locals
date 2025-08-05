@@ -589,6 +589,7 @@ body {
     width: 100%;
     background-color: #fff;
     padding: 2rem 1rem;
+    margin-top: 2rem;
     margin-bottom: 3rem;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -630,6 +631,7 @@ body {
     display: flex;
     gap: 2rem;
     align-items: flex-start;
+    margin-bottom: 3rem;
   }
   
   .main-story-image img {
@@ -708,4 +710,28 @@ body {
 
   
   
+}
+@media (max-width: 767px) {
+  .news-grid,
+  .locals-grid{
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center; /* ✅ Center child items horizontally */
+  }
+
+  .news-card,
+  .local-profile {
+    width: 60%;
+    max-width: 400px; /* ✅ Optional: keeps profiles from getting too wide */
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  .local-profile img {
+    width: 100%;
+    max-width: 150px;
+    margin: 0 auto 1rem auto;
+    display: block;
+  }
+
 }

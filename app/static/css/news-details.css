@@ -1,0 +1,544 @@
+.section-5-article-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+}
+
+
+
+.article-category {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #6c6c6c;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.article-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1c1c1c;
+  line-height: 1.3;
+  margin-bottom: 1.2rem;
+  text-transform: capitalize;
+}
+
+/* === Article Share Icons === */
+.article-share-icons {
+  margin-top: 1rem;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.social-icons a {
+  margin-right: 0.75rem;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.social-icons a img {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.social-icons a:hover img {
+  transform: scale(1.1);
+}
+
+
+
+/* === Article Author & Timestamp === */
+.article-author {
+  margin-top: 1rem;
+  margin-left: 0.5rem;
+  font-size: 1.5rem;
+  color: #555;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.article-author .article-meta {
+  font-weight: bold;
+  color: #222; 
+  margin-bottom: 0.2rem;
+}
+
+/* === Article Section Container === */
+.article-section {
+  background-color: #ffffff; /* white background */
+  padding: 2rem 1.5rem; /* vertical and horizontal spacing */
+  margin: 2rem auto;
+  max-width: 900px; /* prevent full screen width on large screens */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); /* subtle lift */
+  border-radius: 8px;
+}
+
+/* === Horizontal Divider === */
+.section-divider {
+  border: none;
+  border-top: 1px solid #dcdcdc; /* light gray */
+  margin: 1.5rem 0;
+}
+
+/* === Section Title === */
+.section-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #1c1c1c;
+  margin-bottom: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-transform: capitalize;
+}
+
+/* === Paragraphs === */
+.section-content p {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Copyright text styling */
+.section-content .copyright-text {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #777;
+  line-height: 1.6;
+}
+
+/* === Section 8 FAQ Styles === */
+.section-8-article-faqs {
+  background-color: #ffffff;
+  padding: 2rem 1.5rem;
+  margin: 2rem auto;
+  max-width: 900px;
+}
+
+.section-8-article-faqs .faq-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1c1c1c;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+/* FAQ Item Container */
+.faq-item {
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid #d1d1d1;
+  padding-bottom: 1rem;
+}
+
+/* FAQ Question Button */
+.faq-question {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0;
+  color: #1c1c1c;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.faq-question:hover {
+  color: #CDB252; /* Optional hover color */
+}
+
+/* FAQ Answer (Initially hidden) */
+.faq-answer {
+  display: none;
+  padding: 0.5rem 1rem 0 0.25rem;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Show class toggled via JS */
+.faq-answer.show {
+  display: block;
+}
+
+/* === Section 9: Comments Banner === */
+.comments-banner {
+  background-color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-top: 2rem;
+}
+
+.comments-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* Left side: Icon + count */
+.comments-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-icon {
+  width: 45px;
+  height: 45px;
+}
+
+.comment-count {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Center: Join text */
+.comments-center {
+  flex: 1;
+  text-align: center;
+}
+
+.join-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+/* Right: Button */
+.comments-right {
+  text-align: right;
+}
+
+.view-comments-button {
+  background-color: #000;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.view-comments-button:hover {
+  background-color: #333;
+}
+
+
+/* === Section 10: Read Next Carousel === */
+.section-10-read-next {
+  background-color: #7e1e2b; /* Atlanta Locals maroon */
+  padding: 2rem 1rem;
+  color: #ffffff;
+  margin-top: 3rem;
+}
+
+.read-next-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.read-next-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+/* Carousel core */
+.carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Carousel item */
+.carousel-item {
+  flex: 0 0 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+.carousel-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.carousel-post-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Dots */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.carousel-dots .dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ffffffa0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-dots .dot.active {
+  background-color: #ffffff;
+}
+/* === Section 11 Ads === */
+.section-11-ads {
+  padding: 2rem 1rem;
+  background-color: #ffffff;
+}
+
+.ads-header {
+  color: #8c8c8c; /* medium gray */
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.ads-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.ad-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.ad-item img {
+  width: 50%;
+  max-width: 50%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.ad-item img:hover {
+  transform: scale(1.02);
+}
+
+.learn-more-btn {
+  margin-top: 0.75rem;
+  display: inline-block;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.learn-more-btn:hover {
+  background-color: #1c1c1c;
+  transform: translateY(-2px);
+}
+
+/* === Section 12 Most Read === */
+.section-12-most-read {
+  padding: 2rem 1rem;
+  background-color: #f8f8f8;
+}
+
+.most-read-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1c1c1c;
+  margin-bottom: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.most-read-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.most-read-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.most-read-item img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.most-read-link {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1c1c1c;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.most-read-link:hover {
+  color: #8c8c8c;
+}
+
+/* === Section 13 Related Articles === */
+.section-13-related {
+  padding: 2rem 1rem;
+  background-color: #f8f8f8;
+}
+
+.related-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1c1c1c;
+  margin-bottom: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.related-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.related-item img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.related-link {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1c1c1c;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.related-link:hover {
+  color: #8c8c8c;
+}
+
+/* Optional: Responsive tweak */
+@media (min-width: 768px) {
+  /* === Section 5 Article Main === */
+  .section-5-article-main {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 2rem 1rem;
+  }
+
+  .article-heading {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .article-img {
+    width: 80%;
+    margin: 0;
+  }
+
+  .article-img img {
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .article-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1c1c1c;
+    line-height: 1.3;
+    margin-top: 0.75rem;
+    margin-bottom: 1.2rem;
+    text-transform: capitalize;
+  }
+
+  .article-category {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #6c6c6c;
+    font-size: 1.5rem;
+    margin-left: 0.5rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: 1px;
+  }
+
+  /* === Section 12: Most Read === */
+  .most-read-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .most-read-item {
+    flex: 1 1 calc(50% - 2rem);
+    max-width: calc(50% - 2rem);
+  }
+
+  /* === Section 13: Related === */
+  .related-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .related-item {
+    flex: 1 1 calc(50% - 2rem);
+    max-width: calc(50% - 2rem);
+  }
+}
+
+
