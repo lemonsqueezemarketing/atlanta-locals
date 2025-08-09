@@ -11,6 +11,8 @@ dummy_newsposts = [
         "category":"business",
         "title": "Atlanta airport sees continued delays, cancellations", 
         "author": "Mike W",
+        "image":"images/post_img_1.png",
+        "date_created": datetime.now(),
         "content":{
             "section-1":{
                 "title":"Introduction to Hartsfield-Jackson Atlanta International Airport",
@@ -81,8 +83,7 @@ dummy_newsposts = [
                  },
             ],
         },
-        "image":"images/post_img_1.png",
-        "date_created": datetime.now()
+
     },
     {
         "post_id":2,
@@ -963,6 +964,7 @@ def events():
 @main.route('/real-estate')
 def real_estate():
     return render_template('real_estate/index.html')
+
 
 @main.route('/api/test-properties')
 def test_properties():
