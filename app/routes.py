@@ -965,6 +965,10 @@ def events():
 def real_estate():
     return render_template('real_estate/index.html')
 
+@main.route('/admin')
+def admin_home():
+    return render_template('admin/index.html')
+
 
 @main.route('/api/test-properties')
 def test_properties():

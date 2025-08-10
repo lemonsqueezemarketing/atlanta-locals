@@ -27,11 +27,11 @@
     <!-- Footer Section -->
     {% include 'partials/footer.html' %}
   </main>
-  <script
+  <script>
   src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256‑…"
   crossorigin=""
-></script>
+</script>
 
   <script>
     const newsData = {{ news | default([]) | tojson }};
