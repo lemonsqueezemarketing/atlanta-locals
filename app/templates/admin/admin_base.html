@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>{% block title %}Atlanta Locals Admin{% endblock %}</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <!-- Admin CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <!-- Main content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Leaflet JS (correct tag) -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7kGStb6m7NsQ2iG0C2YBktP0QLuR71Cq40u5bM="
+    crossorigin=""
+    defer
+  ></script>
+
+  <!-- Admin JS (load once, with defer) -->
+  <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

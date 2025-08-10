@@ -1,0 +1,78 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Atlanta Local News{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <!-- admin.css is already loaded in admin_base, but leaving this is harmless -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  {% include 'partials/admin_nav.html' %}
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Top Row: Page title + User info -->
+    <div class="admin-topbar">
+      <div class="page-title">
+        <!-- Mobile menu toggle -->
+        <button class="hamburger-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+        <h2>Admin — Create Content</h2>
+      </div>
+      <div class="user-info">
+        <span class="user-email">admin@atlantalocals</span>
+        <span class="user-avatar">👤</span>
+      </div>
+    </div>
+
+    <!-- Second Row: Content type chooser -->
+    <div class="admin-content-container">
+      <div class="content-card">
+        <div class="content-card-header">
+          <h3 class="content-card-title">Choose Content Type</h3>
+          <p class="content-card-subtitle">Select what you want to create.</p>
+        </div>
+
+        <!-- Option: New Blog Post -->
+        <div class="content-option">
+          <div class="content-option-icon">📝</div>
+          <div class="content-option-info">
+            <h4 class="option-title">New Blog Post</h4>
+            <p class="option-description">
+              Create a new blog post with title, slug, category, author, image, and content.
+            </p>
+          </div>
+          <div class="content-option-action">
+            <button class="btn-select">Select</button>
+          </div>
+        </div>
+
+        <!-- Option: New News Post -->
+        <div class="content-option">
+          <div class="content-option-icon">📰</div>
+          <div class="content-option-info">
+            <h4 class="option-title">New News Post</h4>
+            <p class="option-description">
+              Create a new article with title, slug, category, author, image, and content.
+            </p>
+          </div>
+          <div class="content-option-action">
+            <button class="btn-select">Select</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {# Remove duplicate admin.js include here to avoid double-wiring #}
+{% endblock %}
