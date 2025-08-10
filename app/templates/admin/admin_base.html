@@ -6,14 +6,6 @@
 
   <title>{% block title %}Atlanta Locals Admin{% endblock %}</title>
 
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-
   <!-- Admin CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 
@@ -21,21 +13,21 @@
 </head>
 
 <body>
+  <!-- Global mobile menu toggle -->
+  <button class="hamburger-btn global-hamburger" aria-label="Open menu" aria-expanded="false">
+    ☰
+  </button>
+
   <!-- Main content -->
   <main>
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Leaflet JS (correct tag) -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j7kGStb6m7NsQ2iG0C2YBktP0QLuR71Cq40u5bM="
-    crossorigin=""
-    defer
-  ></script>
-
   <!-- Admin JS (load once, with defer) -->
   <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+
+  <!-- Create Blog Post JS (load once, with defer) -->
+  <script src="{{ url_for('static', filename='js/blog_create.js') }}" defer></script>
 
   {% block scripts %}{% endblock %}
 </body>

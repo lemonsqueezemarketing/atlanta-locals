@@ -945,6 +945,8 @@ def directory():
 def blog():
     return render_template('blog/index.html')
 
+
+
 @main.route('/shop')
 def shop():
     return render_template('shop/index.html')
@@ -968,6 +970,12 @@ def real_estate():
 @main.route('/admin')
 def admin_home():
     return render_template('admin/index.html')
+
+@main.route('/admin/blog/create',methods=['GET', 'POST'])
+def create_blog_post():
+    return render_template('blog/create_post.html')
+
+
 
 
 @main.route('/api/test-properties')
