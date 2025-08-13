@@ -1,0 +1,260 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Admin — Users{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  {% include 'partials/admin_nav.html' %}
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Top Row -->
+    <div class="admin-topbar">
+      <div class="page-title">
+        <h2>Admin — User List View</h2>
+      </div>
+      <div class="user-info">
+        <span class="user-email">admin@atlantalocals</span>
+        <span class="user-avatar">👤</span>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="admin-content-container">
+      <div class="content-card">
+        <div class="content-card-header">
+          <h3 class="content-card-title">Users</h3>
+          <a href="#" class="btn-create">
+            <span class="plus-icon">+</span> Create New
+          </a>
+          <p class="content-card-subtitle">Manage registered users.</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>DOB</th>
+                <th>ZIP</th>
+                <th>City/State</th>
+                <th>Image</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th style="width:160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dummy rows -->
+              <tr>
+                <td>1</td>
+                <td>Alex</td>
+                <td>Mitchell</td>
+                <td>alex.mitchell@example.com</td>
+                <td>Male</td>
+                <td>1990-03-12</td>
+                <td>30303</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/alex.jpg</td>
+                <td>2025-08-10 10:12</td>
+                <td>2025-08-10 10:12</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Briana</td>
+                <td>Lopez</td>
+                <td>briana.lopez@example.com</td>
+                <td>Female</td>
+                <td>1994-07-01</td>
+                <td>30308</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/briana.jpg</td>
+                <td>2025-08-10 11:40</td>
+                <td>2025-08-11 09:05</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Cameron</td>
+                <td>Nguyen</td>
+                <td>cameron.nguyen@example.com</td>
+                <td>Male</td>
+                <td>1988-11-22</td>
+                <td>30309</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/cameron.jpg</td>
+                <td>2025-08-10 13:15</td>
+                <td>2025-08-10 13:15</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Dana</td>
+                <td>Reed</td>
+                <td>dana.reed@example.com</td>
+                <td>Female</td>
+                <td>1992-05-17</td>
+                <td>30312</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/dana.jpg</td>
+                <td>2025-08-10 14:30</td>
+                <td>2025-08-12 09:21</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Elijah</td>
+                <td>Brown</td>
+                <td>elijah.brown@example.com</td>
+                <td>Male</td>
+                <td>1986-09-05</td>
+                <td>30318</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/elijah.jpg</td>
+                <td>2025-08-10 15:48</td>
+                <td>2025-08-11 08:00</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Faith</td>
+                <td>Owens</td>
+                <td>faith.owens@example.com</td>
+                <td>Female</td>
+                <td>1995-01-29</td>
+                <td>30307</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/faith.jpg</td>
+                <td>2025-08-11 09:10</td>
+                <td>2025-08-11 09:10</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Gavin</td>
+                <td>Patel</td>
+                <td>gavin.patel@example.com</td>
+                <td>Male</td>
+                <td>1991-02-14</td>
+                <td>30306</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/gavin.jpg</td>
+                <td>2025-08-11 10:22</td>
+                <td>2025-08-11 10:22</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Haley</td>
+                <td>Price</td>
+                <td>haley.price@example.com</td>
+                <td>Female</td>
+                <td>1993-06-03</td>
+                <td>30310</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/haley.jpg</td>
+                <td>2025-08-11 11:37</td>
+                <td>2025-08-12 08:44</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Isaac</td>
+                <td>Turner</td>
+                <td>isaac.turner@example.com</td>
+                <td>Male</td>
+                <td>1989-12-01</td>
+                <td>30313</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/isaac.jpg</td>
+                <td>2025-08-11 13:05</td>
+                <td>2025-08-11 13:05</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Jasmine</td>
+                <td>Wright</td>
+                <td>jasmine.wright@example.com</td>
+                <td>Female</td>
+                <td>1997-04-19</td>
+                <td>30305</td>
+                <td>Atlanta, GA</td>
+                <td>media/profile/jasmine.jpg</td>
+                <td>2025-08-11 14:22</td>
+                <td>2025-08-11 14:22</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Optional pagination placeholder -->
+        <div class="pagination">
+          <button class="page-btn" disabled>Prev</button>
+          <span class="page-number is-active">1</span>
+          <span class="page-number">2</span>
+          <span class="page-number">3</span>
+          <button class="page-btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

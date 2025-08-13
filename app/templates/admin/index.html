@@ -37,33 +37,133 @@
           <p class="content-card-subtitle">Select what you want to create.</p>
         </div>
 
-        <!-- Option: New Blog Post -->
-        <div class="content-option">
-          <div class="content-option-icon">📝</div>
-          <div class="content-option-info">
-            <h4 class="option-title">New Blog Post</h4>
-            <p class="option-description">
-              Create a new blog post with title, slug, category, author, image, and content.
-            </p>
-          </div>
-          <div class="content-option-action">
-            <button class="btn-select">Select</button>
-          </div>
-        </div>
 
-        <!-- Option: New News Post -->
-        <div class="content-option">
-          <div class="content-option-icon">📰</div>
-          <div class="content-option-info">
-            <h4 class="option-title">New News Post</h4>
-            <p class="option-description">
-              Create a new article with title, slug, category, author, image, and content.
-            </p>
-          </div>
-          <div class="content-option-action">
-            <button class="btn-select">Select</button>
-          </div>
-        </div>
+    <!-- Option: New User -->
+    <div class="content-option">
+      <div class="content-option-icon">👤</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New User</h4>
+        <p class="option-description">
+          Add a new user with name, email, role, and account details.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="{{ url_for('main.admin_users') }}" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Blog Post Category -->
+    <div class="content-option">
+      <div class="content-option-icon">📂</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Blog Post Category</h4>
+        <p class="option-description">
+          Create a category to organize related blog posts by topic or theme.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="{{ url_for('main.admin_blog_cats') }}" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Blog Post -->
+    <div class="content-option">
+      <div class="content-option-icon">📝</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Blog Post</h4>
+        <p class="option-description">
+          Create a new blog post with title, slug, category, author, image, and content.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="{{ url_for('main.admin_blog_post') }}" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New News Post -->
+    <div class="content-option">
+      <div class="content-option-icon">📰</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New News Post</h4>
+        <p class="option-description">
+          Create a new article with title, slug, category, author, image, and content.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="{{ url_for('main.admin_news_post') }}" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Business Listing -->
+    <div class="content-option">
+      <div class="content-option-icon">🏢</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Business Listing</h4>
+        <p class="option-description">
+          Add a business profile with name, category, location, contact details, and description.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="#" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Event -->
+    <div class="content-option">
+      <div class="content-option-icon">📅</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Event</h4>
+        <p class="option-description">
+          Publish an event with date, time, location, organizer, and event details.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="#" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Real Estate Listing -->
+    <div class="content-option">
+      <div class="content-option-icon">🏠</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Real Estate Listing</h4>
+        <p class="option-description">
+          Add property details including address, price, photos, and description.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="#" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Job Posting -->
+    <div class="content-option">
+      <div class="content-option-icon">💼</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Job Posting</h4>
+        <p class="option-description">
+          Post a job with title, company, location, requirements, and application link.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="#" class="btn-select">Select</a>
+      </div>
+    </div>
+
+    <!-- Option: New Classified Ad -->
+    <div class="content-option">
+      <div class="content-option-icon">📢</div>
+      <div class="content-option-info">
+        <h4 class="option-title">New Classified Ad</h4>
+        <p class="option-description">
+          Create a listing for items, services, or community notices with photos and details.
+        </p>
+      </div>
+      <div class="content-option-action">
+        <a href="#" class="btn-select">Select</a>
+      </div>
+    </div>
+
       </div>
     </div>
   </main>

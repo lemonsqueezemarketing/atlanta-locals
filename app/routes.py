@@ -971,10 +971,25 @@ def real_estate():
 def admin_home():
     return render_template('admin/index.html')
 
+@main.route('/admin/users',methods=['GET',])
+def admin_users():
+    return render_template('admin/user_list_view.html')
+
+@main.route('/admin/blog-cat',methods=['GET',])
+def admin_blog_cats():
+    return render_template('admin/blog_cat_list_view.html')
+
+@main.route('/admin/blog',methods=['GET',])
+def admin_blog_post():
+    return render_template('admin/blog_list_view.html')
+
 @main.route('/admin/blog/create',methods=['GET', 'POST'])
 def create_blog_post():
     return render_template('blog/create_post.html')
 
+@main.route('/admin/news',methods=['GET',])
+def admin_news_post():
+    return render_template('admin/news_list_view.html')
 
 @main.route('/api/debug/db')
 def debug_db():
@@ -1023,12 +1038,6 @@ def test_blog_content():
     docs = list(coll.find({}, {"_id": 0}))  # include {"_id": 0} to hide ObjectId
     return jsonify(docs)
 
-@main.route('/api/blog-cat')
-def get_blog_cat():
-    blog_cats = BlogCategory.query.all()
-    for blog_cat in blog_cats:
-        print(blog_cat)
-    return f"blog cats: {blog_cats}"
 
 
 @main.route('/api/test-properties')
