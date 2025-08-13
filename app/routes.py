@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, abort
-from .models import db, Property, NewsPost
+from flask import Blueprint, render_template, abort, jsonify, current_app
+from .models import db, BlogCategory, MyUser, BlogPost, NewsPost
 from datetime import datetime
 
 
@@ -976,13 +976,66 @@ def create_blog_post():
     return render_template('blog/create_post.html')
 
 
+@main.route('/api/debug/db')
+def debug_db():
+    # Counts
+    cat_count  = BlogCategory.query.count()
+    user_count = MyUser.query.count()
+    post_count = BlogPost.query.count()
+    news_count = NewsPost.query.count()
+
+    # Log a few rows to the server console
+    print("\n--- DB DEBUG ---")
+    print(f"BlogCategory count: {cat_count}")
+    for c in BlogCategory.query.order_by(BlogCategory.blog_cat_id).limit(3):
+        print(f"  - [{c.blog_cat_id}] {c.title} (slug={c.slug})")
+
+    print(f"MyUser count: {user_count}")
+    for u in MyUser.query.order_by(MyUser.my_user_id).limit(3):
+        print(f"  - [{u.my_user_id}] {u.first_name} {u.last_name} <{u.email}>")
+
+    print(f"BlogPost count: {post_count}")
+    for p in BlogPost.query.order_by(BlogPost.post_id).limit(3):
+        print(f"  - [{p.post_id}] {p.title} (slug={p.slug}) cat_id={p.blog_cat_id} author_id={p.author_id}")
+
+    print(f"NewsPost count: {news_count}")
+    for n in NewsPost.query.order_by(NewsPost.post_id).limit(3):
+        print(f"  - news post_id={n.post_id}")
+    print("--- END DB DEBUG ---\n")
+
+    # Also return a small JSON so you can check in the browser
+    return jsonify({
+        "blog_category_count": cat_count,
+        "my_user_count": user_count,
+        "blog_post_count": post_count,
+        "news_post_count": news_count
+    })
+
+@main.route('/api/test-blog-content')
+def test_blog_content():
+    from flask import jsonify, current_app
+
+    db = getattr(current_app, "mongo_db", None)
+    if db is None:
+        return jsonify({"error": "Mongo not initialized"}), 500
+
+    coll = db.blog_content
+    docs = list(coll.find({}, {"_id": 0}))  # include {"_id": 0} to hide ObjectId
+    return jsonify(docs)
+
+@main.route('/api/blog-cat')
+def get_blog_cat():
+    blog_cats = BlogCategory.query.all()
+    for blog_cat in blog_cats:
+        print(blog_cat)
+    return f"blog cats: {blog_cats}"
 
 
 @main.route('/api/test-properties')
 def test_properties():
-    properties = Property.query.all()
-    for p in properties:
-        print(p.title)
-    return f"{len(properties)} properties printed in console."
+    #properties = Property.query.all()
+    #for p in properties:
+        #print(p.title)
+    return f" currently in progress properties printed in console."
 
 
