@@ -1,0 +1,204 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Admin — Blog Categories{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  {% include 'partials/admin_nav.html' %}
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Top Row -->
+    <div class="admin-topbar">
+      <div class="page-title">
+        <h2>Admin — Blog Category List View</h2>
+      </div>
+      <div class="user-info">
+        <span class="user-email">admin@atlantalocals</span>
+        <span class="user-avatar">👤</span>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="admin-content-container">
+      <div class="content-card">
+        <div class="content-card-header">
+          <h3 class="content-card-title">Blog Categories</h3>
+          <a href="#" class="btn-create">
+            <span class="plus-icon">+</span> Create New
+          </a>
+          <p class="content-card-subtitle">Manage categories used to organize blog posts.</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Slug</th>
+                <th>Description</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th style="width:160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dummy rows -->
+              <tr>
+                <td>1</td>
+                <td>Travel</td>
+                <td>travel</td>
+                <td>Trips, tips, and flight updates.</td>
+                <td>2025-08-10 09:00</td>
+                <td>2025-08-10 09:00</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Real Estate</td>
+                <td>real-estate</td>
+                <td>Market news and neighborhood guides.</td>
+                <td>2025-08-10 09:05</td>
+                <td>2025-08-11 12:10</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Food & Drink</td>
+                <td>food-and-drink</td>
+                <td>Restaurants, pop-ups, and chef profiles.</td>
+                <td>2025-08-10 09:12</td>
+                <td>2025-08-12 08:30</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Lifestyle</td>
+                <td>lifestyle</td>
+                <td>Parks, BeltLine, and things to do.</td>
+                <td>2025-08-10 09:20</td>
+                <td>2025-08-10 09:20</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Transit</td>
+                <td>transit</td>
+                <td>MARTA updates and traffic alerts.</td>
+                <td>2025-08-10 09:25</td>
+                <td>2025-08-11 14:47</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Sports</td>
+                <td>sports</td>
+                <td>Hawks, Falcons, United, and more.</td>
+                <td>2025-08-10 09:33</td>
+                <td>2025-08-10 09:33</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Community</td>
+                <td>community</td>
+                <td>Neighborhood stories and local voices.</td>
+                <td>2025-08-10 09:40</td>
+                <td>2025-08-12 07:58</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Business</td>
+                <td>business</td>
+                <td>Openings, closings, and local economy.</td>
+                <td>2025-08-10 09:45</td>
+                <td>2025-08-11 16:02</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Guides</td>
+                <td>guides</td>
+                <td>How-tos and curated roundups.</td>
+                <td>2025-08-10 09:50</td>
+                <td>2025-08-10 09:50</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Weather</td>
+                <td>weather</td>
+                <td>Forecasts and severe weather alerts.</td>
+                <td>2025-08-10 09:55</td>
+                <td>2025-08-11 08:18</td>
+                <td class="cell-actions">
+                  <a href="#" class="btn-link">View</a>
+                  <a href="#" class="btn-link">Edit</a>
+                  <a href="#" class="btn-link danger">Delete</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <button class="page-btn" disabled>Prev</button>
+          <span class="page-number is-active">1</span>
+          <span class="page-number">2</span>
+          <span class="page-number">3</span>
+          <button class="page-btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}
