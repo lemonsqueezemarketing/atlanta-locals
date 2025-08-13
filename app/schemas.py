@@ -211,6 +211,10 @@ class BlogPostOutSchema(Schema):
     created_at        = fields.DateTime(allow_none=True)
     updated_at        = fields.DateTime(allow_none=True)
 
+    # Computed / denormalized fields for admin tables
+    author_first_name = fields.Function(lambda o: getattr(o.author, "first_name", None))
+    category_title    = fields.Function(lambda o: getattr(o.category, "title", None))
+
 blog_post_out = BlogPostOutSchema()
 blog_post_list_out = BlogPostOutSchema(many=True)
 
@@ -278,7 +282,20 @@ blog_post_update = BlogPostUpdateSchema()
 # ======================================================
 
 class NewsPostOutSchema(Schema):
-    post_id = fields.Integer()
+    # Core fields
+    post_id          = fields.Integer()
+    title            = fields.String()
+    slug             = fields.String()
+    blog_cat_id      = fields.Integer()
+    author_id        = fields.Integer()
+    image            = fields.String()
+    content_mongo_id = fields.String(allow_none=True)
+    created_at       = fields.DateTime(allow_none=True)
+    updated_at       = fields.DateTime(allow_none=True)
+
+    # Computed / denormalized fields for admin tables
+    author_first_name = fields.Function(lambda o: getattr(o.author, "first_name", None))
+    category_title    = fields.Function(lambda o: getattr(o.category, "title", None))
 
 news_post_out = NewsPostOutSchema()
 news_post_list_out = NewsPostOutSchema(many=True)
