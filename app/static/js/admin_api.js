@@ -1,0 +1,165 @@
+(function () {
+    const el = document.querySelector("[data-admin-list]");
+    if (!el) return;
+  
+    const resource = el.getAttribute("data-admin-list"); // e.g., "blog-posts", "blog-categories", "news-posts"
+    const perPage  = el.getAttribute("data-per-page") || "10";
+    const includeContentAttr = el.getAttribute("data-include-content");
+    const includeContent = includeContentAttr == null ? null : includeContentAttr;
+  
+    // ---------- Column Schemas (add new resources here only) ----------
+    // key: resource path, value: array of column defs { key, header, get(item), className? }
+    const SCHEMAS = {
+      "blog-posts": [
+        { key: "post_id",          header: "ID",        get: (p) => p.post_id },
+        { key: "title",            header: "Title",     get: (p) => p.title,              className: "cell--truncate" },
+        { key: "slug",             header: "Slug",      get: (p) => p.slug,               className: "cell--truncate" },
+        { key: "category_title",   header: "Category",  get: (p) => p.category_title || "" },
+        { key: "author_first_name",header: "Author",    get: (p) => p.author_first_name || "" },
+        { key: "image",            header: "Image",     get: (p) => p.image || "",        className: "cell--truncate" },
+        { key: "created_at",       header: "Created",   get: (p) => formatDate(p.created_at) },
+        { key: "updated_at",       header: "Updated",   get: (p) => formatDate(p.updated_at) },
+        { key: "__actions__",      header: "Actions",   get: renderActions, className: "cell-actions", isHtml: true }
+      ],
+      "blog-categories": [
+        { key: "blog_cat_id", header: "ID",          get: (c) => c.blog_cat_id },
+        { key: "title",       header: "Title",       get: (c) => c.title,        className: "cell--truncate" },
+        { key: "slug",        header: "Slug",        get: (c) => c.slug,         className: "cell--truncate" },
+        { key: "description", header: "Description", get: (c) => c.description || "", className: "cell--truncate" },
+        { key: "created_at",  header: "Created",     get: (c) => formatDate(c.created_at) },
+        { key: "updated_at",  header: "Updated",     get: (c) => formatDate(c.updated_at) },
+        { key: "__actions__", header: "Actions",     get: renderActions, className: "cell-actions", isHtml: true }
+      ],
+      "news-posts": [
+        // Your NewsPost list returns BlogPost-shaped rows (by design), so reuse similar columns:
+        { key: "post_id",          header: "ID",        get: (p) => p.post_id },
+        { key: "title",            header: "Title",     get: (p) => p.title,              className: "cell--truncate" },
+        { key: "slug",             header: "Slug",      get: (p) => p.slug,               className: "cell--truncate" },
+        { key: "category_title",   header: "Category",  get: (p) => p.category_title || "" },
+        { key: "author_first_name",header: "Author",    get: (p) => p.author_first_name || "" },
+        { key: "image",            header: "Image",     get: (p) => p.image || "",        className: "cell--truncate" },
+        { key: "created_at",       header: "Created",   get: (p) => formatDate(p.created_at) },
+        { key: "updated_at",       header: "Updated",   get: (p) => formatDate(p.updated_at) },
+        { key: "__actions__",      header: "Actions",   get: renderActions, className: "cell-actions", isHtml: true }
+      ],
+      "users": [
+        { key: "my_user_id",   header: "ID",         get: (u) => u.my_user_id },
+        { key: "first_name",   header: "First",      get: (u) => u.first_name || "" },
+        { key: "last_name",    header: "Last",       get: (u) => u.last_name  || "" },
+        { key: "email",        header: "Email",      get: (u) => u.email      || "", className: "cell--truncate" },
+        { key: "gender",       header: "Gender",     get: (u) => u.gender     || "" },
+        { key: "dob",          header: "DOB",        get: (u) => formatDate(u.dob) },
+        { key: "zip_code",     header: "ZIP",        get: (u) => u.zip_code   || "" },
+        { key: "city_state",   header: "City/State", get: (u) => u.city_state || "" },
+        { key: "image",        header: "Image",      get: (u) => u.image      || "", className: "cell--truncate" },
+        { key: "created_at",   header: "Created",    get: (u) => formatDate(u.created_at) },
+        { key: "updated_at",   header: "Updated",    get: (u) => formatDate(u.updated_at) },
+        { key: "__actions__",  header: "Actions",    get: renderActions, className: "cell-actions", isHtml: true }
+      ],
+
+      // Add future models here, not in multiple files.
+    };
+  
+    const schema = SCHEMAS[resource];
+    if (!schema) {
+      console.warn(`[admin_api] No schema defined for resource "${resource}".`);
+    }
+  
+    // Build query string
+    const params = new URLSearchParams();
+    params.set("per_page", perPage);
+    if (includeContent !== null) params.set("include_content", includeContent);
+    const url = `/api/v1/${resource}?${params.toString()}`;
+  
+    // Hooks to table parts if you want the script to optionally render <thead>
+    const table = document.querySelector(".admin-table");
+    const thead = table ? table.querySelector("thead") : null;
+    const tbody = table ? table.querySelector("tbody") : null;
+  
+    (async () => {
+      try {
+        console.log(`[admin_api] Fetching: ${url}`);
+        const res = await fetch(url, { method: "GET", headers: { "Accept": "application/json" } });
+        if (!res.ok) {
+          console.error(`[admin_api] ${resource} fetch failed`, res.status, await res.text());
+          return;
+        }
+        const payload = await res.json();
+        console.log(`[admin_api] ${resource} data:`, payload);
+        const items = Array.isArray(payload?.items) ? payload.items : [];
+  
+        // 1) If you want JS to render headers too (optional):
+        if (schema && thead && thead.dataset.autogen !== "false") {
+          thead.innerHTML = `
+            <tr>
+              ${schema.map(col => {
+                const width = col.key === "__actions__" ? ' style="width:160px;"' : "";
+                return `<th${width}>${escapeHtml(col.header)}</th>`;
+              }).join("")}
+            </tr>`;
+        }
+  
+        // 2) Render body
+        if (tbody) {
+          if (!items.length) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="${schema ? schema.length : 1}" style="text-align:center; color: var(--muted); padding: 18px;">
+                  No results.
+                </td>
+              </tr>`;
+            return;
+          }
+  
+          tbody.innerHTML = items.map(item => {
+            const tds = (schema || []).map(col => {
+              const raw = col.get(item);
+              const classAttr = col.className ? ` class="${col.className}"` : "";
+              if (col.isHtml) {
+                return `<td${classAttr}>${raw}</td>`;
+              }
+              const text = raw == null ? "" : String(raw);
+              const titleAttr = (col.className && col.className.includes("cell--truncate"))
+                ? ` title="${escapeHtml(text)}"` : "";
+              return `<td${classAttr}${titleAttr}>${escapeHtml(text)}</td>`;
+            }).join("");
+            return `<tr>${tds}</tr>`;
+          }).join("");
+        }
+      } catch (err) {
+        console.error(`[admin_api] ${resource} error:`, err);
+      }
+    })();
+  
+    // ---------- helpers ----------
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  
+    function formatDate(dt) {
+      if (!dt) return "";
+      try {
+        const d = new Date(dt);
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      } catch {
+        return String(dt);
+      }
+    }
+  
+    function renderActions() {
+      // Keep actions simple for now; hook up later
+      return `
+        <a href="#" class="btn-link">View</a>
+        <a href="#" class="btn-link">Edit</a>
+        <a href="#" class="btn-link danger">Delete</a>
+      `;
+    }
+  })();
+  

@@ -12,14 +12,13 @@
 
   <!-- Sidebar -->
   {% include 'partials/admin_nav.html' %}
-
   <!-- Main Content -->
-  <main class="admin-main">
+  <main class="admin-main" data-admin-list="blog-posts" data-per-page="10" data-include-content="true">
+
     <!-- Top Row -->
     <div class="admin-topbar">
       <div class="page-title">
         <h2>Admin — Blog Post List View</h2>
-
       </div>
       <div class="user-info">
         <span class="user-email">admin@atlantalocals</span>
@@ -41,13 +40,11 @@
             Manage blog entries with categories, authors, and content.
           </p>
         </div>
-      </div>
-    </div>
 
-
+        <!-- Table -->
         <div class="table-wrapper">
           <table class="admin-table">
-            <thead>
+            <thead data-autogen="false">
               <tr>
                 <th>ID</th>
                 <th>Title</th>
@@ -60,162 +57,11 @@
                 <th style="width:160px;">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Dummy rows -->
-              <tr>
-                <td>1</td>
-                <td>Atlanta airport sees continued delays, cancellations</td>
-                <td>atlanta_airports_delays</td>
-                <td>Travel</td>
-                <td>John</td>
-                <td>media/blog/atl_airport_delays.jpg</td>
-                <td>2025-08-10 19:37</td>
-                <td>2025-08-10 19:37</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Midtown condo prices surge in Q3</td>
-                <td>midtown-condo-prices-q3</td>
-                <td>Real Estate</td>
-                <td>John</td>
-                <td>media/blog/midtown_condos.jpg</td>
-                <td>2025-08-11 09:02</td>
-                <td>2025-08-11 10:15</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Grant Park BBQ Fest returns this weekend</td>
-                <td>grant-park-bbq-fest</td>
-                <td>Food &amp; Drink</td>
-                <td>Sarah</td>
-                <td>media/blog/grant_park_bbq.jpg</td>
-                <td>2025-08-11 12:40</td>
-                <td>2025-08-11 12:40</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>Best tea spots on the BeltLine</td>
-                <td>best-tea-spots-beltline</td>
-                <td>Lifestyle</td>
-                <td>Sarah</td>
-                <td>media/blog/tea_spots.jpg</td>
-                <td>2025-08-12 08:10</td>
-                <td>2025-08-12 09:55</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>New MARTA schedule updates announced</td>
-                <td>new-marta-schedule</td>
-                <td>Transit</td>
-                <td>Mike</td>
-                <td>media/blog/marta_updates.jpg</td>
-                <td>2025-08-12 10:20</td>
-                <td>2025-08-12 10:20</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>Local chef opens new BBQ concept</td>
-                <td>local-chef-new-bbq</td>
-                <td>Food &amp; Drink</td>
-                <td>Emily</td>
-                <td>media/blog/bbq_concept.jpg</td>
-                <td>2025-08-12 11:00</td>
-                <td>2025-08-12 11:00</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>7</td>
-                <td>Hawks preseason schedule released</td>
-                <td>hawks-preseason-schedule</td>
-                <td>Sports</td>
-                <td>Emily</td>
-                <td>media/blog/hawks_preseason.jpg</td>
-                <td>2025-08-12 12:30</td>
-                <td>2025-08-12 12:30</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>8</td>
-                <td>City parks add new playgrounds</td>
-                <td>city-parks-new-playgrounds</td>
-                <td>Community</td>
-                <td>Mike</td>
-                <td>media/blog/parks_playgrounds.jpg</td>
-                <td>2025-08-12 13:00</td>
-                <td>2025-08-12 13:30</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>9</td>
-                <td>How to spend a day in Midtown</td>
-                <td>day-in-midtown</td>
-                <td>Real Estate</td>
-                <td>Anna</td>
-                <td>media/blog/day_in_midtown.jpg</td>
-                <td>2025-08-12 14:05</td>
-                <td>2025-08-12 14:05</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Weekend farmers markets roundup</td>
-                <td>weekend-farmers-markets</td>
-                <td>Community</td>
-                <td>Anna</td>
-                <td>media/blog/farmers_markets.jpg</td>
-                <td>2025-08-12 15:20</td>
-                <td>2025-08-12 15:20</td>
-                <td class="cell-actions">
-                  <a href="#" class="btn-link">View</a>
-                  <a href="#" class="btn-link">Edit</a>
-                  <a href="#" class="btn-link danger">Delete</a>
-                </td>
-              </tr>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
 
+        <!-- Pagination (static for now; wire up later) -->
         <div class="pagination">
           <button class="page-btn" disabled>Prev</button>
           <span class="page-number is-active">1</span>
@@ -226,6 +72,7 @@
       </div>
     </div>
   </main>
+
 </div>
 {% endblock %}
 
