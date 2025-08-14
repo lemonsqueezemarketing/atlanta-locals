@@ -5,6 +5,7 @@
 
 {% block head %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 {% endblock %}
 
@@ -62,6 +63,29 @@
   </div>
 </section>
 
+<!-- Latest Blog Posts (modeled after Latest News) -->
+<section class="latest-news">
+  <div class="section-header">
+    <h2>Latest Blog Posts</h2>
+    <p>Fresh how-tos and guides from our SEO library</p>
+  </div>
+
+  <!-- Uses same classes/styles as news grid; JS targets the data-* hook below -->
+  <div class="news-grid" data-latest-blog-list>
+    <!-- Blog cards will be injected by blog.js -->
+  </div>
+
+  <!-- Simple pager (blog.js wires these up) -->
+  <div class="pager" data-blog-pager>
+    <button type="button" class="btn" data-blog-prev disabled>← Prev</button>
+    <span class="pager-label" data-blog-page-label>Page 1</span>
+    <button type="button" class="btn" data-blog-next>Next →</button>
+  </div>
+</section>
+
+
+
+
 <section class="seo-library">
   <h2>Atlanta SEO Knowledge Library</h2>
   <ul class="seo-list">
@@ -75,4 +99,5 @@
 
 {% block scripts %}
   {{ super() }}
+  <script src="{{ url_for('static', filename='js/blog.js') }}"></script>
 {% endblock %}
