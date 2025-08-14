@@ -52,16 +52,14 @@
 </div>
 
 <!-- Main Story Section -->
-<section class="main-story">
+<section class="main-story" data-admin-list="news-main">
   <div class="main-story-image">
-    <img src="{{ url_for('static', filename=main_post.image) }}" alt="{{main_post.title}}" />
+    <img data-main-image src="" alt="Main story image">
   </div>
   <div class="main-story-content">
-    <h2 class="main-story-title">{{main_post.title}}</h2>
-    <p class="main-story-description">
-      {{ main_post.content['section-1']['paragraph-1'][:150] }}...
-    </p>
-    <a href="{{ url_for('main.news_detail', news_id=main_post.post_id) }}" class="read-more-btn">Read More</a>
+    <h2 class="main-story-title" data-main-title>Loading main post…</h2>
+    <p class="main-story-description" data-main-desc></p>
+    <a data-main-link href="#" class="read-more-btn">Read More</a>
   </div>
 </section>
 
@@ -71,8 +69,8 @@
 <!-- Third Story Block -->
 
 
-<!-- Most Read Section -->
-<div class="most-read">
+<!-- Most Read Section 
+ <div class="most-read">
   <h3 class="most-read-title">Most Read - {{ current_date }}</h3>
   <ul class="most-read-list">
     <li><span class="most-read-rank">1</span> Atlanta's housing market sees unexpected surge</li>
@@ -85,24 +83,28 @@
   </ul>
 </div>
 
+-->
+
+
+<!-- Most Read Section -->
+<div class="most-read">
+  <h3 class="most-read-title">Most Read - {{ current_date }}</h3>
+  <ul class="most-read-list" data-most-read-list>
+    <!-- JS populates top 7 most-read news items here -->
+  </ul>
+</div>
+
+
 <!-- Latest News Section -->
 <section class="latest-news">
   <div class="section-header">
     <h2>Latest News</h2>
     <p>Fresh stories and updates from around Atlanta</p>
   </div>
-  <div class="news-grid">
-    {% for post in latest_posts %}
-    <article class="news-card">
-      <img src="{{ url_for('static', filename=post.image) }}" alt="{{ post.title }}">
-      <div class="news-content">
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.content['section-1']['paragraph-1'][:150] }}...</p>
-        <a href="{{ url_for('main.news_detail', news_id=post.post_id) }}" class="read-more">Read More</a>
-      </div>
-    </article>
-    {% endfor %}
+  <div class="news-grid" data-latest-news-list>
+    <!-- Latest news posts will be injected here by news.js -->
   </div>
+  
 </section>
 
 <!-- Featured Locals Section -->

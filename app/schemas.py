@@ -1,5 +1,5 @@
 # app/schemas.py
-from marshmallow import Schema, fields, validates, ValidationError
+from marshmallow import Schema, fields, validates, validates_schema, ValidationError
 import re
 
 # --- Helpers (kept from earlier BlogCategory work) ---
@@ -13,10 +13,9 @@ def _slugify(text: str) -> str:
     )
 
 # ======================================================
-# BlogCategory Schemas (as finalized earlier)
+# BlogCategory Schemas
 # ======================================================
 class BlogCategoryCreateSchema(Schema):
-    # For POST and PUT: both required to match DB constraints
     title = fields.String(required=True)
     slug = fields.String(required=True)
     description = fields.String(allow_none=True)
@@ -34,7 +33,6 @@ class BlogCategoryCreateSchema(Schema):
             raise ValidationError("Slug must be URL-safe (lowercase, hyphenated).")
 
 class BlogCategoryUpdateSchema(Schema):
-    # For PATCH: all optional, but if present must be valid
     title = fields.String(required=False)
     slug = fields.String(required=False)
     description = fields.String(required=False, allow_none=True)
@@ -67,22 +65,15 @@ blog_category_update = BlogCategoryUpdateSchema()
 
 # ======================================================
 # MyUser Schemas
-# Model (for reference):
-#   my_user_id PK
-#   first_name (NOT NULL), last_name (NOT NULL), email (NOT NULL), gender (NOT NULL),
-#   dob (NOT NULL, Date), zip_code (NOT NULL), city_state (NULL), image (NOT NULL)
 # ======================================================
-
-# Simple ZIP pattern for US "12345" or "12345-6789" (len <= 10 per model)
 _US_ZIP_RE = re.compile(r"^\d{5}(?:-\d{4})?$")
 
 class MyUserCreateSchema(Schema):
-    # Create / PUT: require all NOT NULL columns
     first_name = fields.String(required=True)
     last_name  = fields.String(required=True)
     email      = fields.Email(required=True)
     gender     = fields.String(required=True)
-    dob        = fields.Date(required=True)          # parses ISO-like strings to date
+    dob        = fields.Date(required=True)
     zip_code   = fields.String(required=True)
     city_state = fields.String(required=False, allow_none=True)
     image      = fields.String(required=True)
@@ -114,7 +105,6 @@ class MyUserCreateSchema(Schema):
             raise ValidationError("ZIP code cannot be empty.")
         if len(v) > 10:
             raise ValidationError("ZIP code too long (max 10).")
-        # Soft validation: only enforce if it looks numeric-ish; otherwise allow
         if re.fullmatch(r"[0-9\-]+", v) and not _US_ZIP_RE.match(v):
             raise ValidationError("ZIP must be 12345 or 12345-6789.")
 
@@ -126,7 +116,6 @@ class MyUserCreateSchema(Schema):
             raise ValidationError("Image path too long (max 300).")
 
 class MyUserUpdateSchema(Schema):
-    # PATCH: all optional, but if provided must be valid
     first_name = fields.String(required=False)
     last_name  = fields.String(required=False)
     email      = fields.Email(required=False)
@@ -184,7 +173,7 @@ class MyUserOutSchema(Schema):
     last_name  = fields.String()
     email      = fields.String()
     gender     = fields.String()
-    dob        = fields.Date()                         # serialize as ISO date
+    dob        = fields.Date()
     zip_code   = fields.String()
     city_state = fields.String(allow_none=True)
     image      = fields.String()
@@ -197,9 +186,8 @@ my_user_create = MyUserCreateSchema()
 my_user_update = MyUserUpdateSchema()
 
 # ======================================================
-# BlogPost Schemas (with added validators)
+# BlogPost Schemas
 # ======================================================
-
 class BlogPostOutSchema(Schema):
     post_id           = fields.Integer()
     title             = fields.String()
@@ -210,8 +198,6 @@ class BlogPostOutSchema(Schema):
     content_mongo_id  = fields.String(allow_none=True)
     created_at        = fields.DateTime(allow_none=True)
     updated_at        = fields.DateTime(allow_none=True)
-
-    # Computed / denormalized fields for admin tables
     author_first_name = fields.Function(lambda o: getattr(o.author, "first_name", None))
     category_title    = fields.Function(lambda o: getattr(o.category, "title", None))
 
@@ -280,9 +266,7 @@ blog_post_update = BlogPostUpdateSchema()
 # ======================================================
 # NewsPost Schemas
 # ======================================================
-
 class NewsPostOutSchema(Schema):
-    # Core fields
     post_id          = fields.Integer()
     title            = fields.String()
     slug             = fields.String()
@@ -292,8 +276,6 @@ class NewsPostOutSchema(Schema):
     content_mongo_id = fields.String(allow_none=True)
     created_at       = fields.DateTime(allow_none=True)
     updated_at       = fields.DateTime(allow_none=True)
-
-    # Computed / denormalized fields for admin tables
     author_first_name = fields.Function(lambda o: getattr(o.author, "first_name", None))
     category_title    = fields.Function(lambda o: getattr(o.category, "title", None))
 
@@ -309,3 +291,157 @@ class NewsPostUpdateSchema(Schema):
 news_post_create = NewsPostCreateSchema()
 news_post_update = NewsPostUpdateSchema()
 
+# ======================================================
+# NewsMain Schemas
+# ======================================================
+class NewsMainOutSchema(Schema):
+    news_main_id = fields.Integer()
+    post_id      = fields.Integer()
+    start_date   = fields.Date()
+    end_date     = fields.Date()
+    created_at   = fields.DateTime(allow_none=True)
+    updated_at   = fields.DateTime(allow_none=True)
+    notes        = fields.String(allow_none=True)
+    author_first_name = fields.Function(
+        lambda o: getattr(getattr(getattr(o, "post", None), "author", None), "first_name", None)
+    )
+    category_title = fields.Function(
+        lambda o: getattr(getattr(getattr(o, "post", None), "category", None), "title", None)
+    )
+
+news_main_out = NewsMainOutSchema()
+news_main_list_out = NewsMainOutSchema(many=True)
+
+class NewsMainCreateSchema(Schema):
+    post_id    = fields.Integer(required=True)
+    start_date = fields.Date(required=True)
+    end_date   = fields.Date(required=True)
+    notes      = fields.String(allow_none=True)
+
+    @validates_schema
+    def _validate_dates(self, data, **kwargs):
+        sd = data.get("start_date")
+        ed = data.get("end_date")
+        if sd is None or ed is None:
+            raise ValidationError("Start date and end date are required.")
+        if not (sd < ed):
+            raise ValidationError("End date must be after start date.")
+
+class NewsMainUpdateSchema(Schema):
+    post_id    = fields.Integer()
+    start_date = fields.Date()
+    end_date   = fields.Date()
+    notes      = fields.String(allow_none=True)
+
+    @validates_schema
+    def _validate_dates(self, data, **kwargs):
+        sd = data.get("start_date")
+        ed = data.get("end_date")
+        if sd is not None and ed is not None and not (sd < ed):
+            raise ValidationError("End date must be after start date.")
+
+news_main_create = NewsMainCreateSchema()
+news_main_update = NewsMainUpdateSchema()
+
+# ======================================================
+# PostAnalytics Schemas
+# ======================================================
+class PostAnalyticsOutSchema(Schema):
+    post_analytics_id = fields.Integer()
+    post_id           = fields.Integer()
+    views             = fields.Integer()
+    likes             = fields.Integer()
+    comments          = fields.Integer()
+    shares            = fields.Integer()
+    created_at        = fields.DateTime(allow_none=True)
+    updated_at        = fields.DateTime(allow_none=True)
+
+post_analytics_out = PostAnalyticsOutSchema()
+post_analytics_list_out = PostAnalyticsOutSchema(many=True)
+
+class PostAnalyticsCreateSchema(Schema):
+    post_id  = fields.Integer(required=True)
+    views    = fields.Integer(load_default=0)
+    likes    = fields.Integer(load_default=0)
+    comments = fields.Integer(load_default=0)
+    shares   = fields.Integer(load_default=0)
+
+    @validates("views")
+    def _v_views(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("views cannot be negative.")
+
+    @validates("likes")
+    def _v_likes(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("likes cannot be negative.")
+
+    @validates("comments")
+    def _v_comments(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("comments cannot be negative.")
+
+    @validates("shares")
+    def _v_shares(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("shares cannot be negative.")
+
+class PostAnalyticsUpdateSchema(Schema):
+    views    = fields.Integer()
+    likes    = fields.Integer()
+    comments = fields.Integer()
+    shares   = fields.Integer()
+
+    @validates("views")
+    def _v_views(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("views cannot be negative.")
+
+    @validates("likes")
+    def _v_likes(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("likes cannot be negative.")
+
+    @validates("comments")
+    def _v_comments(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("comments cannot be negative.")
+
+    @validates("shares")
+    def _v_shares(self, v):
+        if v is not None and v < 0:
+            raise ValidationError("shares cannot be negative.")
+
+post_analytics_create = PostAnalyticsCreateSchema()
+post_analytics_update = PostAnalyticsUpdateSchema()
+
+# ------------------------------------------------------
+# BlogPost + Analytics combined output
+# ------------------------------------------------------
+class BlogPostWithAnalyticsOutSchema(BlogPostOutSchema):
+    views    = fields.Function(lambda o: getattr(getattr(o, "analytics", None), "views", 0))
+    likes    = fields.Function(lambda o: getattr(getattr(o, "analytics", None), "likes", 0))
+    comments = fields.Function(lambda o: getattr(getattr(o, "analytics", None), "comments", 0))
+    shares   = fields.Function(lambda o: getattr(getattr(o, "analytics", None), "shares", 0))
+
+blog_post_with_analytics_out = BlogPostWithAnalyticsOutSchema()
+blog_post_with_analytics_list_out = BlogPostWithAnalyticsOutSchema(many=True)
+
+# ======================================================
+# Latest News Posts View Schema
+# ======================================================
+class LatestNewsPostsOutSchema(Schema):
+    post_id     = fields.Integer()
+    title       = fields.String()
+    slug        = fields.String()
+    image       = fields.String()
+    blog_cat_id = fields.Integer()
+    author_id   = fields.Integer()
+    created_at  = fields.DateTime(allow_none=True)
+    views       = fields.Integer()
+    likes       = fields.Integer()
+    comments    = fields.Integer()
+    shares      = fields.Integer()
+
+latest_news_posts_out = LatestNewsPostsOutSchema()
+latest_news_posts_list_out = LatestNewsPostsOutSchema(many=True)

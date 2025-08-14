@@ -81,6 +81,7 @@ class BlogPost(db.Model):
     category = db.relationship("BlogCategory", back_populates="posts")
     author   = db.relationship("MyUser",      back_populates="posts")
     news     = db.relationship("NewsPost",    back_populates="post", uselist=False, cascade="all, delete-orphan")
+    analytics = db.relationship("PostAnalytics", back_populates="post", uselist=False, cascade="all, delete-orphan")  
 
     def __repr__(self):
         return f"<BlogPost {self.slug}>"
@@ -101,3 +102,87 @@ class NewsPost(db.Model):
 
     def __repr__(self):
         return f"<NewsPost post_id={self.post_id}>"
+    
+
+class NewsMain(db.Model):
+    """
+    Represents the current/past 'main story' windows for news posts.
+    Only one active main story should exist at any given time (enforced in DB).
+    """
+    __tablename__ = "news_main"
+    __table_args__ = {"schema": SCHEMA}
+
+    # PK
+    news_main_id = db.Column(db.Integer, primary_key=True)
+
+    # FK to news_post (per your DDL) — ON DELETE CASCADE is in the database
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey(f"{SCHEMA}.news_post.post_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Window (DATEs, not timestamps)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date   = db.Column(db.Date, nullable=False)
+
+    # Timestamps
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # Optional notes
+    notes = db.Column(db.Text)
+
+    # --- Relationships ---
+    # Link to the NewsPost row (uselist=False because it's 1:1 by PK)
+    news_post = db.relationship(
+        "NewsPost",
+        backref=db.backref("news_main_entries", cascade="all, delete-orphan", passive_deletes=True),
+        uselist=False,
+        lazy="joined",
+    )
+
+    @property
+    def post(self):
+        """
+        Convenience: return the related BlogPost (via NewsPost → BlogPost).
+        This lets API code use `nm.post` directly.
+        """
+        return self.news_post.post if self.news_post is not None else None
+
+    def __repr__(self):
+        return f"<NewsMain id={self.news_main_id} post_id={self.post_id} {self.start_date}→{self.end_date}>"
+
+class PostAnalytics(db.Model):
+    """
+    1:1 analytics row per BlogPost.
+    Mirrors DDL in atllocal_db.post_analytics (unique post_id, ON DELETE CASCADE).
+    """
+    __tablename__ = "post_analytics"
+    __table_args__ = (
+        db.UniqueConstraint("post_id", name="post_analytics_post_id_unique"),
+        {"schema": SCHEMA},
+    )
+
+    post_analytics_id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey(f"{SCHEMA}.blog_post.post_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    views    = db.Column(db.Integer, nullable=False, server_default="0")
+    likes    = db.Column(db.Integer, nullable=False, server_default="0")
+    comments = db.Column(db.Integer, nullable=False, server_default="0")
+    shares   = db.Column(db.Integer, nullable=False, server_default="0")
+
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # ORM relationship back to BlogPost
+    post = db.relationship("BlogPost", back_populates="analytics", lazy="joined")
+
+    def __repr__(self):
+        return f"<PostAnalytics id={self.post_analytics_id} post_id={self.post_id} views={self.views}>"

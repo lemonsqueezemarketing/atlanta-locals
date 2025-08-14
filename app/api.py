@@ -1,10 +1,10 @@
-# app/api.py
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, url_for
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, and_, text
 from bson import ObjectId
 
-from .models import db, BlogCategory, MyUser, BlogPost, NewsPost
+from .models import db, BlogCategory, MyUser, BlogPost, NewsPost, NewsMain, PostAnalytics
 from .schemas import (
     # BlogCategory
     blog_category_out,
@@ -26,6 +26,19 @@ from .schemas import (
     news_post_list_out,
     news_post_create,
     news_post_update,
+    # NewsMain
+    news_main_out,
+    news_main_list_out,
+    news_main_create,
+    news_main_update,
+    # PostAnalytics
+    post_analytics_out,
+    post_analytics_list_out,
+    post_analytics_create,
+    post_analytics_update,
+    # Optional combined
+    blog_post_with_analytics_out,
+    blog_post_with_analytics_list_out,
 )
 
 api_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
@@ -55,7 +68,7 @@ def _is_valid_objectid(s: str) -> bool:
 def _fetch_mongo_json(content_id):
     """Fetch and return raw JSON stored in Mongo by _id (string/ObjectId)."""
     col = _mongo_collection()
-    if col is None or not content_id:  # ✅ avoid truth testing on Collection
+    if col is None or not content_id:
         return None
     try:
         doc = col.find_one({"_id": ObjectId(str(content_id))})
@@ -86,6 +99,29 @@ def _update_mongo_json(existing_id, payload: dict):
         return str(oid), False
     new_id = _insert_mongo_json(payload or {})
     return new_id, True
+
+def _news_main_post(nm: NewsMain):
+    """
+    Safely resolve the related BlogPost for a NewsMain row.
+    Uses the relationship if present on the model; falls back to querying by post_id.
+    """
+    bp = getattr(nm, "post", None)
+    if bp is not None:
+        return bp
+    if nm.post_id is not None:
+        return BlogPost.query.get(nm.post_id)
+    return None
+
+def _analytics_dict(pa: PostAnalytics | None):
+    """Return a small dict of analytics counters (or zeroes)."""
+    if not pa:
+        return {"views": 0, "likes": 0, "comments": 0, "shares": 0}
+    return {
+        "views": pa.views or 0,
+        "likes": pa.likes or 0,
+        "comments": pa.comments or 0,
+        "shares": pa.shares or 0,
+    }
 
 # ======================================================
 # BlogCategory (CRUD)
@@ -296,6 +332,7 @@ class BlogPostListAPI(MethodView):
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=20, type=int)
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
         query = BlogPost.query
         if q:
@@ -308,11 +345,25 @@ class BlogPostListAPI(MethodView):
             )
 
         paged = query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
-        items = blog_post_list_out.dump(paged.items)
+
+        # If caller wants analytics inline and you kept the relationship on the model,
+        # you can serialize with the combined schema. Otherwise use the base schema.
+        if include_analytics:
+            items = blog_post_with_analytics_list_out.dump(paged.items)
+        else:
+            items = blog_post_list_out.dump(paged.items)
 
         # Hide content_mongo_id from list view (public)
         for item in items:
             item.pop("content_mongo_id", None)
+
+        # Add browser-ready image URL
+        for i, row in enumerate(paged.items):
+            items[i]["image_url"] = url_for("static", filename=row.image) if row.image else None
+
+            # If you didn't use combined schema, optionally tack on analytics here:
+            if not include_analytics:
+                items[i]["analytics"] = _analytics_dict(getattr(row, "analytics", None))
 
         if include_content:
             for i, row in enumerate(paged.items):
@@ -357,6 +408,8 @@ class BlogPostListAPI(MethodView):
             return _json_error("Title or slug already exists.", 409)
 
         data = blog_post_out.dump(post)
+        data["image_url"] = url_for("static", filename=post.image) if post.image else None
+
         # Embed content on create if present (or fetch if content_mongo_id was provided)
         if content is not None:
             data["content"] = content
@@ -364,14 +417,26 @@ class BlogPostListAPI(MethodView):
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
                 data["content"] = embedded
+
+        # Attach analytics skeleton (0s) for convenience
+        data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 201
 
 
 class BlogPostItemAPI(MethodView):
     def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
         post = BlogPost.query.get_or_404(post_id)
-        data = blog_post_out.dump(post)
+        data = (blog_post_with_analytics_out.dump(post)
+                if include_analytics
+                else blog_post_out.dump(post))
+        data["image_url"] = url_for("static", filename=post.image) if post.image else None
+
+        if not include_analytics:
+            data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
+
         if include_content:
             content = _fetch_mongo_json(post.content_mongo_id)
             if content is not None:
@@ -412,12 +477,14 @@ class BlogPostItemAPI(MethodView):
             return _json_error("Title or slug already exists.", 409)
 
         data = blog_post_out.dump(post)
+        data["image_url"] = url_for("static", filename=post.image) if post.image else None
         if content is not None:
             data["content"] = content
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
                 data["content"] = embedded
+        data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 200
 
     def patch(self, post_id: int):
@@ -452,12 +519,14 @@ class BlogPostItemAPI(MethodView):
             return _json_error("Title or slug already exists.", 409)
 
         data = blog_post_out.dump(post)
+        data["image_url"] = url_for("static", filename=post.image) if post.image else None
         if content is not None:
             data["content"] = content
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
                 data["content"] = embedded
+        data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 200
 
     def delete(self, post_id: int):
@@ -481,6 +550,7 @@ class NewsPostListAPI(MethodView):
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=20, type=int)
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
         query = NewsPost.query.join(BlogPost, NewsPost.post_id == BlogPost.post_id)
         paged = query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -489,11 +559,18 @@ class NewsPostListAPI(MethodView):
         for news in paged.items:
             bp = news.post
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)  # ✅ hide from public list view
+            row.pop("content_mongo_id", None)  # hide from public list view
+            # include browser-ready image URL
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
             if include_content:
                 content = _fetch_mongo_json(bp.content_mongo_id)
                 if content is not None:
                     row["content"] = content
+            # analytics (inline or zeroes)
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
             items.append(row)
 
         return jsonify({
@@ -524,22 +601,34 @@ class NewsPostListAPI(MethodView):
         db.session.commit()
 
         data = blog_post_out.dump(bp)
+        data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
         embedded = _fetch_mongo_json(bp.content_mongo_id)
         if embedded is not None:
             data["content"] = embedded
+        data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
         return data, 201
 
 
 class NewsPostItemAPI(MethodView):
     def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
         news = NewsPost.query.get_or_404(post_id)
         bp = news.post
         data = blog_post_out.dump(bp)
+        data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
         if include_content:
             content = _fetch_mongo_json(bp.content_mongo_id)
             if content is not None:
                 data["content"] = content
+
+        if include_analytics:
+            data.update(_analytics_dict(getattr(bp, "analytics", None)))
+        else:
+            data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
         return data, 200
 
     def put(self, post_id: int):
@@ -552,9 +641,11 @@ class NewsPostItemAPI(MethodView):
         news = NewsPost.query.get_or_404(post_id)
         bp = news.post
         data = blog_post_out.dump(bp)
+        data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
         embedded = _fetch_mongo_json(bp.content_mongo_id)
         if embedded is not None:
             data["content"] = embedded
+        data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
         return data, 200
 
     def patch(self, post_id: int):
@@ -566,9 +657,11 @@ class NewsPostItemAPI(MethodView):
         news = NewsPost.query.get_or_404(post_id)
         bp = news.post
         data = blog_post_out.dump(bp)
+        data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
         embedded = _fetch_mongo_json(bp.content_mongo_id)
         if embedded is not None:
             data["content"] = embedded
+        data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
         return data, 200
 
     def delete(self, post_id: int):
@@ -576,6 +669,325 @@ class NewsPostItemAPI(MethodView):
         db.session.delete(news)
         db.session.commit()
         return jsonify({"status": "deleted", "news_post_id": post_id}), 200
+
+# ======================================================
+# NewsMain (windowed "main story" selections)
+# ======================================================
+class NewsMainListAPI(MethodView):
+    def get(self):
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=20, type=int)
+        include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        active_only = request.args.get("active", default=None)
+
+        query = NewsMain.query
+
+        # Optional: filter current active window when active=1/true
+        if active_only is not None and str(active_only).lower() in ("1", "true", "yes"):
+            today = func.current_date()
+            query = query.filter(and_(NewsMain.start_date <= today, NewsMain.end_date >= today))
+
+        query = query.join(BlogPost, NewsMain.post_id == BlogPost.post_id)
+
+        paged = query.order_by(NewsMain.start_date.desc(), NewsMain.created_at.desc()) \
+                     .paginate(page=page, per_page=per_page, error_out=False)
+
+        items = []
+        for nm in paged.items:
+            bp = _news_main_post(nm)  # robust resolution even if relationship missing
+            nm_row = news_main_out.dump(nm)
+            post_row = blog_post_out.dump(bp) if bp else {}
+            post_row.pop("content_mongo_id", None)  # hide from public list view
+            # add browser-ready image URL for nested post
+            if bp and bp.image:
+                post_row["image_url"] = url_for("static", filename=bp.image)
+            if include_content and bp:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    post_row["content"] = content
+            # tack on analytics for nested post
+            post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
+            items.append({
+                "news_main": nm_row,
+                "post": post_row,
+            })
+
+        return jsonify({
+            "items": items,
+            "page": paged.page,
+            "per_page": paged.per_page,
+            "total": paged.total,
+            "pages": paged.pages
+        }), 200
+
+    def post(self):
+        payload = request.get_json(silent=True) or {}
+        errors = news_main_create.validate(payload)
+        if errors:
+            return _json_error(errors, 400)
+
+        # Ensure BlogPost exists
+        post_id = payload["post_id"]
+        bp = BlogPost.query.get(post_id)
+        if not bp:
+            return _json_error("BlogPost not found for given post_id.", 404)
+
+        nm = NewsMain(
+            post_id=post_id,
+            start_date=payload["start_date"],
+            end_date=payload["end_date"],
+            notes=payload.get("notes"),
+        )
+        db.session.add(nm)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            # Likely UNIQUE window or EXCLUDE overlap violation
+            return _json_error("Could not create NewsMain (constraint violation: overlapping window or duplicate).", 409)
+
+        data = {
+            "news_main": news_main_out.dump(nm),
+            "post": blog_post_out.dump(bp)
+        }
+        # include image_url & analytics on nested post
+        if bp and bp.image:
+            data["post"]["image_url"] = url_for("static", filename=bp.image)
+        data["post"]["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+        return data, 201
+
+
+class NewsMainItemAPI(MethodView):
+    def get(self, news_main_id: int):
+        include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        nm = NewsMain.query.get_or_404(news_main_id)
+        bp = _news_main_post(nm)
+        nm_row = news_main_out.dump(nm)
+        post_row = blog_post_out.dump(bp) if bp else {}
+        if bp and bp.image:
+            post_row["image_url"] = url_for("static", filename=bp.image)
+        if include_content and bp:
+            content = _fetch_mongo_json(bp.content_mongo_id)
+            if content is not None:
+                post_row["content"] = content
+        post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
+        return {"news_main": nm_row, "post": post_row}, 200
+
+    def put(self, news_main_id: int):
+        payload = request.get_json(silent=True) or {}
+        errors = news_main_update.validate(payload)
+        if errors:
+            return _json_error(errors, 400)
+
+        nm = NewsMain.query.get_or_404(news_main_id)
+
+        # Allow re-pointing and window updates
+        if "post_id" in payload and payload["post_id"] is not None:
+            bp = BlogPost.query.get(payload["post_id"])
+            if not bp:
+                return _json_error("BlogPost not found for given post_id.", 404)
+            nm.post_id = payload["post_id"]
+
+        if "start_date" in payload and payload["start_date"] is not None:
+            nm.start_date = payload["start_date"]
+        if "end_date" in payload and payload["end_date"] is not None:
+            nm.end_date = payload["end_date"]
+        if "notes" in payload:
+            nm.notes = payload["notes"]
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return _json_error("Could not update NewsMain (constraint violation: overlapping window or duplicate).", 409)
+
+        bp = _news_main_post(nm)
+        post_row = blog_post_out.dump(bp) if bp else {}
+        if bp and bp.image:
+            post_row["image_url"] = url_for("static", filename=bp.image)
+        post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
+        return {"news_main": news_main_out.dump(nm), "post": post_row}, 200
+
+    def patch(self, news_main_id: int):
+        # Same behavior as PUT for partial updates
+        return self.put(news_main_id)
+
+    def delete(self, news_main_id: int):
+        nm = NewsMain.query.get_or_404(news_main_id)
+        db.session.delete(nm)
+        db.session.commit()
+        return jsonify({"status": "deleted", "news_main_id": news_main_id}), 200
+
+# ======================================================
+# PostAnalytics (CRUD)
+# ======================================================
+class PostAnalyticsListAPI(MethodView):
+    def get(self):
+        """List analytics rows (paginated)."""
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=50, type=int)
+
+        paged = PostAnalytics.query.order_by(PostAnalytics.updated_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        data = post_analytics_list_out.dump(paged.items)
+        return jsonify({
+            "items": data,
+            "page": paged.page,
+            "per_page": paged.per_page,
+            "total": paged.total,
+            "pages": paged.pages
+        }), 200
+
+    def post(self):
+        """Create analytics row for a post (1:1)."""
+        payload = request.get_json(silent=True) or {}
+        errors = post_analytics_create.validate(payload)
+        if errors:
+            return _json_error(errors, 400)
+
+        post_id = payload["post_id"]
+        if not BlogPost.query.get(post_id):
+            return _json_error("BlogPost not found for given post_id.", 404)
+
+        # enforce uniqueness at app level too
+        if PostAnalytics.query.filter_by(post_id=post_id).first():
+            return _json_error("Analytics already exists for this post_id.", 409)
+
+        pa = PostAnalytics(
+            post_id=post_id,
+            views=payload.get("views", 0),
+            likes=payload.get("likes", 0),
+            comments=payload.get("comments", 0),
+            shares=payload.get("shares", 0),
+        )
+        db.session.add(pa)
+        db.session.commit()
+        return post_analytics_out.dump(pa), 201
+
+
+class PostAnalyticsItemAPI(MethodView):
+    def get(self, post_id: int):
+        pa = PostAnalytics.query.filter_by(post_id=post_id).first()
+        if not pa:
+            return _json_error("Analytics row not found.", 404)
+        return post_analytics_out.dump(pa), 200
+
+    def patch(self, post_id: int):
+        payload = request.get_json(silent=True) or {}
+        errors = post_analytics_update.validate(payload)
+        if errors:
+            return _json_error(errors, 400)
+
+        pa = PostAnalytics.query.filter_by(post_id=post_id).first()
+        if not pa:
+            return _json_error("Analytics row not found.", 404)
+
+        for field in ["views", "likes", "comments", "shares"]:
+            if field in payload and payload[field] is not None:
+                setattr(pa, field, payload[field])
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return _json_error("Could not update analytics.", 409)
+
+        return post_analytics_out.dump(pa), 200
+
+    def delete(self, post_id: int):
+        pa = PostAnalytics.query.filter_by(post_id=post_id).first()
+        if not pa:
+            return _json_error("Analytics row not found.", 404)
+        db.session.delete(pa)
+        db.session.commit()
+        return jsonify({"status": "deleted", "post_id": post_id}), 200
+
+# ======================================================
+# Most-read (from SQL Views) — read-only helpers
+# ======================================================
+class MostReadBlogAPI(MethodView):
+    def get(self):
+        """Return rows from atlLocal_db.v_most_read_blog_posts (read-only)."""
+        sql = text("""
+            SELECT post_id, title, slug, image, blog_cat_id, author_id,
+                   created_at, views, likes, comments, shares
+            FROM atlLocal_db.v_most_read_blog_posts
+        """)
+        rows = db.session.execute(sql).mappings().all()
+        # add image_url for convenience
+        out = []
+        for r in rows:
+            row = dict(r)
+            row["image_url"] = url_for("static", filename=row["image"]) if row.get("image") else None
+            out.append(row)
+        return jsonify({"items": out, "count": len(out)}), 200
+
+
+class MostReadNewsAPI(MethodView):
+    def get(self):
+        """Return rows from atlLocal_db.v_most_read_news_posts (read-only)."""
+        sql = text("""
+            SELECT post_id, title, slug, image, blog_cat_id, author_id,
+                   created_at, views, likes, comments, shares
+            FROM atlLocal_db.v_most_read_news_posts
+        """)
+        rows = db.session.execute(sql).mappings().all()
+        out = []
+        for r in rows:
+            row = dict(r)
+            row["image_url"] = url_for("static", filename=row["image"]) if row.get("image") else None
+            out.append(row)
+        return jsonify({"items": out, "count": len(out)}), 200
+
+
+class LatestNewsAPI(MethodView):
+    def get(self):
+        """
+        Return latest news posts as FULL post objects (like /api/v1/news-posts),
+        enriched with Mongo 'content', 'image_url', and 'analytics'.
+        """
+        include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+        per_page = request.args.get("per_page", type=int)
+
+        # Pull the latest post IDs from the SQL view (already ordered in the view).
+        sql = text("""SELECT post_id FROM atllocal_db.v_latest_news_posts""")
+        rows = db.session.execute(sql).mappings().all()
+        post_ids = [r["post_id"] for r in rows]
+
+        # Respect ?per_page= if provided (helps the /news page show top N)
+        if per_page is not None and per_page > 0:
+            post_ids = post_ids[:per_page]
+
+        items = []
+        for pid in post_ids:
+            bp = BlogPost.query.get(pid)
+            if not bp:
+                continue
+
+            # Serialize like NewsPost list items (BlogPost-shaped)
+            row = blog_post_out.dump(bp)
+            row.pop("content_mongo_id", None)  # hide internal id
+
+            # Image URL for browser
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
+            # Mongo content (optional)
+            if include_content:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+
+            # Analytics
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
+            items.append(row)
+
+        return jsonify({"items": items, "count": len(items)}), 200
 
 # -------------------------------
 # Route Registration
@@ -626,4 +1038,45 @@ api_bp.add_url_rule(
     "/news-posts/<int:post_id>",
     view_func=NewsPostItemAPI.as_view("news_post_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
+)
+
+# NewsMain
+api_bp.add_url_rule(
+    "/news-main",
+    view_func=NewsMainListAPI.as_view("news_main_list"),
+    methods=["GET", "POST"],
+)
+api_bp.add_url_rule(
+    "/news-main/<int:news_main_id>",
+    view_func=NewsMainItemAPI.as_view("news_main_item"),
+    methods=["GET", "PUT", "PATCH", "DELETE"],
+)
+
+# PostAnalytics
+api_bp.add_url_rule(
+    "/post-analytics",
+    view_func=PostAnalyticsListAPI.as_view("post_analytics_list"),
+    methods=["GET", "POST"],
+)
+api_bp.add_url_rule(
+    "/post-analytics/<int:post_id>",
+    view_func=PostAnalyticsItemAPI.as_view("post_analytics_item"),
+    methods=["GET", "PATCH", "DELETE"],
+)
+
+# Most-read (views)
+api_bp.add_url_rule(
+    "/analytics/most-read/blog",
+    view_func=MostReadBlogAPI.as_view("most_read_blog"),
+    methods=["GET"],
+)
+api_bp.add_url_rule(
+    "/analytics/most-read/news",
+    view_func=MostReadNewsAPI.as_view("most_read_news"),
+    methods=["GET"],
+)
+api_bp.add_url_rule(
+    "/analytics/latest-news",
+    view_func=LatestNewsAPI.as_view("latest_news"),
+    methods=["GET"],
 )

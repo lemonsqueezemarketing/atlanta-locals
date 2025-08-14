@@ -868,16 +868,19 @@ dummy_newsposts = [
 
 ]
 
-@main.route('/')
-@main.route('/home')
-@main.route('/news')
+@main.route("/")
+@main.route("/home")
+def home():
+    #main_post = dummy_newsposts[0]
+    latest_posts = dummy_newsposts[:3]
+    return render_template("news/index.html",  latest_posts=latest_posts)
+
+# News -> "/news" (kept as its own endpoint)
+@main.route("/news")
 def news():
     main_post = dummy_newsposts[0]
-    #print(main_post)
     latest_posts = dummy_newsposts[:3]
-    #print(latest_posts)
-    return render_template('news/index.html',main_post = main_post, latest_posts=latest_posts)
-
+    return render_template("news/index.html", main_post=main_post, latest_posts=latest_posts)
 
 @main.route('/news/<int:news_id>')
 def news_detail(news_id):
@@ -892,21 +895,6 @@ def news_detail(news_id):
 
     return render_template('news/news_detail.html', post=news_post,related_posts=related_posts)
 
-@main.route('/directory')
-def home():
-    businesses = [
-        {
-            "title": "Teaz Social Expands with More Live Events",
-            "summary": "Atlanta's favorite social tea lounge is now hosting weekly open mic nights, live DJs, and community mixers.",
-            "image": "/story_tea.png"
-        },
-        {
-            "title": "Mike Launches the ATL Local App",
-            "summary": "Founder Mike officially launches ATL Local, a new community-driven search engine built for Atlantans by Atlantans.",
-            "image": "/story_mike_atl_local.png"
-        }
-    ]
-    return render_template('directory/index.html', posts=businesses)
 
 
 @main.route('/about')
