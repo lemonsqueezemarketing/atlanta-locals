@@ -670,6 +670,98 @@ class NewsPostItemAPI(MethodView):
         db.session.commit()
         return jsonify({"status": "deleted", "news_post_id": post_id}), 200
 
+# ---------------------------------------------------------
+# NewsPostReadNextAPI
+# Returns up to the next N news posts for the "Read Next" carousel.
+# Excludes the current post_id and orders by BlogPost.created_at (desc).
+# ---------------------------------------------------------
+class NewsPostReadNextAPI(MethodView):
+    def get(self, post_id: int):
+        limit = request.args.get("limit", default=3, type=int)
+        include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
+        # Ensure the current news post exists (pk = BlogPost.post_id)
+        _ = NewsPost.query.get_or_404(post_id)
+
+        # Other news posts, newest first (pull fields from BlogPost)
+        rows = (
+            BlogPost.query
+            .join(NewsPost, NewsPost.post_id == BlogPost.post_id)
+            .filter(BlogPost.post_id != post_id)
+            .order_by(BlogPost.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        items = []
+        for bp in rows:
+            row = blog_post_out.dump(bp)
+            row.pop("content_mongo_id", None)  # hide internal id
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
+            if include_content:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
+            items.append(row)
+
+        return jsonify({"items": items, "count": len(items)}), 200
+
+# ---------------------------------------------------------
+# NewsPostRelatedAPI
+# Returns up to N related news posts (same category as current),
+# excluding the current post_id. Results are BlogPost-shaped objects
+# (with image_url and analytics), optionally with content.
+# ---------------------------------------------------------
+class NewsPostRelatedAPI(MethodView):
+    def get(self, post_id: int):
+        limit = request.args.get("limit", default=4, type=int)
+        include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
+        # Ensure current news post exists and fetch its BlogPost (for category)
+        news = NewsPost.query.get_or_404(post_id)
+        bp_current = news.post
+        cat_id = bp_current.blog_cat_id
+
+        # Other news posts in the SAME category (exclude current), newest first
+        rows = (
+            BlogPost.query
+            .join(NewsPost, NewsPost.post_id == BlogPost.post_id)
+            .filter(BlogPost.post_id != post_id)
+            .filter(BlogPost.blog_cat_id == cat_id)
+            .order_by(BlogPost.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        items = []
+        for bp in rows:
+            row = blog_post_out.dump(bp)
+            row.pop("content_mongo_id", None)
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
+            if include_content:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
+            items.append(row)
+
+        return jsonify({"items": items, "count": len(items)}), 200
+
 # ======================================================
 # NewsMain (windowed "main story" selections)
 # ======================================================
@@ -1039,6 +1131,21 @@ api_bp.add_url_rule(
     view_func=NewsPostItemAPI.as_view("news_post_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
 )
+
+# Read-Next
+api_bp.add_url_rule(
+    "/news/<int:post_id>/read-next",
+    view_func=NewsPostReadNextAPI.as_view("news_post_read_next"),
+    methods=["GET"],
+)
+
+# Related (same category)
+api_bp.add_url_rule(
+    "/news/<int:post_id>/related",
+    view_func=NewsPostRelatedAPI.as_view("news_post_related"),
+    methods=["GET"],
+)
+
 
 # NewsMain
 api_bp.add_url_rule(
