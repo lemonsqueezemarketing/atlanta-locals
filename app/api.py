@@ -3,6 +3,7 @@ from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, and_, text
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 
 from .models import db, BlogCategory, MyUser, BlogPost, NewsPost, NewsMain, PostAnalytics
 from .schemas import (
@@ -81,13 +82,32 @@ def _fetch_mongo_json(content_id):
         return None
 
 def _insert_mongo_json(payload: dict):
-    """Insert JSON payload into Mongo and return inserted_id as str."""
+    """
+    Insert JSON payload into Mongo and return inserted_id as a str.
+    - Strips accidental/empty post_id to avoid unique-index collisions.
+    - Logs and re-raises DuplicateKeyError so the caller can return a clean 409.
+    - Logs and re-raises unexpected exceptions for higher-level handling.
+    """
     col = _mongo_collection()
     if col is None:
         return None
-    result = col.insert_one(payload or {})
-    return str(result.inserted_id)
 
+    # Defensive copy & cleanup
+    doc = dict(payload or {})
+    # If a unique index exists on post_id, inserting multiple docs with post_id: null
+    # will cause E11000. Strip empty/None so partial/sparse index won't trip.
+    if doc.get("post_id") in (None, "", "null"):
+        doc.pop("post_id", None)
+
+    try:
+        result = col.insert_one(doc)
+        return str(result.inserted_id)
+    except DuplicateKeyError as e:
+        current_app.logger.warning("Mongo DuplicateKeyError on blog_content insert: %s", e)
+        raise
+    except Exception as e:
+        current_app.logger.error("Error inserting MongoDB content: %s", e, exc_info=True)
+        raise
 def _update_mongo_json(existing_id, payload: dict):
     """Update if existing_id valid; else insert new. Returns (content_id_str, created_new)."""
     col = _mongo_collection()
@@ -346,22 +366,16 @@ class BlogPostListAPI(MethodView):
 
         paged = query.order_by(BlogPost.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
-        # If caller wants analytics inline and you kept the relationship on the model,
-        # you can serialize with the combined schema. Otherwise use the base schema.
         if include_analytics:
             items = blog_post_with_analytics_list_out.dump(paged.items)
         else:
             items = blog_post_list_out.dump(paged.items)
 
-        # Hide content_mongo_id from list view (public)
         for item in items:
             item.pop("content_mongo_id", None)
 
-        # Add browser-ready image URL
         for i, row in enumerate(paged.items):
             items[i]["image_url"] = url_for("static", filename=row.image) if row.image else None
-
-            # If you didn't use combined schema, optionally tack on analytics here:
             if not include_analytics:
                 items[i]["analytics"] = _analytics_dict(getattr(row, "analytics", None))
 
@@ -385,40 +399,69 @@ class BlogPostListAPI(MethodView):
         if errors:
             return _json_error(errors, 400)
 
-        # Ensure FK exist
+        # FK checks
         if not BlogCategory.query.get(payload["blog_cat_id"]):
             return _json_error("blog_cat_id not found.", 404)
         if not MyUser.query.get(payload["author_id"]):
             return _json_error("author_id not found.", 404)
 
-        # Optional content
+        # Pull out content so SQL can be created first
         content = payload.pop("content", None)
-        if content is not None:
-            if _mongo_collection() is None:
-                return _json_error("MongoDB is not configured but 'content' was provided.", 503)
-            content_id = _insert_mongo_json(content)
-            payload["content_mongo_id"] = content_id
 
-        post = BlogPost(**payload)
+        # 1) Create SQL row first
+        post = BlogPost(**payload)  # no content_mongo_id yet
         db.session.add(post)
         try:
-            db.session.commit()
+            db.session.commit()  # assigns post.post_id
         except IntegrityError:
             db.session.rollback()
             return _json_error("Title or slug already exists.", 409)
 
+        # 2) If content provided, insert into Mongo WITH post_id, then attach back
+        if content is not None:
+            col = _mongo_collection()
+            if col is None:
+                return _json_error("MongoDB is not configured but 'content' was provided.", 503)
+
+            # Ensure the inserted doc carries post_id to satisfy unique index patterns
+            doc = dict(content or {})
+            doc["post_id"] = post.post_id
+
+            try:
+                inserted_id = col.insert_one(doc).inserted_id
+            except DuplicateKeyError as e:
+                current_app.logger.warning(f"Mongo DuplicateKeyError on insert: {e}")
+                return _json_error(
+                    "MongoDB unique index on 'post_id' rejected the insert. "
+                    "Consider using a partial/sparse index or ensure post_id is unique.",
+                    409
+                )
+            except Exception as e:
+                current_app.logger.error(f"Mongo insert error: {e}")
+                return _json_error("Failed to save content to MongoDB.", 500)
+
+            # Save stringified ObjectId to SQL
+            post.content_mongo_id = str(inserted_id)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                return _json_error("Failed to attach content to post.", 409)
+
+        # 3) Build response
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
 
-        # Embed content on create if present (or fetch if content_mongo_id was provided)
         if content is not None:
-            data["content"] = content
+            # Return the content you submitted (without helper post_id)
+            cleaned = dict(content)
+            cleaned.pop("post_id", None)
+            data["content"] = cleaned
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
                 data["content"] = embedded
 
-        # Attach analytics skeleton (0s) for convenience
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 201
 

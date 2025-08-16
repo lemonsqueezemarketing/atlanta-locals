@@ -962,8 +962,8 @@ def admin_blog_post():
     return render_template('admin/blog_list_view.html')
 
 @main.route('/admin/blog/create',methods=['GET', 'POST'])
-def create_blog_post():
-    return render_template('blog/create_post.html')
+def admin_create_blog_post():
+    return render_template('admin/create_post.html')
 
 @main.route('/admin/news',methods=['GET',])
 def admin_news_post():
@@ -1004,25 +1004,5 @@ def debug_db():
         "news_post_count": news_count
     })
 
-@main.route('/api/test-blog-content')
-def test_blog_content():
-    from flask import jsonify, current_app
-
-    db = getattr(current_app, "mongo_db", None)
-    if db is None:
-        return jsonify({"error": "Mongo not initialized"}), 500
-
-    coll = db.blog_content
-    docs = list(coll.find({}, {"_id": 0}))  # include {"_id": 0} to hide ObjectId
-    return jsonify(docs)
-
-
-
-@main.route('/api/test-properties')
-def test_properties():
-    #properties = Property.query.all()
-    #for p in properties:
-        #print(p.title)
-    return f" currently in progress properties printed in console."
 
 

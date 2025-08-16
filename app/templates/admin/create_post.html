@@ -30,7 +30,7 @@
         <!-- Content Form -->
         <div class="admin-content-container">
             <div class="content-card">
-                <form method="POST" action="{{ url_for('main.create_blog_post') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ url_for('main.admin_create_blog_post') }}" enctype="multipart/form-data">
 
                     <!-- Title -->
                     <div class="form-group">
@@ -47,13 +47,17 @@
                     <!-- Category -->
                     <div class="form-group">
                         <label for="category">Category</label>
-                        <input type="text" id="category" name="category">
+                        <select id="category" name="category" required>
+                          <option value="" selected disabled>Loading categories…</option>
+                        </select>
                     </div>
 
                     <!-- Author -->
                     <div class="form-group">
                         <label for="author">Author</label>
-                        <input type="text" id="author" name="author">
+                        <select id="author" name="author" required>
+                          <option value="" selected disabled>Loading authors…</option>
+                        </select>
                     </div>
 
                     <!-- Image -->
@@ -236,4 +240,9 @@
     </main>
 </div>
 
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/blog_create.js') }}"></script>  
+  
 {% endblock %}

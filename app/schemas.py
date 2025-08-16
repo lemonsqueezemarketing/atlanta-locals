@@ -1,5 +1,5 @@
 # app/schemas.py
-from marshmallow import Schema, fields, validates, validates_schema, ValidationError
+from marshmallow import Schema, fields, validates, validates_schema, ValidationError, INCLUDE
 import re
 
 # --- Helpers (kept from earlier BlogCategory work) ---
@@ -204,6 +204,9 @@ class BlogPostOutSchema(Schema):
 blog_post_out = BlogPostOutSchema()
 blog_post_list_out = BlogPostOutSchema(many=True)
 
+# ======================================================
+# BlogPost Schemas (fixed validator signatures)
+# ======================================================
 class BlogPostCreateSchema(Schema):
     title             = fields.String(required=True)
     slug              = fields.String(required=True)
@@ -211,25 +214,28 @@ class BlogPostCreateSchema(Schema):
     author_id         = fields.Integer(required=True)
     image             = fields.String(required=True)
     content_mongo_id  = fields.String(allow_none=True)
+    # ✅ allow the JSON you send from the form
+    content           = fields.Dict(required=False)
 
     @validates("title")
-    def _v_title(self, v):
+    def _v_title(self, v, **kwargs):
         if not v or not v.strip():
             raise ValidationError("Title cannot be empty.")
 
     @validates("slug")
-    def _v_slug(self, v):
+    def _v_slug(self, v, **kwargs):
         if not v or not v.strip():
             raise ValidationError("Slug cannot be empty.")
         if v != _slugify(v):
             raise ValidationError("Slug must be URL-safe (lowercase, hyphenated).")
 
     @validates("image")
-    def _v_image(self, v):
+    def _v_image(self, v, **kwargs):
         if not v or not v.strip():
             raise ValidationError("Image path/URL cannot be empty.")
         if len(v) > 300:
             raise ValidationError("Image path too long (max 300).")
+
 
 class BlogPostUpdateSchema(Schema):
     title             = fields.String()
@@ -238,14 +244,16 @@ class BlogPostUpdateSchema(Schema):
     author_id         = fields.Integer()
     image             = fields.String()
     content_mongo_id  = fields.String(allow_none=True)
+    # ✅ allow partial updates that include content
+    content           = fields.Dict(required=False)
 
     @validates("title")
-    def _v_title(self, v):
+    def _v_title(self, v, **kwargs):
         if v is not None and not v.strip():
             raise ValidationError("Title cannot be empty.")
 
     @validates("slug")
-    def _v_slug(self, v):
+    def _v_slug(self, v, **kwargs):
         if v is not None:
             if not v.strip():
                 raise ValidationError("Slug cannot be empty.")
@@ -253,13 +261,12 @@ class BlogPostUpdateSchema(Schema):
                 raise ValidationError("Slug must be URL-safe (lowercase, hyphenated).")
 
     @validates("image")
-    def _v_image(self, v):
+    def _v_image(self, v, **kwargs):
         if v is not None:
             if not v.strip():
                 raise ValidationError("Image path/URL cannot be empty.")
             if len(v) > 300:
                 raise ValidationError("Image path too long (max 300).")
-
 blog_post_create = BlogPostCreateSchema()
 blog_post_update = BlogPostUpdateSchema()
 
