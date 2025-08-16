@@ -961,9 +961,15 @@ def admin_blog_cats():
 def admin_blog_post():
     return render_template('admin/blog_list_view.html')
 
+
 @main.route('/admin/blog/create',methods=['GET', 'POST'])
 def admin_create_blog_post():
     return render_template('admin/create_post.html')
+
+@main.route('/admin/blogs/<int:post_id>', methods=['GET', 'POST'])
+def admin_blog_detail(post_id):
+    return render_template('admin/read_update_post.html')
+
 
 @main.route('/admin/news',methods=['GET',])
 def admin_news_post():
