@@ -40,7 +40,7 @@ console.log('blog.js loaded for /blog route');
     const params = new URLSearchParams();
     params.set('per_page', '10');
     params.set('include_content', 'true');
-    const blogURL = `/api/v1/blog-posts?${params.toString()}`;
+    const blogURL = `/api/v1/analytics/latest-blog?${params.toString()}`;
     try {
       console.log('[blog] (debug) fetching:', blogURL);
       const res = await fetch(blogURL, { headers: { 'Accept': 'application/json' } });
@@ -146,7 +146,7 @@ console.log('blog.js loaded for /blog route');
     params.set('per_page', String(state.perPage));
     params.set('include_content', 'true');
 
-    const url = `/api/v1/blog-posts?${params.toString()}`;
+    const url = `/api/v1/analytics/latest-blog?${params.toString()}`;
     console.log('[blog] fetching (paged):', url);
 
     try {

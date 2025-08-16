@@ -871,30 +871,26 @@ dummy_newsposts = [
 @main.route("/")
 @main.route("/home")
 def home():
-    #main_post = dummy_newsposts[0]
-    latest_posts = dummy_newsposts[:3]
-    return render_template("news/index.html",  latest_posts=latest_posts)
+    return render_template("news/index.html")
 
 # News -> "/news" (kept as its own endpoint)
 @main.route("/news")
 def news():
-    main_post = dummy_newsposts[0]
-    latest_posts = dummy_newsposts[:3]
-    return render_template("news/index.html", main_post=main_post, latest_posts=latest_posts)
+    return render_template("news/index.html")
 
 @main.route('/news/<int:news_id>')
 def news_detail(news_id):
-    #news_post = NewsPost.query.get_or_404(news_id)
-    news_post = None 
-    for news in dummy_newsposts:
-        if news.get("post_id") == news_id:
-            news_post = news
-            #print(news_post)
 
-    related_posts = dummy_newsposts
+    return render_template('news/news_detail.html')
 
-    return render_template('news/news_detail.html', post=news_post,related_posts=related_posts)
+@main.route('/blog')
+def blog():
+    return render_template('blog/index.html')
 
+@main.route('/blog/<int:post_id>')
+def blog_detail(post_id):
+
+    return render_template('blog/blog_detail.html')
 
 
 @main.route('/about')
@@ -926,12 +922,6 @@ def directory():
         "location": "Atlanta, GA"
     }
     return render_template('home/index.html', news=news, weather=weather)
-
-
-
-@main.route('/blog')
-def blog():
-    return render_template('blog/index.html')
 
 
 

@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Atlanta Local Blog{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/news-details.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Blog</h1>
+  <p class="subtitle">Your Trusted Source for Atlanta SEO</p>
+</section>
+
+<!-- Ad Campaign Div -->
+<div class="ad-campaign-bar">
+  <a href="#" class="ad-campaign-link">How to Break Through Your Small Business Revenue Ceiling in 2 Days</a>
+</div>
+
+<!-- Ad Image Placeholder -->
+<div class="ad-placeholder">
+  <img src="{{ url_for('static', filename='images/ad_banner.webp') }}" alt="Ad Placeholder" />
+</div>
+
+
+<!-- News Categories Sub-Header -->
+<div class="c-topics" style="border-top: 2px solid #800000; border-bottom: 2px solid #800000;">
+  <div class="topics-container">
+    <ul class="topics left-algn">
+      <li><a href="#" class="nav-itemText">Atlanta Business</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Shops</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Food & Restaurants</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Real Estate</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Auto</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Entertainment</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Health & Wellness</a></li>
+      <li><a href="#" class="nav-itemText">Atlanta Service Providers</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Section 3 News Alert Section -->
+<section class="section-3-news-alert">
+</section>
+
+
+<!-- Section 4 Watch Now Section -->
+<section class="section-4-watch-now">
+</section>
+
+
+<!-- Section 5 Blog Article Main -->
+<section class="section-5-article-main">
+  <div class="article-heading">
+    <div class="article-category"> <!-- handled by js--></div>
+      <h2 class="article-title"> <!-- handled by js--></h2>
+      <div class="article-img">       
+        <img src="" alt="">  <!-- handled by js-->
+      </div>
+     
+    </div>
+
+    
+  <div class="article-share-icons">
+    <div class="social-icons">
+      <a href="#"><img src="{{ url_for('static', filename='images/facebook-icon.svg') }}" alt="Facebook"></a>
+      <a href="#"><img src="{{ url_for('static', filename='images/twitter-icon.svg') }}" alt="Twitter"></a>
+      <a href="#"><img src="{{ url_for('static', filename='images/email-icon.svg') }}" alt="Email"></a>
+      <a href="#"><img src="{{ url_for('static', filename='images/share-icon.svg') }}" alt="Share"></a>
+      <a href="#"><img src="{{ url_for('static', filename='images/chat-icon.svg') }}" alt="Comment"></a>
+     
+      
+    </div>
+
+  </div>
+  <div class="article-author">
+    <p class="article-meta"> <!-- handled by js--></p>
+    <p class = "aricle-date-created"> <!-- handled by js--></p>
+  </div>
+</section>
+
+
+<!-- Section 1 Article details -->
+<section class="section-1-article-deats article-section">
+  <!-- handled by js-->
+</section>
+
+<!-- Section 2 Article details -->
+<section class="section-2-article-deats article-section">
+ <!-- handled by js-->
+</section>
+
+<!-- Section 3 Article details -->
+<section class="section-3-article-deats article-section">
+ <!-- handled by js-->
+</section>
+
+<!-- Section 4 Article details -->
+<section class="section-4-article-deats article-section">
+ <!-- handled by js-->
+</section>
+
+<!-- Section 5 Article details -->
+<section class="section-5-article-deats article-section">
+ <!-- handled by js-->
+</section>
+
+<!-- Section 6 Article Conclusion -->
+<section class="section-6-article-deats article-section">
+ <!-- handled by js-->
+</section>
+
+
+<!-- Section 7 Article Assoc Press -->
+<section class="section-7-assoc-press article-section">
+<!-- handled by js-->
+</section>
+
+<!-- Section 8 Article FAQs -->
+<section class="section-8-article-faqs article-section">
+<!-- handled by js-->
+</section>
+
+
+<!-- Section 9 Article Comments -->
+<section class="section-9-article-comments comments-banner">
+  <div class="comments-container">
+    
+    <!-- Left: Icon + Comment Count -->
+    <div class="comments-left">
+      <img src="{{ url_for('static', filename='images/chat-icon.svg') }}" alt="Comments" class="chat-icon">
+      <span class="comment-count"><!-- handled by js--></span>
+    </div>
+
+    <!-- Center: Prompt Text -->
+    <div class="comments-center">
+      <p class="join-text">Join the conversation</p>
+    </div>
+
+    <!-- Right: View Comments Button -->
+    <div class="comments-right">
+      <a href="#" class="view-comments-button">View Comments</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- Section 10 Read Next -->
+<section class="section-10-read-next">
+  <div class="read-next-container">
+    <h2 class="read-next-title">Read Next</h2>
+    <div class="carousel-wrapper">
+      <div class="carousel-track">
+        <!-- JS dynamically injects .carousel-item elements -->
+      </div>
+      <div class="carousel-dots">
+        <!-- JS dynamically injects .dot elements -->
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- Section 11 Ads -->
+<section class="section-11-ads">
+  <h4 class="ads-header">ADVERTISEMENT</h4>
+  <div class="ads-grid">
+    
+    <div class="ad-item">
+      <img src="{{ url_for('static', filename='images/ad-1.png') }}" alt="Ad 1">
+      <a href="https://lemonsqueeze-marketing.com/" class="learn-more-btn">Learn More</a>
+    </div>
+
+    <div class="ad-item">
+      <img src="{{ url_for('static', filename='images/ad-2.png') }}" alt="Ad 2">
+      <a href="https://lemonsqueeze-marketing.com/" class="learn-more-btn">Learn More</a>
+    </div>
+
+    <div class="ad-item">
+      <img src="{{ url_for('static', filename='images/ad-3.png') }}" alt="Ad 3">
+      <a href="https://lemonsqueeze-marketing.com/" class="learn-more-btn">Learn More</a>
+    </div>
+
+    <div class="ad-item">
+      <img src="{{ url_for('static', filename='images/ad-4.png') }}" alt="Ad 4">
+      <a href="https://lemonsqueeze-marketing.com/" class="learn-more-btn">Learn More</a>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- Section 12 Most Read -->
+<section class="section-12-most-read">
+  <h2 class="most-read-title">Most Read</h2>
+  <div class="most-read-list">
+
+    <div class="most-read-item">
+      <img src="{{ url_for('static', filename='images/post_img_1.png') }}" alt="Most Read 1">
+      <a href="#" class="most-read-link">Atlanta airport sees continued delays, cancellations</a>
+    </div>
+
+    <div class="most-read-item">
+      <img src="{{ url_for('static', filename='images/post_img_2.png') }}" alt="Most Read 2">
+      <a href="#" class="most-read-link">Atlanta's Housing Market Sees Unexpected Surge</a>
+    </div>
+
+    <div class="most-read-item">
+      <img src="{{ url_for('static', filename='images/post_img_3.png') }}" alt="Most Read 3">
+      <a href="#" class="most-read-link">5 Must-Visit Coffee Shops in Midtown</a>
+    </div>
+
+    <div class="most-read-item">
+      <img src="{{ url_for('static', filename='images/post_img_1.png') }}" alt="Most Read 4">
+      <a href="#" class="most-read-link">City Council Approves New Park Plan</a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- Section 13 Related Articles -->
+<section class="section-13-related">
+  <h2 class="related-title">Related Articles</h2>
+  <div class="related-list"><!-- handled by JS --></div>
+</section>
+
+<!-- Newsletter Signup Section -->
+<section class="newsletter-signup">
+  <div class="signup-container">
+    <h2>Stay in the Loop</h2>
+    <p>Get the latest Atlanta stories, events, and updates straight to your inbox.</p>
+    <form action="#" method="POST">
+      <input type="email" name="email" placeholder="Enter your email" required>
+      <button type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/blog-detail.js') }}"></script>  
+  
+{% endblock %}

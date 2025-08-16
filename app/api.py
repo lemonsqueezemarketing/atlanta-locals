@@ -542,6 +542,164 @@ class BlogPostItemAPI(MethodView):
         db.session.commit()
         return jsonify({"status": "deleted", "post_id": post_id}), 200
 
+
+# ======================================================
+# Latest Blog (paginated, newest first)
+# ======================================================
+class LatestBlogAPI(MethodView):
+    def get(self):
+        """
+        Return latest blog posts (newest first) with the SAME paging shape
+        as /api/v1/blog-posts so the existing pager in blog.js keeps working.
+        Supports:
+          - ?page=, ?per_page=
+          - ?include_content=true|false
+          - ?include_analytics=true|false
+        """
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=20, type=int)
+        include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
+        query = BlogPost.query.order_by(BlogPost.created_at.desc())
+        paged = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        # Base serialization (like BlogPostListAPI)
+        if include_analytics:
+            items = blog_post_with_analytics_list_out.dump(paged.items)
+        else:
+            items = blog_post_list_out.dump(paged.items)
+
+        # Hide internal content id + add browser image_url
+        for i, row in enumerate(paged.items):
+            items[i].pop("content_mongo_id", None)
+            items[i]["image_url"] = url_for("static", filename=row.image) if row.image else None
+
+            if not include_analytics:
+                items[i]["analytics"] = _analytics_dict(getattr(row, "analytics", None))
+
+        # Optional: embed Mongo content
+        if include_content:
+            for i, row in enumerate(paged.items):
+                content = _fetch_mongo_json(row.content_mongo_id)
+                if content is not None:
+                    items[i]["content"] = content
+
+        return jsonify({
+            "items": items,
+            "page": paged.page,
+            "per_page": paged.per_page,
+            "total": paged.total,
+            "pages": paged.pages
+        }), 200
+
+# ---------------------------------------------------------
+# BlogPostReadNextAPI
+# Returns up to the next N blog posts for the "Read Next" carousel.
+# Excludes the current post_id and orders by BlogPost.created_at (desc).
+# ---------------------------------------------------------
+class BlogPostReadNextAPI(MethodView):
+    def get(self, post_id: int):
+        """
+        GET /api/v1/blog/<post_id>/read-next
+        Query params:
+          - limit (int, default 3)
+          - include_content=true|false (default false)
+          - include_analytics=true|false (default false)
+        Response:
+          { "items": [BlogPost-shaped objects], "count": <int> }
+        """
+        limit = request.args.get("limit", default=3, type=int)
+        include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
+        # Ensure the current blog post exists
+        _ = BlogPost.query.get_or_404(post_id)
+
+        # Other blog posts, newest first (exclude current)
+        rows = (
+            BlogPost.query
+            .filter(BlogPost.post_id != post_id)
+            .order_by(BlogPost.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        items = []
+        for bp in rows:
+            row = blog_post_out.dump(bp)
+            row.pop("content_mongo_id", None)  # hide internal id
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
+            if include_content:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
+            items.append(row)
+
+        return jsonify({"items": items, "count": len(items)}), 200
+
+# ---------------------------------------------------------
+# BlogPostRelatedAPI
+# Returns up to N related blog posts (same category as current),
+# excluding the current post_id. Results are BlogPost-shaped objects
+# (with image_url and analytics), optionally with content.
+# ---------------------------------------------------------
+class BlogPostRelatedAPI(MethodView):
+    def get(self, post_id: int):
+        """
+        GET /api/v1/blog/<post_id>/related
+        Query params:
+          - limit (int, default 4)
+          - include_content=true|false (default false)
+          - include_analytics=true|false (default false)
+        Response:
+          { "items": [BlogPost-shaped objects], "count": <int> }
+        """
+        limit = request.args.get("limit", default=4, type=int)
+        include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
+        include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
+
+        # Ensure current blog post exists; get its category for "related" logic
+        bp_current = BlogPost.query.get_or_404(post_id)
+        cat_id = bp_current.blog_cat_id
+
+        # Other blog posts in SAME category (exclude current), newest first
+        rows = (
+            BlogPost.query
+            .filter(BlogPost.post_id != post_id)
+            .filter(BlogPost.blog_cat_id == cat_id)
+            .order_by(BlogPost.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        items = []
+        for bp in rows:
+            row = blog_post_out.dump(bp)
+            row.pop("content_mongo_id", None)  # hide internal id
+            row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
+
+            if include_content:
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+
+            if include_analytics:
+                row.update(_analytics_dict(getattr(bp, "analytics", None)))
+            else:
+                row["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
+
+            items.append(row)
+
+        return jsonify({"items": items, "count": len(items)}), 200
+
 # ======================================================
 # NewsPost (1:1 with BlogPost)
 # ======================================================
@@ -1120,6 +1278,35 @@ api_bp.add_url_rule(
     methods=["GET", "PUT", "PATCH", "DELETE"],
 )
 
+# Most-read Blog (views)
+api_bp.add_url_rule(
+    "/analytics/most-read/blog",
+    view_func=MostReadBlogAPI.as_view("most_read_blog"),
+    methods=["GET"],
+)
+
+# Latest Blog Posts
+api_bp.add_url_rule(
+    "/analytics/latest-blog",
+    view_func=LatestBlogAPI.as_view("latest_blog"),
+    methods=["GET"],
+)
+
+# Blog "Read Next"
+api_bp.add_url_rule(
+    "/blog/<int:post_id>/read-next",
+    view_func=BlogPostReadNextAPI.as_view("blog_post_read_next"),
+    methods=["GET"],
+)
+
+# Blog Related (same category)
+api_bp.add_url_rule(
+    "/blog/<int:post_id>/related",
+    view_func=BlogPostRelatedAPI.as_view("blog_post_related"),
+    methods=["GET"],
+)
+
+
 # NewsPost
 api_bp.add_url_rule(
     "/news-posts",
@@ -1139,7 +1326,7 @@ api_bp.add_url_rule(
     methods=["GET"],
 )
 
-# Related (same category)
+# Related News (same category)
 api_bp.add_url_rule(
     "/news/<int:post_id>/related",
     view_func=NewsPostRelatedAPI.as_view("news_post_related"),
@@ -1171,12 +1358,7 @@ api_bp.add_url_rule(
     methods=["GET", "PATCH", "DELETE"],
 )
 
-# Most-read (views)
-api_bp.add_url_rule(
-    "/analytics/most-read/blog",
-    view_func=MostReadBlogAPI.as_view("most_read_blog"),
-    methods=["GET"],
-)
+
 api_bp.add_url_rule(
     "/analytics/most-read/news",
     view_func=MostReadNewsAPI.as_view("most_read_news"),
