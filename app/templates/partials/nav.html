@@ -1,57 +1,64 @@
 <!-- templates/partials/nav.html -->
 <nav class="nav">
-    <div class="nav-left mobile-only">
-      <button id="menu-toggle">
-        <span id="menu-icon">☰</span>
-        <span id="close-icon" style="display: none;">✕</span>
-      </button>
-    </div>
-    <div class="nav-right">
-      <a href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Local Logo" class="logo">
-      </a>
-    </div>
-  </nav>
-  
-  <!-- Mobile Navigation Modal -->
-  <div id="mobile-nav-modal" class="nav-modal mobile-only">
-    <div class="nav-content">
-      <a href="{{ url_for('main.news') }}">Atl News</a>
-      <a href="{{ url_for('main.blog') }}">Atl Blog</a>
-      <a href="#">Atl Real Estate</a>
-      <a href="#">Atl Shop</a>
-      <a href="#">Book</a>
-      <a href="#">Atl Events</a>
-      <a href="#">Atl Search</a>
-      <div class="profile-dropdown">
-        <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Profile Icon">
-        <div class="dropdown-content">
-          <a href="#">Sign In</a>
-          <a href="#">Log Out</a>
-        </div>
+  <div class="nav-left mobile-only">
+    <button id="menu-toggle">
+      <span id="menu-icon">☰</span>
+      <span id="close-icon" style="display: none;">✕</span>
+    </button>
+  </div>
+  <div class="nav-right">
+    <a href="{{ url_for('main.home') }}">
+      <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="ATL Local Logo" class="logo">
+    </a>
+  </div>
+</nav>
+
+<!-- Mobile Navigation Modal -->
+<div id="mobile-nav-modal" class="nav-modal mobile-only">
+  <div class="nav-content">
+    <a href="{{ url_for('main.news') }}">Atl News</a>
+    <a href="{{ url_for('main.blog') }}">Atl Blog</a>
+    <a href="{{ url_for('main.real_estate') }}">Atl Real Estate</a>
+    <a href="{{ url_for('main.shop') }}">Atl Shop</a>
+    <a href="{{ url_for('main.book') }}">Book</a>
+    <a href="{{ url_for('main.events') }}">Atl Events</a>
+    <a href="{{ url_for('main.search_map') }}">Atl Search</a>
+    <div class="profile-dropdown">
+      <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Profile Icon">
+      <div class="dropdown-content">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.logout') }}">Log Out</a>
+        {% else %}
+          <a href="{{ url_for('main.login') }}">Sign In</a>
+          <a href="{{ url_for('main.register') }}">Register</a>
+        {% endif %}
       </div>
     </div>
   </div>
-  
-  <!-- Desktop Navigation -->
-  <div class="nav-modal desktop-only">
-    <div class="nav-content">
-      <a href="{{ url_for('main.news') }}">Atl News</a>
-      <a href="{{ url_for('main.blog') }}">Atl Blog</a>
-      <a href="#">About</a>
-      <a href="#">Search</a>
-      <a href="#">Atl Real Estate</a>
-      <a href="#">Atl Directory</a>
-      <a href="#">Atl Shop</a>
-      <a href="#">Book</a>
-      <a href="#">Atl Events</a>
-      <div class="profile-dropdown">
-        <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Profile Icon">
-        <div class="dropdown-content">
-          <a href="#">Sign In</a>
-          <a href="#">Log Out</a>
-        </div>
+</div>
+
+<!-- Desktop Navigation -->
+<div class="nav-modal desktop-only">
+  <div class="nav-content">
+    <a href="{{ url_for('main.news') }}">Atl News</a>
+    <a href="{{ url_for('main.blog') }}">Atl Blog</a>
+    <a href="{{ url_for('main.about') }}">About</a>
+    <a href="{{ url_for('main.search_map') }}">Search</a>
+    <a href="{{ url_for('main.real_estate') }}">Atl Real Estate</a>
+    <a href="{{ url_for('main.directory') }}">Atl Directory</a>
+    <a href="{{ url_for('main.shop') }}">Atl Shop</a>
+    <a href="{{ url_for('main.book') }}">Book</a>
+    <a href="{{ url_for('main.events') }}">Atl Events</a>
+    <div class="profile-dropdown">
+      <img src="{{ url_for('static', filename='images/profile-icon-new.png') }}" alt="Profile Icon">
+      <div class="dropdown-content">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.logout') }}">Log Out</a>
+        {% else %}
+          <a href="{{ url_for('main.login') }}">Sign In</a>
+          <a href="{{ url_for('main.register') }}">Register</a>
+        {% endif %}
       </div>
     </div>
   </div>
-  
+</div>

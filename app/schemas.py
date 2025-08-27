@@ -21,12 +21,12 @@ class BlogCategoryCreateSchema(Schema):
     description = fields.String(allow_none=True)
 
     @validates("title")
-    def validate_title(self, value):
+    def validate_title(self, value, **kwargs):
         if not value or not value.strip():
             raise ValidationError("Title cannot be empty.")
 
     @validates("slug")
-    def validate_slug(self, value):
+    def validate_slug(self, value, **kwargs):
         if not value or not value.strip():
             raise ValidationError("Slug cannot be empty.")
         if value != _slugify(value):
@@ -38,12 +38,12 @@ class BlogCategoryUpdateSchema(Schema):
     description = fields.String(required=False, allow_none=True)
 
     @validates("title")
-    def validate_title(self, value):
+    def validate_title(self, value, **kwargs):
         if value is not None and not value.strip():
             raise ValidationError("Title cannot be empty.")
 
     @validates("slug")
-    def validate_slug(self, value):
+    def validate_slug(self, value, **kwargs):
         if value is not None:
             if not value.strip():
                 raise ValidationError("Slug cannot be empty.")
@@ -69,116 +69,50 @@ blog_category_update = BlogCategoryUpdateSchema()
 _US_ZIP_RE = re.compile(r"^\d{5}(?:-\d{4})?$")
 
 class MyUserCreateSchema(Schema):
-    first_name = fields.String(required=True)
-    last_name  = fields.String(required=True)
-    email      = fields.Email(required=True)
-    gender     = fields.String(required=True)
-    dob        = fields.Date(required=True)
-    zip_code   = fields.String(required=True)
-    city_state = fields.String(required=False, allow_none=True)
-    image      = fields.String(required=True)
-
-    @validates("first_name")
-    def _v_first_name(self, v):
-        if not v or not v.strip():
-            raise ValidationError("First name cannot be empty.")
-        if len(v) > 255:
-            raise ValidationError("First name too long (max 255).")
-
-    @validates("last_name")
-    def _v_last_name(self, v):
-        if not v or not v.strip():
-            raise ValidationError("Last name cannot be empty.")
-        if len(v) > 255:
-            raise ValidationError("Last name too long (max 255).")
-
-    @validates("gender")
-    def _v_gender(self, v):
-        if not v or not v.strip():
-            raise ValidationError("Gender cannot be empty.")
-        if len(v) > 20:
-            raise ValidationError("Gender too long (max 20).")
-
-    @validates("zip_code")
-    def _v_zip(self, v):
-        if not v or not v.strip():
-            raise ValidationError("ZIP code cannot be empty.")
-        if len(v) > 10:
-            raise ValidationError("ZIP code too long (max 10).")
-        if re.fullmatch(r"[0-9\-]+", v) and not _US_ZIP_RE.match(v):
-            raise ValidationError("ZIP must be 12345 or 12345-6789.")
-
-    @validates("image")
-    def _v_image(self, v):
-        if not v or not v.strip():
-            raise ValidationError("Image path/URL cannot be empty.")
-        if len(v) > 300:
-            raise ValidationError("Image path too long (max 300).")
+    first_name     = fields.String(required=True)
+    last_name      = fields.String(required=True)
+    email          = fields.Email(required=True)
+    gender         = fields.String(required=True)
+    dob            = fields.Date(required=True)
+    zip_code       = fields.String(required=True)
+    city_state     = fields.String(required=False, allow_none=True)
+    image          = fields.String(required=True)
+    password       = fields.String(required=True, load_only=True)  # 🔑 plain-text input only
+    is_admin       = fields.Boolean(load_default=False)
+    is_member       = fields.Boolean(required=False)
+    is_active      = fields.Boolean(load_default=True)
 
 class MyUserUpdateSchema(Schema):
-    first_name = fields.String(required=False)
-    last_name  = fields.String(required=False)
-    email      = fields.Email(required=False)
-    gender     = fields.String(required=False)
-    dob        = fields.Date(required=False)
-    zip_code   = fields.String(required=False)
-    city_state = fields.String(required=False, allow_none=True)
-    image      = fields.String(required=False)
-
-    @validates("first_name")
-    def _v_first_name(self, v):
-        if v is not None:
-            if not v.strip():
-                raise ValidationError("First name cannot be empty.")
-            if len(v) > 255:
-                raise ValidationError("First name too long (max 255).")
-
-    @validates("last_name")
-    def _v_last_name(self, v):
-        if v is not None:
-            if not v.strip():
-                raise ValidationError("Last name cannot be empty.")
-            if len(v) > 255:
-                raise ValidationError("Last name too long (max 255).")
-
-    @validates("gender")
-    def _v_gender(self, v):
-        if v is not None:
-            if not v.strip():
-                raise ValidationError("Gender cannot be empty.")
-            if len(v) > 20:
-                raise ValidationError("Gender too long (max 20).")
-
-    @validates("zip_code")
-    def _v_zip(self, v):
-        if v is not None:
-            if not v.strip():
-                raise ValidationError("ZIP code cannot be empty.")
-            if len(v) > 10:
-                raise ValidationError("ZIP code too long (max 10).")
-            if re.fullmatch(r"[0-9\-]+", v) and not _US_ZIP_RE.match(v):
-                raise ValidationError("ZIP must be 12345 or 12345-6789.")
-
-    @validates("image")
-    def _v_image(self, v):
-        if v is not None:
-            if not v.strip():
-                raise ValidationError("Image path/URL cannot be empty.")
-            if len(v) > 300:
-                raise ValidationError("Image path too long (max 300).")
+    first_name     = fields.String(required=False)
+    last_name      = fields.String(required=False)
+    email          = fields.Email(required=False)
+    gender         = fields.String(required=False)
+    dob            = fields.Date(required=False)
+    zip_code       = fields.String(required=False)
+    city_state     = fields.String(required=False, allow_none=True)
+    image          = fields.String(required=False)
+    password       = fields.String(required=False, load_only=True)  # allow password reset
+    is_admin       = fields.Boolean(required=False)
+    is_member       = fields.Boolean(required=False)
+    is_active      = fields.Boolean(required=False)
+    email_verified = fields.Boolean(required=False)
 
 class MyUserOutSchema(Schema):
-    my_user_id = fields.Integer()
-    first_name = fields.String()
-    last_name  = fields.String()
-    email      = fields.String()
-    gender     = fields.String()
-    dob        = fields.Date()
-    zip_code   = fields.String()
-    city_state = fields.String(allow_none=True)
-    image      = fields.String()
-    created_at = fields.DateTime(allow_none=True)
-    updated_at = fields.DateTime(allow_none=True)
+    my_user_id     = fields.Integer()
+    first_name     = fields.String()
+    last_name      = fields.String()
+    email          = fields.String()
+    gender         = fields.String()
+    dob            = fields.Date()
+    zip_code       = fields.String()
+    city_state     = fields.String(allow_none=True)
+    image          = fields.String()
+    is_admin       = fields.Boolean()
+    is_member       = fields.Boolean()
+    is_active      = fields.Boolean()
+    email_verified = fields.Boolean()
+    created_at     = fields.DateTime(allow_none=True)
+    updated_at     = fields.DateTime(allow_none=True)
 
 my_user_out = MyUserOutSchema()
 my_user_list_out = MyUserOutSchema(many=True)
@@ -236,6 +170,7 @@ class BlogPostCreateSchema(Schema):
         if len(v) > 300:
             raise ValidationError("Image path too long (max 300).")
 
+blog_post_create = BlogPostCreateSchema()
 
 class BlogPostUpdateSchema(Schema):
     title             = fields.String()
@@ -267,7 +202,7 @@ class BlogPostUpdateSchema(Schema):
                 raise ValidationError("Image path/URL cannot be empty.")
             if len(v) > 300:
                 raise ValidationError("Image path too long (max 300).")
-blog_post_create = BlogPostCreateSchema()
+
 blog_post_update = BlogPostUpdateSchema()
 
 # ======================================================
@@ -374,22 +309,22 @@ class PostAnalyticsCreateSchema(Schema):
     shares   = fields.Integer(load_default=0)
 
     @validates("views")
-    def _v_views(self, v):
+    def _v_views(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("views cannot be negative.")
 
     @validates("likes")
-    def _v_likes(self, v):
+    def _v_likes(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("likes cannot be negative.")
 
     @validates("comments")
-    def _v_comments(self, v):
+    def _v_comments(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("comments cannot be negative.")
 
     @validates("shares")
-    def _v_shares(self, v):
+    def _v_shares(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("shares cannot be negative.")
 
@@ -400,22 +335,22 @@ class PostAnalyticsUpdateSchema(Schema):
     shares   = fields.Integer()
 
     @validates("views")
-    def _v_views(self, v):
+    def _v_views(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("views cannot be negative.")
 
     @validates("likes")
-    def _v_likes(self, v):
+    def _v_likes(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("likes cannot be negative.")
 
     @validates("comments")
-    def _v_comments(self, v):
+    def _v_comments(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("comments cannot be negative.")
 
     @validates("shares")
-    def _v_shares(self, v):
+    def _v_shares(self, v, **kwargs):
         if v is not None and v < 0:
             raise ValidationError("shares cannot be negative.")
 

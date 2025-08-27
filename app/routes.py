@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, abort, jsonify, current_app
+from flask import Blueprint, render_template, request,abort, jsonify, current_app,redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 from .models import db, BlogCategory, MyUser, BlogPost, NewsPost
 from datetime import datetime
 
@@ -868,6 +871,25 @@ dummy_newsposts = [
 
 ]
 
+
+def admin_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapped(*args, **kwargs):
+        # Adjust this line to match your model:
+        #   - If you have a boolean: current_user.is_admin
+        #   - If you have a role string: current_user.role == "admin"
+        is_admin = getattr(current_user, "is_admin", False) or getattr(current_user, "role", "") == "admin"
+
+        if not is_admin:
+            # Choose one behavior; redirect with flash or 403.
+            flash("You do not have permission to access that page.", "error")
+            return redirect(url_for("main.home"))
+            # Or: abort(403)
+
+        return view_func(*args, **kwargs)
+    return wrapped
+
 @main.route("/")
 @main.route("/home")
 def home():
@@ -927,7 +949,8 @@ def directory():
 
 @main.route('/shop')
 def shop():
-    return render_template('shop/index.html')
+    JOIN_URL = 'https://www.paypal.com/ncp/payment/39WCXLXMZWSCY'
+    return render_template('shop/index.html', join_url = JOIN_URL)
 
 @main.route('/book')
 def book():
@@ -945,37 +968,124 @@ def events():
 def real_estate():
     return render_template('real_estate/index.html')
 
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name  = request.form.get('last_name')
+        email      = request.form.get('email')
+        password   = request.form.get('password')
+        confirm    = request.form.get('confirm_password')
+        gender     = (request.form.get('gender') or "").strip().lower()
+        dob        = request.form.get('dob')
+        zip_code   = request.form.get('zip_code')
+        city_state = request.form.get('city_state')
+        image      = request.form.get('image')  # simple string path for now
+
+        if password != confirm:
+            flash("Passwords do not match", "error")
+            return redirect(url_for('main.register'))
+
+        existing_user = MyUser.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Email already registered", "error")
+            return redirect(url_for('main.register'))
+
+        # normalize gender to match DB constraint
+        if gender == "prefer-not-to-say":
+            gender = "na"
+        allowed = {"male", "female", "non-binary", "other", "na"}
+        if gender not in allowed:
+            flash("Select a valid gender option.", "error")
+            return redirect(url_for('main.register'))
+
+        hashed_pw = generate_password_hash(password)
+
+        new_user = MyUser(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password_hash=hashed_pw,
+            gender=gender,
+            dob=dob,
+            zip_code=zip_code,
+            city_state=city_state,
+            image=image or ""
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Account created successfully! Please log in.", "success")
+        return redirect(url_for('main.login'))
+
+    return render_template('admin/register.html')
+
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email    = request.form.get('email')
+        password = request.form.get('password')
+
+        user = MyUser.query.filter_by(email=email).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            flash("Invalid email or password", "error")
+            return redirect(url_for('main.login'))
+
+        login_user(user)
+        flash("Logged in successfully!", "success")
+        return redirect(url_for('main.admin_home'))
+
+    return render_template('admin/login.html')
+
+
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "success")
+    return redirect(url_for('main.login'))
+
+
 @main.route('/admin')
+@admin_required
 def admin_home():
     return render_template('admin/index.html')
 
 @main.route('/admin/users',methods=['GET',])
+@admin_required
 def admin_users():
     return render_template('admin/user_list_view.html')
 
 @main.route('/admin/blog-cat',methods=['GET',])
+@admin_required
 def admin_blog_cats():
     return render_template('admin/blog_cat_list_view.html')
 
 @main.route('/admin/blog',methods=['GET',])
+@admin_required
 def admin_blog_post():
     return render_template('admin/blog_list_view.html')
 
 
 @main.route('/admin/blog/create',methods=['GET', 'POST'])
+@admin_required
 def admin_create_blog_post():
     return render_template('admin/create_post.html')
 
 @main.route('/admin/blogs/<int:post_id>', methods=['GET', 'POST'])
+@admin_required
 def admin_blog_detail(post_id):
     return render_template('admin/read_update_post.html')
 
 
 @main.route('/admin/news',methods=['GET',])
+@admin_required
 def admin_news_post():
     return render_template('admin/news_list_view.html')
 
 @main.route('/api/debug/db')
+@admin_required
 def debug_db():
     # Counts
     cat_count  = BlogCategory.query.count()

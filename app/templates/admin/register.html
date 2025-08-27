@@ -1,0 +1,116 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Top Row -->
+    <div class="admin-topbar">
+      <div class="page-title">
+        <h2>Create Account</h2>
+      </div>
+      <div class="user-info">
+        <span class="user-avatar">👤</span>
+      </div>
+    </div>
+
+    <!-- Content Form -->
+    <div class="admin-content-container">
+      <div class="content-card">
+        <form method="POST" action="{{ url_for('main.register') }}" enctype="multipart/form-data">
+          <!-- First Name -->
+          <div class="form-group">
+            <label for="first_name">First name</label>
+            <input type="text" id="first_name" name="first_name" required>
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-group">
+            <label for="last_name">Last name</label>
+            <input type="text" id="last_name" name="last_name" required>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="confirm_password">Confirm password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password">
+          </div>
+
+          <!-- Gender -->
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <!-- register.html -->
+            <select id="gender" name="gender" required>
+                <option value="" selected disabled>Select gender…</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+                <option value="na">Prefer not to say</option>
+            </select>
+            
+  
+          </div>
+
+          <!-- DOB -->
+          <div class="form-group">
+            <label for="dob">Date of birth</label>
+            <input type="date" id="dob" name="dob" required>
+          </div>
+
+          <!-- Zip -->
+          <div class="form-group">
+            <label for="zip_code">ZIP code</label>
+            <input type="text" id="zip_code" name="zip_code" required>
+          </div>
+
+          <!-- City/State (optional per schema) -->
+          <div class="form-group">
+            <label for="city_state">City, State</label>
+            <input type="text" id="city_state" name="city_state" placeholder="e.g., Atlanta, GA">
+          </div>
+
+          <!-- Profile Image -->
+          <div class="form-group">
+            <label for="image">Profile image</label>
+            <input type="file" id="image" name="image" accept="image/*">
+          </div>
+
+          <!-- Submit -->
+          <div class="form-group" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <button type="submit" class="btn-select">Create Account</button>
+            <small>Already have an account?
+              <a class="btn-select" href="{{ url_for('main.login') }}" style="padding:6px 10px;">Log in</a>
+
+
+            </small>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

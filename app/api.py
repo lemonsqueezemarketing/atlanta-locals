@@ -4,6 +4,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, and_, text
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+from werkzeug.security import generate_password_hash, check_password_hash  # ⬅️ add check_password_hash
+from flask_login import login_user, current_user   # ⬅️ add current_user
+
+
+
 
 from .models import db, BlogCategory, MyUser, BlogPost, NewsPost, NewsMain, PostAnalytics
 from .schemas import (
@@ -43,6 +48,69 @@ from .schemas import (
 )
 
 api_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
+
+
+# -------------------------------
+# Permissions Helpers
+# -------------------------------
+def _json_401():
+    return jsonify({"error": "Authentication required."}), 401
+
+def _json_403():
+    return jsonify({"error": "Admin access required."}), 403
+
+def login_required_json(fn):
+    from functools import wraps
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return _json_401()
+        return fn(*args, **kwargs)
+    return wrapper
+
+def admin_required_json(fn):
+    from functools import wraps
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return _json_401()
+        if not getattr(current_user, "is_admin", False):
+            return _json_403()
+        return fn(*args, **kwargs)
+    return wrapper
+
+# Allow per-method decorators on a MethodView
+class GuardedMethodView(MethodView):
+    decorators_by_method: dict[str, list] = {}
+
+    def dispatch_request(self, *args, **kwargs):
+        method = request.method
+        view = getattr(self, method.lower(), None)
+        if view is None and method == "HEAD":
+            view = getattr(self, "get", None)
+        assert view is not None, f"Unimplemented method {method}"
+        # wrap the view function with any method-specific decorators
+        for dec in self.decorators_by_method.get(method, []):
+            view = dec(view)
+        return view(*args, **kwargs)
+
+# Common maps you can reuse
+PUBLIC_READ_ADMIN_WRITE = {
+    "POST":  [admin_required_json],
+    "PUT":   [admin_required_json],
+    "PATCH": [admin_required_json],
+    "DELETE":[admin_required_json],
+    # "GET": []  # public
+}
+
+ADMIN_ALL = {
+    "GET":   [admin_required_json],
+    "POST":  [admin_required_json],
+    "PUT":   [admin_required_json],
+    "PATCH": [admin_required_json],
+    "DELETE":[admin_required_json],
+}
+
 
 # -------------------------------
 # Helpers
@@ -146,7 +214,8 @@ def _analytics_dict(pa: PostAnalytics | None):
 # ======================================================
 # BlogCategory (CRUD)
 # ======================================================
-class BlogCategoryListAPI(MethodView):
+class BlogCategoryListAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
         q = request.args.get("q", type=str)
         page = request.args.get("page", default=1, type=int)
@@ -189,7 +258,8 @@ class BlogCategoryListAPI(MethodView):
         return blog_category_out.dump(cat), 201
 
 
-class BlogCategoryItemAPI(MethodView):
+class BlogCategoryItemAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self, cat_id: int):
         cat = BlogCategory.query.get_or_404(cat_id)
         return blog_category_out.dump(cat), 200
@@ -244,7 +314,8 @@ class BlogCategoryItemAPI(MethodView):
 # ======================================================
 # MyUser (CRUD)
 # ======================================================
-class MyUserListAPI(MethodView):
+class MyUserListAPI(GuardedMethodView):
+    decorators_by_method = ADMIN_ALL
     def get(self):
         q = request.args.get("q", type=str)
         page = request.args.get("page", default=1, type=int)
@@ -278,7 +349,16 @@ class MyUserListAPI(MethodView):
         if errors:
             return _json_error(errors, 400)
 
-        user = MyUser(**payload)
+        # 🔑 hash password before saving
+        password = payload.pop("password", None)
+        if not password:
+            return _json_error("Password is required.", 400)
+        hashed = generate_password_hash(password)
+
+        user = MyUser(
+            **payload,
+            password_hash=hashed
+        )
         db.session.add(user)
         try:
             db.session.commit()
@@ -289,7 +369,8 @@ class MyUserListAPI(MethodView):
         return my_user_out.dump(user), 201
 
 
-class MyUserItemAPI(MethodView):
+class MyUserItemAPI(GuardedMethodView):
+    decorators_by_method = ADMIN_ALL
     def get(self, user_id: int):
         user = MyUser.query.get_or_404(user_id)
         return my_user_out.dump(user), 200
@@ -301,14 +382,13 @@ class MyUserItemAPI(MethodView):
             return _json_error(errors, 400)
 
         user = MyUser.query.get_or_404(user_id)
-        user.first_name = payload["first_name"]
-        user.last_name  = payload["last_name"]
-        user.email      = payload["email"]
-        user.gender     = payload["gender"]
-        user.dob        = payload["dob"]
-        user.zip_code   = payload["zip_code"]
-        user.city_state = payload.get("city_state")
-        user.image      = payload["image"]
+
+        for field in ["first_name", "last_name", "email", "gender", "dob", "zip_code", "city_state", "image", "is_admin", "is_member","is_active", "email_verified"]:
+            if field in payload:
+                setattr(user, field, payload[field])
+
+        if "password" in payload:
+            user.password_hash = generate_password_hash(payload["password"])
 
         try:
             db.session.commit()
@@ -325,9 +405,13 @@ class MyUserItemAPI(MethodView):
             return _json_error(errors, 400)
 
         user = MyUser.query.get_or_404(user_id)
-        for field in ["first_name", "last_name", "email", "gender", "dob", "zip_code", "city_state", "image"]:
+
+        for field in ["first_name", "last_name", "email", "gender", "dob", "zip_code", "city_state", "image", "is_admin", "is_member","is_active", "email_verified"]:
             if field in payload:
                 setattr(user, field, payload[field])
+
+        if "password" in payload:
+            user.password_hash = generate_password_hash(payload["password"])
 
         try:
             db.session.commit()
@@ -343,10 +427,42 @@ class MyUserItemAPI(MethodView):
         db.session.commit()
         return jsonify({"status": "deleted", "my_user_id": user_id}), 200
 
+
+# ======================================================
+# Auth (Login)
+# ======================================================
+class AuthLoginAPI(GuardedMethodView):
+    def post(self):
+        payload = request.get_json(silent=True) or {}
+        email = payload.get("email")
+        password = payload.get("password")
+
+        if not email or not password:
+            return _json_error("Email and password required.", 400)
+
+        user = MyUser.query.filter_by(email=email).first()
+        if not user:
+            return _json_error("Invalid email or password.", 401)
+
+        if not check_password_hash(user.password_hash, password):
+            return _json_error("Invalid email or password.", 401)
+
+        if not user.is_active:
+            return _json_error("User account is inactive.", 403)
+
+        # 🔓 log in the user (Flask-Login session)
+        login_user(user, remember=True)
+
+        return jsonify({
+            "status": "ok",
+            "user": my_user_out.dump(user)
+        }), 200
+
 # ======================================================
 # BlogPost (CRUD + Mongo content)
 # ======================================================
-class BlogPostListAPI(MethodView):
+class BlogPostListAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
         q = request.args.get("q", type=str)
         page = request.args.get("page", default=1, type=int)
@@ -466,7 +582,8 @@ class BlogPostListAPI(MethodView):
         return data, 201
 
 
-class BlogPostItemAPI(MethodView):
+class BlogPostItemAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
@@ -589,7 +706,7 @@ class BlogPostItemAPI(MethodView):
 # ======================================================
 # Latest Blog (paginated, newest first)
 # ======================================================
-class LatestBlogAPI(MethodView):
+class LatestBlogAPI(GuardedMethodView):
     def get(self):
         """
         Return latest blog posts (newest first) with the SAME paging shape
@@ -641,7 +758,7 @@ class LatestBlogAPI(MethodView):
 # Returns up to the next N blog posts for the "Read Next" carousel.
 # Excludes the current post_id and orders by BlogPost.created_at (desc).
 # ---------------------------------------------------------
-class BlogPostReadNextAPI(MethodView):
+class BlogPostReadNextAPI(GuardedMethodView):
     def get(self, post_id: int):
         """
         GET /api/v1/blog/<post_id>/read-next
@@ -694,7 +811,7 @@ class BlogPostReadNextAPI(MethodView):
 # excluding the current post_id. Results are BlogPost-shaped objects
 # (with image_url and analytics), optionally with content.
 # ---------------------------------------------------------
-class BlogPostRelatedAPI(MethodView):
+class BlogPostRelatedAPI(GuardedMethodView):
     def get(self, post_id: int):
         """
         GET /api/v1/blog/<post_id>/related
@@ -746,7 +863,8 @@ class BlogPostRelatedAPI(MethodView):
 # ======================================================
 # NewsPost (1:1 with BlogPost)
 # ======================================================
-class NewsPostListAPI(MethodView):
+class NewsPostListAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=20, type=int)
@@ -810,7 +928,8 @@ class NewsPostListAPI(MethodView):
         return data, 201
 
 
-class NewsPostItemAPI(MethodView):
+class NewsPostItemAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
@@ -876,7 +995,7 @@ class NewsPostItemAPI(MethodView):
 # Returns up to the next N news posts for the "Read Next" carousel.
 # Excludes the current post_id and orders by BlogPost.created_at (desc).
 # ---------------------------------------------------------
-class NewsPostReadNextAPI(MethodView):
+class NewsPostReadNextAPI(GuardedMethodView):
     def get(self, post_id: int):
         limit = request.args.get("limit", default=3, type=int)
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
@@ -921,7 +1040,7 @@ class NewsPostReadNextAPI(MethodView):
 # excluding the current post_id. Results are BlogPost-shaped objects
 # (with image_url and analytics), optionally with content.
 # ---------------------------------------------------------
-class NewsPostRelatedAPI(MethodView):
+class NewsPostRelatedAPI(GuardedMethodView):
     def get(self, post_id: int):
         limit = request.args.get("limit", default=4, type=int)
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
@@ -966,7 +1085,8 @@ class NewsPostRelatedAPI(MethodView):
 # ======================================================
 # NewsMain (windowed "main story" selections)
 # ======================================================
-class NewsMainListAPI(MethodView):
+class NewsMainListAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=20, type=int)
@@ -1050,7 +1170,8 @@ class NewsMainListAPI(MethodView):
         return data, 201
 
 
-class NewsMainItemAPI(MethodView):
+class NewsMainItemAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self, news_main_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         nm = NewsMain.query.get_or_404(news_main_id)
@@ -1114,7 +1235,8 @@ class NewsMainItemAPI(MethodView):
 # ======================================================
 # PostAnalytics (CRUD)
 # ======================================================
-class PostAnalyticsListAPI(MethodView):
+class PostAnalyticsListAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
         """List analytics rows (paginated)."""
         page = request.args.get("page", default=1, type=int)
@@ -1159,7 +1281,8 @@ class PostAnalyticsListAPI(MethodView):
         return post_analytics_out.dump(pa), 201
 
 
-class PostAnalyticsItemAPI(MethodView):
+class PostAnalyticsItemAPI(GuardedMethodView):
+    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self, post_id: int):
         pa = PostAnalytics.query.filter_by(post_id=post_id).first()
         if not pa:
@@ -1199,13 +1322,13 @@ class PostAnalyticsItemAPI(MethodView):
 # ======================================================
 # Most-read (from SQL Views) — read-only helpers
 # ======================================================
-class MostReadBlogAPI(MethodView):
+class MostReadBlogAPI(GuardedMethodView):
     def get(self):
-        """Return rows from atlLocal_db.v_most_read_blog_posts (read-only)."""
+        """Return rows from atllocal_db.v_most_read_blog_posts (read-only)."""
         sql = text("""
             SELECT post_id, title, slug, image, blog_cat_id, author_id,
                    created_at, views, likes, comments, shares
-            FROM atlLocal_db.v_most_read_blog_posts
+            FROM atllocal_db.v_most_read_blog_posts
         """)
         rows = db.session.execute(sql).mappings().all()
         # add image_url for convenience
@@ -1217,13 +1340,13 @@ class MostReadBlogAPI(MethodView):
         return jsonify({"items": out, "count": len(out)}), 200
 
 
-class MostReadNewsAPI(MethodView):
+class MostReadNewsAPI(GuardedMethodView):
     def get(self):
-        """Return rows from atlLocal_db.v_most_read_news_posts (read-only)."""
+        """Return rows from atllocal_db.v_most_read_news_posts (read-only)."""
         sql = text("""
             SELECT post_id, title, slug, image, blog_cat_id, author_id,
                    created_at, views, likes, comments, shares
-            FROM atlLocal_db.v_most_read_news_posts
+            FROM atllocal_db.v_most_read_news_posts
         """)
         rows = db.session.execute(sql).mappings().all()
         out = []
@@ -1234,7 +1357,7 @@ class MostReadNewsAPI(MethodView):
         return jsonify({"items": out, "count": len(out)}), 200
 
 
-class LatestNewsAPI(MethodView):
+class LatestNewsAPI(GuardedMethodView):
     def get(self):
         """
         Return latest news posts as FULL post objects (like /api/v1/news-posts),
@@ -1307,6 +1430,12 @@ api_bp.add_url_rule(
     "/users/<int:user_id>",
     view_func=MyUserItemAPI.as_view("user_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
+)
+# Auth
+api_bp.add_url_rule(
+    "/auth/login",
+    view_func=AuthLoginAPI.as_view("auth_login"),
+    methods=["POST"],
 )
 
 # BlogPost

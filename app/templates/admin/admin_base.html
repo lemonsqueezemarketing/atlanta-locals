@@ -18,18 +18,33 @@
     ☰
   </button>
 
+  <!-- Global top bar with auth controls -->
+  <header class="admin-global-topbar" style="display:flex; justify-content:flex-end; gap:10px; align-items:center; padding:10px 16px;">
+    {% if current_user.is_authenticated %}
+      <span class="user-greeting">👋 {{ current_user.first_name or 'User' }}</span>
+      <a class="btn-select" href="{{ url_for('main.logout') }}">Log out</a>
+    {% else %}
+      <a class="btn-select" href="{{ url_for('main.login') }}">Log in</a>
+      <a class="btn-select" href="{{ url_for('main.register') }}">Register</a>
+    {% endif %}
+  </header>
+
   <!-- Main content -->
   <main>
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <ul class="flashes">
+          {% for cat, msg in msgs %}<li class="{{cat}}">{{ msg }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
     {% block content %}{% endblock %}
   </main>
 
   <!-- Admin JS (load once, with defer) -->
   <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/admin_api.js') }}"></script>
-
-
-  <!-- Create Blog Post JS (load once, with defer) -->
-  <script src="{{ url_for('static', filename='js/blog_create.js') }}" defer></script>
 
   {% block scripts %}{% endblock %}
 </body>

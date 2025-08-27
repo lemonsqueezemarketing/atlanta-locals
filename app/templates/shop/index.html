@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% block title %}Atlanta Locals Shop{% endblock %}
@@ -19,34 +18,68 @@
   <div class="branding-logo">
     <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
   </div>
-  <h1 class="atl-brand-title">Atlanta Local Search</h1>
-  <p class="subtitle">Atlanta’s Own Search Engine</p>
+  <h1 class="atl-brand-title">Atlanta Local Shop</h1>
+  <p class="subtitle">Atlanta’s Own Local E-Commerce Shop</p>
 </section>
+
 <section class="shop-hero">
   <h1>Shop Atlanta Locals</h1>
   <p>Support small businesses with every purchase.</p>
 </section>
 
+{% set JOIN_URL = join_url if join_url is defined else '#' %}
+{% set is_member = current_user.is_authenticated and (current_user.is_member | default(false)) %}
+
 <section class="product-grid">
   <div class="product-card">
-    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 1">
-    <h3>ATL Made Candle</h3>
-    <p class="price">$18.00</p>
-    <button>Add to Cart</button>
+    <img src="{{ url_for('static', filename='media/products/atl_local_tshirt.png') }}" alt="Product 1">
+    <h3>ATL Local T-shirt</h3>
+
+    {% if is_member %}
+      <p class="price">$25.00</p>
+      <button>Add to Cart</button>
+    {% else %}
+      <p class="member-note">Members shop local with $0 delivery.</p>
+      <a class="btn-join" href="{{ JOIN_URL }}"  target="_blank" rel="noopener noreferrer">Join ATL Local</a>
+    {% endif %}
   </div>
 
   <div class="product-card">
-    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 2">
-    <h3>Historic West End T-Shirt</h3>
-    <p class="price">$25.00</p>
-    <button>Add to Cart</button>
+    <img src="{{ url_for('static', filename='media/products/atl_local_mug.png') }}"  alt="Product 2">
+    <h3>ATL Local Coffee Mug</h3>
+
+    {% if is_member %}
+      <p class="price">$25.00</p>
+      <button>Add to Cart</button>
+    {% else %}
+      <p class="member-note">Members shop local with $0 delivery.</p>
+      <a class="btn-join" href="{{ JOIN_URL }}" target="_blank" rel="noopener noreferrer">Join ATL Local</a>
+    {% endif %}
   </div>
 
   <div class="product-card">
-    <img src="{{ url_for('static', filename='images/placeholder-product.jpg') }}" alt="Product 3">
-    <h3>Black-Owned Coffee</h3>
-    <p class="price">$16.50</p>
-    <button>Add to Cart</button>
+    <img src="{{ url_for('static', filename='media/products/atl_local_hoodie.png') }}"  alt="Product 3">
+    <h3>ATL Local Hoodie</h3>
+
+    {% if is_member %}
+      <p class="price">$45.00</p>
+      <button>Add to Cart</button>
+    {% else %}
+      <p class="member-note">Members shop local with $0 delivery.</p>
+      <a class="btn-join" href="{{ JOIN_URL }}" target="_blank" rel="noopener noreferrer">Join ATL Local</a>
+    {% endif %}
+  </div>
+  <div class="product-card">
+    <img src="{{ url_for('static', filename='media/products/atl_local_hat.png') }}"  alt="Product 4">
+    <h3>ATL Local Hat</h3>
+
+    {% if is_member %}
+      <p class="price">$18.00</p>
+      <button>Add to Cart</button>
+    {% else %}
+      <p class="member-note">Members shop local with $0 delivery.</p>
+      <a class="btn-join" href="{{ JOIN_URL }}" target="_blank" rel="noopener noreferrer">Join ATL Local</a>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

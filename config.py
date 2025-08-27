@@ -1,39 +1,36 @@
 import os
 import certifi
+from dotenv import load_dotenv
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+load_dotenv()
 
-# Environment flags
-ENV = os.environ.get("FLASK_ENV", "dev").lower()  # defaults to dev if not set
+ENV = os.environ.get("FLASK_ENV", "dev").lower()
 
-class Config:
+class BaseConfig:
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-change-me")
+
+class Config(BaseConfig):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    # MongoDB configuration
-    MONGO_DBNAME = "atlLocal"
-    MONGO_URI = (
-        "mongodb+srv://lemonsqueezemarketing:"
-        "yBiTYxe3rgrFIqXU"
-        "@cluster0.vv0bfam.mongodb.net/atlLocal"
-        "?retryWrites=true&w=majority&appName=Cluster0"
-    )
+    MONGO_DBNAME = os.environ.get("MONGO_DBNAME")
+    MONGO_URI = os.environ.get("MONGO_URI")
     MONGO_CERT = certifi.where()
 
-
 class TestConfig(Config):
-    # SQLite for testing
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'atllocal.db')
-
+    # No hardcoded path; env controls it. Optional fallback to local sqlite.
+    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///atllocal.db")
 
 class DevConfig(Config):
-    # Local PostgreSQL for development
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres%40W2025@localhost:5432/postgres"
+    # Purely env-driven; no defaults to avoid leaking or accidental use
+    SQLALCHEMY_DATABASE_URI = os.environ["DEV_DATABASE_URL"]
 
+class ProdConfig(Config):
+    # Purely env-driven; no defaults
+    SQLALCHEMY_DATABASE_URI = os.environ["PROD_DATABASE_URL"]
 
-# Pick config based on ENV
+# Select active config
 if ENV == "test":
     ActiveConfig = TestConfig
-elif ENV == "dev":
-    ActiveConfig = DevConfig
+elif ENV == "prod":
+    ActiveConfig = ProdConfig
 else:
-    ActiveConfig = DevConfig  # default to dev for now
+    ActiveConfig = DevConfig

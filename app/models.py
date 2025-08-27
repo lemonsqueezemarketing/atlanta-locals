@@ -3,23 +3,12 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 SCHEMA = "atllocal_db"
 
-class Property(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    price = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    image_url = db.Column(db.String(300), nullable=True)
-    latitude = db.Column(db.Float, nullable=True)
-    longitude = db.Column(db.Float, nullable=True)
-
-    def __repr__(self):
-        return f'<Property {self.title}>'
 
 class BlogCategory(db.Model):
     __tablename__ = "blog_category"
@@ -39,28 +28,40 @@ class BlogCategory(db.Model):
         return f"<BlogCategory {self.slug}>"
 
 
-class MyUser(db.Model):
+class MyUser(UserMixin, db.Model):
     __tablename__ = "my_user"
     __table_args__ = {"schema": SCHEMA}
 
-    my_user_id  = db.Column(db.Integer, primary_key=True)
-    first_name  = db.Column(db.String(255), nullable=False)
-    last_name   = db.Column(db.String(255), nullable=False)
-    email       = db.Column(db.String(300), nullable=False)
-    gender      = db.Column(db.String(20),  nullable=False)
-    dob         = db.Column(db.Date,        nullable=False)
-    zip_code    = db.Column(db.String(10),  nullable=False)
-    city_state  = db.Column(db.String(300))
-    image       = db.Column(db.String(300), nullable=False)
-    created_at  = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    updated_at  = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    my_user_id     = db.Column(db.Integer, primary_key=True)
+    first_name     = db.Column(db.String(255), nullable=False)
+    last_name      = db.Column(db.String(255), nullable=False)
+    email          = db.Column(db.String(300), nullable=False, unique=True)
+    gender         = db.Column(db.String(20),  nullable=False)
+    dob            = db.Column(db.Date,        nullable=False)
+    zip_code       = db.Column(db.String(10),  nullable=False)
+    city_state     = db.Column(db.String(300))
+    image          = db.Column(db.String(300), nullable=False)
+
+    # --- New auth fields ---
+    password_hash  = db.Column(db.String(255), nullable=False)
+    is_active      = db.Column(db.Boolean, default=True, nullable=False)
+    is_admin       = db.Column(db.Boolean, default=False, nullable=False)
+    is_member       = db.Column(db.Boolean, default=False, nullable=False)   
+    last_login     = db.Column(db.DateTime(timezone=True))
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+
+    created_at     = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at     = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     # ORM relationship
     posts = db.relationship("BlogPost", back_populates="author")
 
+    # Flask-Login requires this property
+    def get_id(self):
+        return str(self.my_user_id)
+
     def __repr__(self):
         return f"<MyUser {self.my_user_id} {self.email}>"
-
 
 class BlogPost(db.Model):
     __tablename__ = "blog_post"
@@ -186,3 +187,17 @@ class PostAnalytics(db.Model):
 
     def __repr__(self):
         return f"<PostAnalytics id={self.post_analytics_id} post_id={self.post_id} views={self.views}>"
+
+
+class Property(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    image_url = db.Column(db.String(300), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+
+    def __repr__(self):
+        return f'<Property {self.title}>'
