@@ -227,13 +227,13 @@ document.addEventListener('DOMContentLoaded', () => {
     form.dataset.submitting = '1';
 
     try {
+      const formData = new FormData();
+      formData.append('image', fileImage.files[0]); // image file
+      formData.append('payload', JSON.stringify(payload)); // all other data
+      
       const res = await fetch(API_BLOG_POSTS, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       // Try to parse JSON (fallback to raw text)

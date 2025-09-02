@@ -7,6 +7,7 @@ from .models import db, MyUser  # import MyUser for user_loader
 # Mongo
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import os
 
 # Flask-Login
 from flask_login import LoginManager
@@ -15,7 +16,9 @@ from flask_login import LoginManager
 def create_app(run_db_create: bool = False, drop_db_all: bool = False):
     app = Flask(__name__, static_folder="static", template_folder="templates")
     app.config.from_object(ActiveConfig)
+    app.config['UPLOAD_FOLDER'] = os.path.join("static", "media")  # ✅ Add this line
     print(f"[init] Loaded config: {ActiveConfig.__name__}")
+    print(f"[init] Media root path: {app.config.get('MEDIA_ROOT')}")
 
     # Ensure SECRET_KEY exists (needed for sessions/flash/login)
     if not app.config.get("SECRET_KEY"):

@@ -1,9 +1,11 @@
-from flask import Blueprint, request, jsonify, current_app, url_for
+import os
+from flask import Blueprint, request, jsonify, current_app, url_for, json
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, and_, text
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash  # ⬅️ add check_password_hash
 from flask_login import login_user, current_user   # ⬅️ add current_user
 
@@ -463,6 +465,7 @@ class AuthLoginAPI(GuardedMethodView):
 # ======================================================
 class BlogPostListAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
+
     def get(self):
         q = request.args.get("q", type=str)
         page = request.args.get("page", default=1, type=int)
@@ -510,7 +513,18 @@ class BlogPostListAPI(GuardedMethodView):
         }), 200
 
     def post(self):
-        payload = request.get_json(silent=True) or {}
+        # ✅ Accept multipart form (for file + JSON)
+        if request.content_type.startswith("multipart/form-data"):
+            image_file = request.files.get("image")
+            payload_raw = request.form.get("payload")
+            if not payload_raw:
+                return _json_error("Missing payload in multipart form", 400)
+            payload = json.loads(payload_raw)
+        else:
+            # Fallback if sent as pure JSON (no file)
+            payload = request.get_json(silent=True) or {}
+            image_file = None
+
         errors = blog_post_create.validate(payload)
         if errors:
             return _json_error(errors, 400)
@@ -521,69 +535,61 @@ class BlogPostListAPI(GuardedMethodView):
         if not MyUser.query.get(payload["author_id"]):
             return _json_error("author_id not found.", 404)
 
-        # Pull out content so SQL can be created first
+        # ✅ Save image file (if provided)
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
+            os.makedirs(upload_dir, exist_ok=True)
+            image_file.save(os.path.join(upload_dir, filename))
+            payload["image"] = f"media/blog/{filename}"
+
+        # Pull out content for Mongo
         content = payload.pop("content", None)
 
-        # 1) Create SQL row first
-        post = BlogPost(**payload)  # no content_mongo_id yet
+        # Create SQL blog post
+        post = BlogPost(**payload)
         db.session.add(post)
         try:
-            db.session.commit()  # assigns post.post_id
+            db.session.commit()
         except IntegrityError:
             db.session.rollback()
             return _json_error("Title or slug already exists.", 409)
 
-        # 2) If content provided, insert into Mongo WITH post_id, then attach back
-        if content is not None:
+        # Save to Mongo if needed
+        if content:
             col = _mongo_collection()
             if col is None:
                 return _json_error("MongoDB is not configured but 'content' was provided.", 503)
-
-            # Ensure the inserted doc carries post_id to satisfy unique index patterns
-            doc = dict(content or {})
-            doc["post_id"] = post.post_id
-
+            content["post_id"] = post.post_id
             try:
-                inserted_id = col.insert_one(doc).inserted_id
-            except DuplicateKeyError as e:
-                current_app.logger.warning(f"Mongo DuplicateKeyError on insert: {e}")
-                return _json_error(
-                    "MongoDB unique index on 'post_id' rejected the insert. "
-                    "Consider using a partial/sparse index or ensure post_id is unique.",
-                    409
-                )
+                inserted_id = col.insert_one(content).inserted_id
+                post.content_mongo_id = str(inserted_id)
+                db.session.commit()
             except Exception as e:
                 current_app.logger.error(f"Mongo insert error: {e}")
                 return _json_error("Failed to save content to MongoDB.", 500)
 
-            # Save stringified ObjectId to SQL
-            post.content_mongo_id = str(inserted_id)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-                return _json_error("Failed to attach content to post.", 409)
-
-        # 3) Build response
+        # Build response
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
 
-        if content is not None:
-            # Return the content you submitted (without helper post_id)
-            cleaned = dict(content)
-            cleaned.pop("post_id", None)
-            data["content"] = cleaned
+        if content:
+            content.pop("post_id", None)
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
+            data["content"] = content
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
-            if embedded is not None:
+            if embedded:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
                 data["content"] = embedded
 
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 201
-
-
 class BlogPostItemAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
+
     def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
@@ -600,11 +606,25 @@ class BlogPostItemAPI(GuardedMethodView):
         if include_content:
             content = _fetch_mongo_json(post.content_mongo_id)
             if content is not None:
+                if "_id" in content:
+                    content["_id"] = str(content["_id"])
                 data["content"] = content
+
         return data, 200
 
     def put(self, post_id: int):
-        payload = request.get_json(silent=True) or {}
+        post = BlogPost.query.get_or_404(post_id)
+
+        if request.content_type.startswith("multipart/form-data"):
+            image_file = request.files.get("image")
+            payload_raw = request.form.get("payload")
+            if not payload_raw:
+                return _json_error("Missing payload in multipart form", 400)
+            payload = json.loads(payload_raw)
+        else:
+            payload = request.get_json(silent=True) or {}
+            image_file = None
+
         errors = blog_post_create.validate(payload)
         if errors:
             return _json_error(errors, 400)
@@ -614,21 +634,29 @@ class BlogPostItemAPI(GuardedMethodView):
         if not MyUser.query.get(payload["author_id"]):
             return _json_error("author_id not found.", 404)
 
-        post = BlogPost.query.get_or_404(post_id)
-
-        # Content handling (replace or create)
         content = payload.pop("content", None)
+
+        # ✅ Handle file save
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
+            os.makedirs(upload_dir, exist_ok=True)
+            image_file.save(os.path.join(upload_dir, filename))
+            post.image = f"media/blog/{filename}"
+        elif "image" in payload:
+            post.image = payload["image"]
+
+        post.title = payload["title"]
+        post.slug = payload["slug"]
+        post.blog_cat_id = payload["blog_cat_id"]
+        post.author_id = payload["author_id"]
+
+        # ✅ Update Mongo content
         if content is not None:
             if _mongo_collection() is None:
                 return _json_error("MongoDB is not configured but 'content' was provided.", 503)
             new_id, _ = _update_mongo_json(post.content_mongo_id, content)
             post.content_mongo_id = new_id
-
-        post.title       = payload["title"]
-        post.slug        = payload["slug"]
-        post.blog_cat_id = payload["blog_cat_id"]
-        post.author_id   = payload["author_id"]
-        post.image       = payload["image"]
 
         try:
             db.session.commit()
@@ -638,39 +666,64 @@ class BlogPostItemAPI(GuardedMethodView):
 
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
-        if content is not None:
+
+        if content:
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
             data["content"] = content
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
                 data["content"] = embedded
+
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 200
 
     def patch(self, post_id: int):
-        payload = request.get_json(silent=True) or {}
+        post = BlogPost.query.get_or_404(post_id)
+
+        if request.content_type.startswith("multipart/form-data"):
+            image_file = request.files.get("image")
+            payload_raw = request.form.get("payload")
+            if not payload_raw:
+                return _json_error("Missing payload in multipart form", 400)
+            payload = json.loads(payload_raw)
+        else:
+            payload = request.get_json(silent=True) or {}
+            image_file = None
+
         errors = blog_post_update.validate(payload)
         if errors:
             return _json_error(errors, 400)
-
-        post = BlogPost.query.get_or_404(post_id)
 
         if "blog_cat_id" in payload and not BlogCategory.query.get(payload["blog_cat_id"]):
             return _json_error("blog_cat_id not found.", 404)
         if "author_id" in payload and not MyUser.query.get(payload["author_id"]):
             return _json_error("author_id not found.", 404)
 
-        # Optional content update
         content = payload.pop("content", None)
+
+        # ✅ Handle file save
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
+            os.makedirs(upload_dir, exist_ok=True)
+            image_file.save(os.path.join(upload_dir, filename))
+            post.image = f"media/blog/{filename}"
+        elif "image" in payload:
+            post.image = payload["image"]
+
+        for field in ["title", "slug", "blog_cat_id", "author_id", "content_mongo_id"]:
+            if field in payload:
+                setattr(post, field, payload[field])
+
         if content is not None:
             if _mongo_collection() is None:
                 return _json_error("MongoDB is not configured but 'content' was provided.", 503)
             new_id, _ = _update_mongo_json(post.content_mongo_id, content)
             post.content_mongo_id = new_id
-
-        for field in ["title", "slug", "blog_cat_id", "author_id", "image", "content_mongo_id"]:
-            if field in payload:
-                setattr(post, field, payload[field])
 
         try:
             db.session.commit()
@@ -680,18 +733,23 @@ class BlogPostItemAPI(GuardedMethodView):
 
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
-        if content is not None:
+
+        if content:
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
             data["content"] = content
         elif post.content_mongo_id:
             embedded = _fetch_mongo_json(post.content_mongo_id)
             if embedded is not None:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
                 data["content"] = embedded
+
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 200
 
     def delete(self, post_id: int):
         post = BlogPost.query.get_or_404(post_id)
-        # Best-effort cleanup
         col = _mongo_collection()
         if post.content_mongo_id and col is not None and _is_valid_objectid(post.content_mongo_id):
             try:
@@ -701,8 +759,6 @@ class BlogPostItemAPI(GuardedMethodView):
         db.session.delete(post)
         db.session.commit()
         return jsonify({"status": "deleted", "post_id": post_id}), 200
-
-
 # ======================================================
 # Latest Blog (paginated, newest first)
 # ======================================================

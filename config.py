@@ -8,6 +8,9 @@ ENV = os.environ.get("FLASK_ENV", "dev").lower()
 
 class BaseConfig:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-change-me")
+    # This is the root path where all uploaded media (blog, companies, etc.) will live
+    MEDIA_ROOT = os.path.join("static", "media")
+    UPLOAD_FOLDER = os.path.join("static", "media")  # ✅ Add this line
 
 class Config(BaseConfig):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
