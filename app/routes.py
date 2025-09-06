@@ -909,6 +909,16 @@ def news_detail(news_id):
 def blog():
     return render_template('blog/index.html')
 
+@main.route('/companies')
+def company_home():
+    return render_template('company_profile/company_profile_listview.html')
+
+
+@main.route('/companies/<int:company_id>')
+def company_detail(company_id):
+
+    return render_template('company_profile/compay_profile_detailview.html')
+
 @main.route('/blog/<int:post_id>')
 def blog_detail(post_id):
 
@@ -921,7 +931,7 @@ def about():
 
 @main.route('/search-map')
 def search_map():
-    return render_template('search_map/index.html')
+    return render_template('search_map/search_home.html')
 
 @main.route('/directory')
 def directory():

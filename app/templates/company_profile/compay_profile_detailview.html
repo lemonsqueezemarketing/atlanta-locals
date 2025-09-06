@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}King Jai the Barber | Atlanta Local Pros{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/company-profile-detailview.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="business-header">
+  <h1 class="business-name">King Jai the Barber</h1>
+  <img src="{{ url_for('static', filename='media/company/kinjai_barber.png') }}" alt="King J. the Barber">
+  <p class="business-location">Atlanta, GA</p>
+</section>
+
+<hr class="divider">
+
+<section class="view-all-reviews">
+  <a href="#" class="view-reviews-link">
+    View All Reviews
+    <span class="caret">›</span>
+  </a>
+</section>
+
+<hr class="divider">
+
+<section class="ratings-summary">
+  <div class="left-rating">
+    <div class="rating-value">4.9</div>
+    <div class="rating-stars">★★★★★</div>
+    <a href="#" class="reviews-link">20 Reviews</a>
+  </div>
+  <div class="right-criteria">
+    <p>Overall: ★★★★★</p>
+    <p>Punctuality: ★★★★★</p>
+    <p>Value: ★★★★★</p>
+    <p>Service: ★★★★★</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="bookmark-section">
+  <button class="bookmark-btn">🔖 Bookmark</button>
+
+  <div class="description">
+    <h2>Description</h2>
+    <p>
+      King Jai the Barber caters to all guests’ hair grooming needs while treating every guest as clients.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="location-map">
+  <div class="map-placeholder">
+    <!-- Placeholder for Leaflet map or static image -->
+    <img src="{{ url_for('static', filename='images/static-map.png') }}" alt="Map showing King Jai’s location">
+  </div>
+  <div class="address-row">
+    <span class="location-icon">📍</span>
+    <a href="#" class="address-link">
+      123 Barber Blvd, Suite 101, Atlanta, GA 30303
+    </a>
+  </div>
+  <div class="action-buttons">
+    <button class="message-btn">💬 Message</button>
+    <button class="call-btn">📞 Call</button>
+  </div>
+</section>
+
+<section class="business-hours">
+  <h2>Business Hours</h2>
+  <hr class="sub-divider">
+  <ul class="hours-list">
+    <li>Sunday: 8:00 AM – 6:00 PM</li>
+    <li>Monday: 8:00 AM – 7:00 PM</li>
+    <li>Tuesday: 8:00 AM – 7:00 PM</li>
+    <li>Wednesday: 8:00 AM – 7:00 PM</li>
+    <li>Thursday: 8:00 AM – 7:00 PM</li>
+    <li>Friday: 8:00 AM – 7:00 PM</li>
+    <li>Saturday: 8:00 AM – 7:00 PM</li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<section class="business-info">
+  <div class="info-grid">
+    <div>
+      <strong>Website</strong>
+      <p><a href="http://www.kingjbarbershop.com" target="_blank">www.kingjbarbershop.com</a></p>
+    </div>
+    <div>
+      <strong>Phone</strong>
+      <p>(770) 549-9947</p>
+    </div>
+
+    <div>
+      <strong>Business Type</strong>
+      <p>Barber</p>
+    </div>
+    <div>
+      <strong>Walk-ins</strong>
+      <p>Yes</p>
+    </div>
+
+    <div>
+      <strong>Payment Methods Accepted</strong>
+      <p>Visa, MasterCard, Debit card, Cash</p>
+    </div>
+    <div>
+      <strong>Parking</strong>
+      <p>Free parking</p>
+    </div>
+
+    <div>
+      <strong>Amenities</strong>
+      <p>WiFi, Snack bar, TV, Disabled Access</p>
+    </div>
+    <div>
+      <strong>Spoken Languages</strong>
+      <p>English</p>
+    </div>
+
+    <div>
+      <strong>Kid Friendly</strong>
+      <p>Yes</p>
+    </div>
+  </div>
+
+  <div class="special-instructions">
+    <strong>Special Instructions</strong>
+    <p>
+      We are excited about our new location and would like to extend an invitation for you to come out and enjoy the experience. We are located at 123 Barber Blvd. Suite 101. Book an appointment or feel free to call at (770) 549-9947.
+    </p>
+  </div>
+
+  <div class="cancellation-policy">
+    <strong>Appointment Cancellation Policy</strong>
+    <p>
+      Appointments may be canceled 24 hours in advance. If appointment is not canceled within 24 hours, client will be charged full price of service.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="reviews-section">
+  <h2>Reviews</h2>
+
+  <div class="review-controls">
+    <button class="filter-btn">⛛ Filter</button>
+    <button class="sort-btn">⇅ Sort</button>
+  </div>
+
+  <div class="review-list">
+    <!-- Review Card 1 -->
+    <div class="review-card">
+      <img class="review-avatar" src="{{ url_for('static', filename='images/avatar1.png') }}" alt="Tino P">
+      <div class="review-meta">
+        <strong>Tino P</strong>
+        <span class="review-date">Feb 08, 2020</span>
+        <div class="review-stars">★★★★★ <span class="verified">✔ Verified</span></div>
+        <p class="review-body">
+          Great cuts and good conversation... I like the location and the cleanliness!
+        </p>
+        <p class="review-provider">Reviewed: King Jai</p>
+      </div>
+    </div>
+
+    <!-- Add 4 more mock review-cards here with similar structure if needed -->
+
+  </div>
+
+  <div class="pagination">
+    <button class="page-btn">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">Next ›</button>
+  </div>
+</section>
+
+<!-- Sticky Book Button -->
+<div class="sticky-book-btn">
+  <button class="book-btn">Book</button>
+</div>
+
+{% endblock %}

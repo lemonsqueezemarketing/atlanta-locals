@@ -220,96 +220,6 @@
   gap: 0.5rem;
 }
 
-
-/* ============= Hot New Businesses (Yelp-style list) ============= */
-.hot-new-businesses {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem 2rem; /* added horizontal padding */
-  background: #fff;
-  box-sizing: border-box;
-}
-
-.hot-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d2d2d;
-  margin: 0 0 0.5rem;
-}
-
-.hot-divider {
-  border: 0;
-  border-top: 1px solid #e0e0e0;
-  margin: 0 0 0.75rem;
-}
-
-.hot-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.hot-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #e6e6e6; /* thin gray line under each item */
-}
-
-.hot-thumb {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-  background: #f4f1ee;
-}
-
-.hot-info {
-  flex: 1;
-  min-width: 0; /* allow truncation if needed */
-}
-
-.hot-name {
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: #1f1f1f;
-  margin-bottom: 0.25rem;
-}
-
-.hot-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.25rem;
-}
-
-/* Stars */
-.hot-stars {
-  display: inline-flex;
-  gap: 2px;
-}
-
-.hot-star {
-  width: 16px;
-  height: 16px;
-  fill: #ffb400; /* star gold */
-}
-
-/* Review count (manipulate by id if desired) */
-.hot-review-count {
-  font-size: 0.95rem;
-  color: #333;
-}
-
-/* Category */
-.hot-category {
-  color: #777;
-  font-size: 0.95rem;
-}
-
-
 /* Explore Section */
 .explore-atlanta-section {
   padding: 2rem 1rem;
@@ -332,115 +242,6 @@
   gap: 1.5rem;
 }
 
-
-
-.explore-card {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-.explore-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.explore-content {
-  padding: 1rem;
-}
-
-.explore-content h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #2d2d2d;
-}
-
-.explore-content p {
-  font-size: 0.95rem;
-  color: #555;
-}
-
-/* ======================= */
-/* NEW MENU SECTION STYLES */
-/* ======================= */
-
-.menu-section {
-  background-color: #7A3B4E; /* maroon background */
-  padding-bottom: 1.5rem;
-}
-
-.menu-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  background-color: #fff;
-  padding: 0 16px;
-}
-
-.btn-open-app {
-  display: flex;
-  align-items: center;
-  background-color: #000;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-open-app img {
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-}
-
-.menu-logo img {
-  max-height: 32px;
-  width: auto;
-}
-
-.menu-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.menu-toggle img {
-  width: 24px;
-  height: 24px;
-}
-
-.menu-search {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 8px;
-  margin: 20px 16px 0;
-  padding: 0 12px;
-  height: 44px;
-}
-
-.menu-search img {
-  width: 18px;
-  height: 18px;
-  opacity: 0.6;
-}
-
-.menu-search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  margin-left: 10px;
-  font-size: 1rem;
-  font-family: inherit;
-}
 
 /* ===============================
    Pagination (search map)
@@ -498,100 +299,46 @@
     text-align: center;
     user-select: none;
   }
-
-
-/* CTA button under Hot New Businesses */
-.hot-cta {
-  max-width: 1200px;
-  margin: 1.5rem auto 2rem;
-  text-align: center;
-}
-
-.hot-cta-btn {
-  display: block;
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-  padding: 0.85rem 1rem;
-  background: #fff;
-  color: #000;
-  font-weight: 600;
-  font-size: 1rem;
-  border: 2px solid #000;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.hot-cta-btn:hover {
-  background: #000;
-  color: #fff;
-}
-
-/* Best Restaurants section */
-.best-restaurants {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem 2rem;
-  background: #fff;
-  box-sizing: border-box;
-}
-
-.best-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #000;
-  margin-bottom: 1rem;
-}
-
-.best-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.best-list a {
-  text-decoration: none;
-  font-size: 1rem;
-  color: #555;
-}
-
-.best-list a:hover {
-  color: #000;
-  text-decoration: underline;
-}
   
-/* Verified ATL Local badge */
-.vetted-badge {
-  display: inline-block;
-  margin-top: 0.4rem;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #155724;                /* deep green for trust */
-  background-color: #d4edda;     /* light green background */
-  border: 1px solid #c3e6cb;     /* subtle border */
-  border-radius: 12px;
-  letter-spacing: 0.2px;
-}
-
-.vetted-badge::before {
-  content: "✔ ";                 /* checkmark icon */
-  color: #28a745;                /* brighter green check */
-  font-weight: bold;
-}
 
 @media (min-width: 768px) {
 
   .map-search-checkboxes label {
     flex: 1 1 30%;
   }
+
   .explore-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .hot-thumb { width: 72px; height: 72px; }
-  .hot-name  { font-size: 1.1rem; }
+.explore-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.explore-content {
+  padding: 1rem;
+}
+
+.explore-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2d2d2d;
+}
+
+.explore-content p {
+  font-size: 0.95rem;
+  color: #555;
 }

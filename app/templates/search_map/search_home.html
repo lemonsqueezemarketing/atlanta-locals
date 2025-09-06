@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}Atlanta Search Map{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/search-map.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Faint Background Image -->
+<div class="faint-background">
+  <img src="{{ url_for('static', filename='images/atlanta-background-new.png') }}" alt="Background" />
+</div>
+
+<!-- Branding Section -->
+<section class="hero-branding">
+  <div class="branding-logo">
+    <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Locals Logo">
+  </div>
+  <h1 class="atl-brand-title">Atlanta Local Search</h1>
+  <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
+
+<!-- SEARCH BAR ROW -->
+<section class="menu-section" aria-label="Main menu">
+  <div class="menu-section-bg">
+    <!-- Top Row: White nav bar on maroon background -->
+    <nav class="menu-navbar" role="navigation">
+      <!-- Left: Open in App button -->
+      <button class="btn-open-app" aria-label="Open in App" type="button">
+        <span class="icon-phone" aria-hidden="true">
+          <img src="{{ url_for('static', filename='images/icons/phone.svg') }}" alt="" />
+        </span>
+        <span class="btn-label">Open in App</span>
+      </button>
+
+      <!-- Center: Atlanta Local logo -->
+      <div class="menu-logo">
+        <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Local Logo" />
+      </div>
+
+      <!-- Right: Hamburger menu -->
+      <button class="menu-toggle" aria-label="Menu" aria-expanded="false" type="button">
+       
+          <span id="menu-icon">☰</span>
+        </span>
+      </button>
+    </nav>
+
+    <!-- Search bar (white, long rectangular) -->
+    <form class="menu-search" role="search" onsubmit="return false;">
+      <span class="search-icon" aria-hidden="true">
+        <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="" />
+      </span>
+      <input
+        type="search"
+        class="menu-search-input"
+        placeholder="e.g. tacos, Mel's"
+        aria-label="Search Atlanta Local"
+      />
+    </form>
+  </div>
+</section>
+
+
+<!-- MAP ROW -->
+<div class="map-layout-container">
+  <!-- MAP AREA -->
+  <div class="map-layout">
+    <!-- LEFT SIDEBAR -->
+    <div class="map-sidebar">
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/saved.svg') }}" alt="Saved" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/recents.svg') }}" alt="Recents" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/atlanta.svg') }}" alt="Atlanta" /></div>
+      <div class="map-icon"><img src="{{ url_for('static', filename='images/midtown.svg') }}" alt="Midtown" /></div>
+    </div>
+
+    <!-- MAP MAIN CONTENT -->
+    <div class="map-main">
+      <!-- TOP BUTTONS -->
+      <div class="map-top-buttons">
+        <button>Saved</button>
+        <button>Recents</button>
+        <button>Atlanta Real Estate</button>
+        <button>Atlanta Auto</button>
+        <button>Hotels</button>
+        <button>Things To Do</button>
+        <button>Transit</button>
+        <button>More</button>
+      </div>
+
+      <!-- LIVE MAP -->
+      <div id="map" class="map-area">
+        <!-- Leaflet map will render here -->
+        <div class="map-bottom-left">
+          <img src="{{ url_for('static', filename='images/layers.svg') }}" alt="Layers" />
+        </div>
+
+        <div class="map-bottom-right">
+          <img src="{{ url_for('static', filename='images/settings.svg') }}" alt="Settings" />
+          <img src="{{ url_for('static', filename='images/locate.svg') }}" alt="Locate" />
+        </div>
+      </div>
+
+      <!-- SEARCH INPUT + FILTER SECTION -->
+      <div class="map-search-filters">
+        <!-- First Row: Input + Button -->
+        <form class="map-search-row" onsubmit="return false;">
+          <div class="map-search-col col-8">
+            <div class="map-search-input-wrapper">
+              <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="Search Icon" class="map-search-icon" />
+              <input type="text" placeholder="Enter address or business" class="map-search-input" />
+            </div>
+          </div>
+          <div class="map-search-col col-4">
+            <button class="map-search-btn" type="submit">Search</button>
+          </div>
+        </form>
+
+        <!-- Second Row: Checkboxes -->
+        <div class="map-search-checkboxes">
+          <label><input type="checkbox" /> Atlanta Best Restaurants</label>
+          <label><input type="checkbox" /> Atlanta Homes for Sale</label>
+          <label><input type="checkbox" /> Atlanta Cars for Sale</label>
+          <label><input type="checkbox" /> Atlanta Best Business Professionals</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOT NEW BUSINESSES SECTION -->
+<div class="hot-new-businesses">
+  <h2 class="hot-title">Hot New Businesses Atlanta</h2>
+  <hr class="hot-divider" />
+
+  <ul class="hot-list">
+    <!-- ITEM 1 -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_bbq.png') }}" alt="Ameen Fish & Wings storefront" />
+      <div class="hot-info">
+        <div class="hot-name">Ameen Fish & Wings</div>
+        <div class="hot-rating" aria-label="Rating" id="amen-rating">
+          <span class="hot-stars" aria-label="5 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="amen-reviews">3</span>
+        </div>
+        <div class="hot-category">Seafood</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+    </li>
+
+    <!-- ITEM 2 -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_condos.png') }}" alt="Waldo's Chicken & Beer interior" />
+      <div class="hot-info">
+        <div class="hot-name">Waldo's Chicken & Beer</div>
+        <div class="hot-rating" aria-label="Rating" id="waldos-rating">
+          <span class="hot-stars" aria-label="5 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="waldos-reviews">10</span>
+        </div>
+        <div class="hot-category">Chicken Shop • Beer Bar</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+    </li>
+
+    <!-- ITEM 3 -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_coffee.png') }}" alt="Urban Grind Coffeehouse" />
+      <div class="hot-info">
+        <div class="hot-name">Urban Grind Coffeehouse</div>
+        <div class="hot-rating" aria-label="Rating" id="urbangrid-rating">
+          <span class="hot-stars" aria-label="5 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="urbangrid-reviews">57</span>
+        </div>
+        <div class="hot-category">Coffee & Tea</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+    </li>
+
+    <!-- ITEM 4 -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_barber.png') }}" alt="King Jai The Barber" />
+      <div class="hot-info">
+        <div class="hot-name">King Jai The Barber</div>
+        <div class="hot-rating" aria-label="Rating" id="kingjai-rating">
+          <span class="hot-stars" aria-label="5 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="kingjai-reviews">128</span>
+        </div>
+        <div class="hot-category">Barbers</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+    </li>
+  </ul>
+  <!-- Simple pager (blog.js wires these up) -->
+  <div class="pager" data-blog-pager>
+    <button type="button" class="btn" data-blog-prev disabled>← Prev</button>
+    <span class="pager-label" data-blog-page-label>Page 1</span>
+    <button type="button" class="btn" data-blog-next>Next →</button>
+  </div>
+</div>
+
+<!-- CTA BUTTON -->
+<div class="hot-cta">
+  <button class="hot-cta-btn">View More New Businesses</button>
+</div>
+
+<!-- BEST RESTAURANTS SECTION -->
+<div class="best-restaurants">
+  <h2 class="best-title">Best Restaurants in Atlanta</h2>
+  <ul class="best-list">
+    <li><a href="#">Healthy Restaurants Near me Atlanta</a></li>
+    <li><a href="#">Affordable Restaurants Near me Atlanta</a></li>
+    <li><a href="#">BBQ Restaurants in Atlanta</a></li>
+    <li><a href="#">Seafood Restaurants in Atlanta</a></li>
+    <li><a href="#">Fine Dining in Atlanta</a></li>
+    <li><a href="#">Vegan & Vegetarian Restaurants Atlanta</a></li>
+    <li><a href="#">Late Night Eats Atlanta</a></li>
+    <li><a href="#">Family-Friendly Restaurants Atlanta</a></li>
+  </ul>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/search-map.js') }}"></script>
+{% endblock %}
