@@ -583,6 +583,169 @@
   font-weight: bold;
 }
 
+/* ===============================
+   Mike Tour Intro / Verified Explainer
+   =============================== */
+   .mike-tour {
+    background: #fff;
+    padding: 1rem 1.5rem 1.25rem;
+    box-sizing: border-box;
+  }
+  
+  .mike-card {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+  }
+  
+  /* Photo */
+  .mike-photo {
+    position: relative;
+    background: #f6f6f6;
+  }
+  .mike-photo img {
+    width: 100%;
+    height: auto;       /* let it scale without cropping */
+    display: block;
+    object-fit: contain; /* keeps the whole image visible */
+    max-height: 350px;  /* optional: keeps very tall images from dominating */
+  }
+  
+  /* Copy */
+  .mike-copy {
+    padding: 1rem 1rem 1.25rem;
+  }
+  
+  .mike-copy h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: #7A3B4E; /* brand maroon */
+    font-weight: 800;
+  }
+  
+  .mike-lede {
+    margin: 0 0 0.5rem;
+    color: #2b2b2b;
+    font-size: 1rem;
+  }
+  
+  .mike-verified {
+    margin: 0 0 0.75rem;
+    color: #333;
+    font-size: 0.975rem;
+  }
+  
+  /* Badge styled to stand out, aligned with brand */
+  .mike-badge-green {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: #d4edda;     /* light green background */
+    color: #155724;          /* dark green text */
+    border: 1px solid #c3e6cb;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  .mike-badge-green::before {
+    content: "✓";
+    font-weight: 900;
+    color: #28a745;          /* brighter green check */
+  }
+  
+  /* CTA */
+  .mike-cta {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.6rem 0.9rem;
+    background: #7A3B4E;           /* brand maroon */
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: transform 0.05s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .mike-cta:hover {
+    background: #6b3343;
+    box-shadow: 0 8px 18px rgba(122, 59, 78, 0.25);
+  }
+  .mike-cta:active {
+    transform: translateY(1px);
+  }
+
+
+/* Optional: polish emoji markers & popups */
+.emoji-icon { background: transparent; border: 0; }
+.emoji-pin { font-size: 22px; line-height: 1; transform: translateY(-2px); text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+.leaflet-popup-content .popup-title { font-weight: 700; margin-bottom: 4px; }
+.leaflet-popup-content .popup-addr { color: #444; margin-bottom: 4px; }
+.leaflet-popup-content .popup-meta { color: #666; font-size: 0.9rem; }
+.leaflet-popup-content .map-badge {
+  display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 999px;
+  background: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.75rem; font-weight: 700;
+}
+.leaflet-popup-content .map-closed { margin-top: 4px; color: #8a1f1f; font-weight: 700; }
+
+
+/* ===== Read Full Review button (match News list styling) ===== */
+/* Works with: <a class="read-more" href="#">Read Full Review</a> inside .hot-item */
+
+.hot-item .read-more {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.6rem 1.1rem;
+  background-color: #7A3B4E;   /* brand maroon */
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: background-color 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+
+.hot-item .read-more:hover {
+  background-color: #6b3343;
+  box-shadow: 0 6px 14px rgba(122, 59, 78, 0.25);
+}
+
+.hot-item .read-more:active {
+  transform: translateY(1px);
+}
+
+.hot-item .read-more:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 59, 78, 0.28);
+}
+
+/* (Optional) Keep legacy news classes working if used elsewhere */
+.read-more-btn {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  background-color: #7A3B4E;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+.read-more-btn:hover { background-color: #6b3343; box-shadow: 0 6px 14px rgba(122,59,78,0.25); }
+.read-more-btn:active { transform: translateY(1px); }
+.read-more-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(122,59,78,0.28); }
+
+
+
 @media (min-width: 768px) {
 
   .map-search-checkboxes label {
@@ -594,4 +757,23 @@
 
   .hot-thumb { width: 72px; height: 72px; }
   .hot-name  { font-size: 1.1rem; }
+
+  .mike-card {
+    grid-template-columns: 1.2fr 1.8fr;
+  }
+  .mike-copy {
+    padding: 1.25rem 1.25rem 1.5rem 1rem;
+  }
+  .mike-copy h2 {
+    font-size: 1.35rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mike-copy h2 {
+    font-size: 1.5rem;
+  }
+  .mike-lede {
+    font-size: 1.05rem;
+  }
 }

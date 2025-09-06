@@ -201,3 +201,4 @@ class Property(db.Model):
 
     def __repr__(self):
         return f'<Property {self.title}>'
+

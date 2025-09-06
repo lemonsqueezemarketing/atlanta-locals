@@ -893,7 +893,7 @@ def admin_required(view_func):
 @main.route("/")
 @main.route("/home")
 def home():
-    return render_template("news/index.html")
+    return render_template("search_map/search_home.html")
 
 # News -> "/news" (kept as its own endpoint)
 @main.route("/news")

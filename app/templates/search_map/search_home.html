@@ -2,6 +2,8 @@
 
 {% block title %}Atlanta Search Map{% endblock %}
 
+
+
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/search-map.css') }}">
@@ -20,6 +22,37 @@
   </div>
   <h1 class="atl-brand-title">Atlanta Local Search</h1>
   <p class="subtitle">Atlanta’s Own Search Engine</p>
+</section>
+
+<!-- MIKE TOUR INTRO / VERIFIED EXPLAINER -->
+<section class="mike-tour" aria-labelledby="mike-tour-title">
+  <div class="mike-card">
+    <div class="mike-photo">
+      <!-- Swap this placeholder with a real photo of Mike when ready -->
+      <img src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="MoneyMike404 exploring Atlanta" />
+    </div>
+
+    <div class="mike-copy">
+      <h2 id="mike-tour-title">Follow IamMoneyMike404’s Atlanta Tour</h2>
+      <p class="mike-lede">
+        Welcome to <strong>Atlanta Local</strong>—reviews by locals, for locals. Join
+        <strong>IamMoneyMike404</strong> as he tours the city sampling spots across ATL. The map below
+        plots places he’s visited and reviewed so you can eat, sip, and explore with confidence.
+      </p>
+      <p class="mike-verified">
+        When you see the <span class="mike-badge-green">Verified ATL Local</span> tag, it means Mike has
+        personally visited and recommends that spot.
+      </p>
+
+      <a class="mike-cta"
+         href="https://www.tiktok.com/@atlanta_local"
+         target="_blank"
+         rel="noopener"
+         aria-label="See video reviews on TikTok at @atlanta_local">
+        See the video reviews on TikTok @atlanta-local →
+      </a>
+    </div>
+  </div>
 </section>
 
 <!-- SEARCH BAR ROW -->
@@ -49,19 +82,25 @@
     </nav>
 
     <!-- Search bar (white, long rectangular) -->
-    <form class="menu-search" role="search" onsubmit="return false;">
+    <form class="menu-search" id="top-search-form" role="search" onsubmit="return false;">
       <span class="search-icon" aria-hidden="true">
         <img src="{{ url_for('static', filename='images/search-icon.svg') }}" alt="" />
       </span>
       <input
         type="search"
         class="menu-search-input"
+        id="top-search-input"
         placeholder="e.g. tacos, Mel's"
         aria-label="Search Atlanta Local"
       />
+      <div class="map-search-col col-4">
+        <button class="map-search-btn" id="top-search-btn" type="submit">Search</button>
+      </div>      
     </form>
+
   </div>
 </section>
+
 
 
 <!-- MAP ROW -->
@@ -136,86 +175,213 @@
   <hr class="hot-divider" />
 
   <ul class="hot-list">
-    <!-- ITEM 1 -->
+    <!-- 1) Salata (4.0 stars) -->
     <li class="hot-item">
-      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_bbq.png') }}" alt="Ameen Fish & Wings storefront" />
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Salata" />
       <div class="hot-info">
-        <div class="hot-name">Ameen Fish & Wings</div>
-        <div class="hot-rating" aria-label="Rating" id="amen-rating">
-          <span class="hot-stars" aria-label="5 out of 5 stars">
+        <div class="hot-name">Salata</div>
+        <div class="hot-rating" aria-label="Rating" id="salata-rating">
+          <span class="hot-stars" aria-label="4 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="salata-reviews">238</span>
+        </div>
+        <div class="hot-category">Healthy • Salad</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 2) Gusto! (4.5 stars) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Gusto Healthy Bowls" />
+      <div class="hot-info">
+        <div class="hot-name">Gusto! Healthy Bowls & Wraps (West End)</div>
+        <div class="hot-rating" aria-label="Rating" id="gusto-rating">
+          <span class="hot-stars" aria-label="4.5 out of 5 stars">
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
           </span>
-          <span class="hot-review-count" id="amen-reviews">3</span>
+          <span class="hot-review-count" id="gusto-reviews">75</span>
         </div>
-        <div class="hot-category">Seafood</div>
+        <div class="hot-category">Fast Food • Healthy Bowls</div>
         <p class="vetted-badge">(Verified by ATL Locals)</p>
       </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
     </li>
-
-    <!-- ITEM 2 -->
+  
+    <!-- 3) Honeysuckle Gelato (4.6 stars) -->
     <li class="hot-item">
-      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_condos.png') }}" alt="Waldo's Chicken & Beer interior" />
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Honeysuckle Gelato" />
       <div class="hot-info">
-        <div class="hot-name">Waldo's Chicken & Beer</div>
-        <div class="hot-rating" aria-label="Rating" id="waldos-rating">
-          <span class="hot-stars" aria-label="5 out of 5 stars">
+        <div class="hot-name">Honeysuckle Gelato (West End)</div>
+        <div class="hot-rating" aria-label="Rating" id="honeysuckle-rating">
+          <span class="hot-stars" aria-label="4.6 out of 5 stars">
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
           </span>
-          <span class="hot-review-count" id="waldos-reviews">10</span>
+          <span class="hot-review-count" id="honeysuckle-reviews">30</span>
         </div>
-        <div class="hot-category">Chicken Shop • Beer Bar</div>
+        <div class="hot-category">Ice Cream Shop</div>
         <p class="vetted-badge">(Verified by ATL Locals)</p>
       </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
     </li>
-
-    <!-- ITEM 3 -->
+  
+    <!-- 4) Sakera Sake Bar (4.9 stars) -->
     <li class="hot-item">
-      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_coffee.png') }}" alt="Urban Grind Coffeehouse" />
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Sakera Sake Bar & Bottles" />
       <div class="hot-info">
-        <div class="hot-name">Urban Grind Coffeehouse</div>
-        <div class="hot-rating" aria-label="Rating" id="urbangrid-rating">
-          <span class="hot-stars" aria-label="5 out of 5 stars">
+        <div class="hot-name">Sakera Sake Bar & Bottles (West End)</div>
+        <div class="hot-rating" aria-label="Rating" id="sakera-rating">
+          <span class="hot-stars" aria-label="4.9 out of 5 stars">
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
           </span>
-          <span class="hot-review-count" id="urbangrid-reviews">57</span>
+          <span class="hot-review-count" id="sakera-reviews">50</span>
         </div>
-        <div class="hot-category">Coffee & Tea</div>
+        <div class="hot-category">Bar • Sake Bar</div>
         <p class="vetted-badge">(Verified by ATL Locals)</p>
       </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
     </li>
-
-    <!-- ITEM 4 -->
+  
+    <!-- 5) Starbucks (4.2 stars) -->
     <li class="hot-item">
-      <img class="hot-thumb" src="{{ url_for('static', filename='images/story_barber.png') }}" alt="King Jai The Barber" />
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Starbucks" />
       <div class="hot-info">
-        <div class="hot-name">King Jai The Barber</div>
+        <div class="hot-name">Starbucks (Moreland Ave NE)</div>
+        <div class="hot-rating" aria-label="Rating" id="starbucks-rating">
+          <span class="hot-stars" aria-label="4.2 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="starbucks-reviews">735</span>
+        </div>
+        <div class="hot-category">Coffee Shop</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 6) Tea’z Social (4.9 stars, closed) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Tea’z Social" />
+      <div class="hot-info">
+        <div class="hot-name">Tea’z Social <span class="hot-closed">(Temporarily Closed)</span></div>
+        <div class="hot-rating" aria-label="Rating" id="teaz-rating">
+          <span class="hot-stars" aria-label="4.9 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="teaz-reviews">74</span>
+        </div>
+        <div class="hot-category">Tea House • Cafe</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 7) Mr. Everything (4.3 stars) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Mr. Everything" />
+      <div class="hot-info">
+        <div class="hot-name">Mr. Everything Cafe (MLK)</div>
+        <div class="hot-rating" aria-label="Rating" id="mreverything-rating">
+          <span class="hot-stars" aria-label="4.3 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="mreverything-reviews">1378</span>
+        </div>
+        <div class="hot-category">Cafe • Fast Casual</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 8) Busy Bee (4.0 stars) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Busy Bee Cafe" />
+      <div class="hot-info">
+        <div class="hot-name">Busy Bee Cafe</div>
+        <div class="hot-rating" aria-label="Rating" id="busybee-rating">
+          <span class="hot-stars" aria-label="4 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="busybee-reviews">3380</span>
+        </div>
+        <div class="hot-category">Soul Food • Restaurant</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 9) King Jai (4.8 stars) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="King Jai The Barber" />
+      <div class="hot-info">
+        <div class="hot-name">King Jai the Barber (Gentleman’s Refinery)</div>
         <div class="hot-rating" aria-label="Rating" id="kingjai-rating">
-          <span class="hot-stars" aria-label="5 out of 5 stars">
+          <span class="hot-stars" aria-label="4.8 out of 5 stars">
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
             <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
           </span>
-          <span class="hot-review-count" id="kingjai-reviews">128</span>
+          <span class="hot-review-count" id="kingjai-reviews">81</span>
         </div>
-        <div class="hot-category">Barbers</div>
+        <div class="hot-category">Barbershop</div>
         <p class="vetted-badge">(Verified by ATL Locals)</p>
       </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
+    </li>
+  
+    <!-- 10) Liquid Wizdom (4.8 stars) -->
+    <li class="hot-item">
+      <img class="hot-thumb" src="{{ url_for('static', filename='media/blog/atlanta_local_main_image.JPG') }}" alt="Liquid Wizdom" />
+      <div class="hot-info">
+        <div class="hot-name">Liquid Wizdom</div>
+        <div class="hot-rating" aria-label="Rating" id="liquidwizdom-rating">
+          <span class="hot-stars" aria-label="4.8 out of 5 stars">
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+            <svg class="hot-star" viewBox="0 0 20 20"><path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/></svg>
+          </span>
+          <span class="hot-review-count" id="liquidwizdom-reviews">24</span>
+        </div>
+        <div class="hot-category">Juice Shop</div>
+        <p class="vetted-badge">(Verified by ATL Locals)</p>
+      </div>
+      <a href="#" class=" btn read-more">Read Full Review</a>
     </li>
   </ul>
+  
   <!-- Simple pager (blog.js wires these up) -->
   <div class="pager" data-blog-pager>
     <button type="button" class="btn" data-blog-prev disabled>← Prev</button>
