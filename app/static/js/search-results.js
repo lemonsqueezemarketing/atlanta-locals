@@ -5,15 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const listEl = document.getElementById('search-result-list');
   if (!listEl) return;
 
-  // Build the exact API URL and carry over the page's ?q=...
-  function currentApiUrl() {
-    const url = new URL('/api/atl-places', window.location.origin);
-    const qs = window.location.search;
-    url.search = qs.startsWith('?') ? qs.slice(1) : qs;
-    return url.toString();
-  }
-
-  // Helpers
+  // ---------- Helpers ----------
   const parseNumber = (v) => {
     if (v == null) return null;
     const n = parseFloat(String(v).trim().replace(/[^\d.+-]/g, ''));
@@ -22,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const buildImageUrl = (img) => {
     if (!img) return '/static/images/placeholder.png';
-    const s = String(img).replace(/^\/+/, '');              // strip leading slashes
+    const s = String(img).replace(/^\/+/, ''); // strip leading slashes
     return s.startsWith('static/') ? `/${s}` : `/static/${s}`;
   };
 
@@ -31,6 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
       .toLowerCase()
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[m]));
+  }
+  function escapeAttr(str) { return escapeHtml(str).replace(/\s+/g, '-'); }
+
+  // ---------- Stars ----------
   const STAR_PATH = 'M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z';
 
   const starFull = () =>
@@ -50,54 +50,63 @@ document.addEventListener('DOMContentLoaded', () => {
       <path class="star-fill"  d="${STAR_PATH}" fill="#ffb400" clip-path="url(#half-clip-${id})"/>
     </svg>`;
 
-  // Fetch and render
-  fetch(currentApiUrl(), { headers: { 'Accept': 'application/json' } })
-    .then((res) => {
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      return res.json();
-    })
-    .then((raw) => {
-      const places = (raw || []).map((p) => {
-        const rating = parseNumber(p.rating) ?? 0;
-        return {
-          id: p.atl_place_id,
-          slug: p.slug || `place-${p.atl_place_id || Math.random().toString(36).slice(2)}`,
-          title: p.title || '',
-          img: buildImageUrl(p.img),
-          rating,
-          reviewCount: parseNumber(p.review_count) || 0,
-          categories: Array.isArray(p.categories)
-            ? p.categories
-            : String(p.categories || '').split(','),
-          isVerified: !!p.is_atl_verified,
-          openStatus: p.open_status || '',
-          openNow: !!p.open_now_status,
-          reviewLink: p.review_link || null,
-        };
-      });
+  // ---------- API ----------
+  function apiUrlForQuery(q) {
+    const query = (q || '').trim();
+    return query ? `/api/search/places?q=${encodeURIComponent(query)}` : `/api/atl-places`;
+  }
 
-      // Build the entire list HTML (kept very close to your Jinja structure)
-      let html = '';
-      for (const p of places) {
-        const full = Math.floor(p.rating);
-        const hasHalf = (p.rating - full) >= 0.5 ? 1 : 0;
-        const empty = Math.max(0, 5 - full - hasHalf);
+  async function fetchPlaces(q) {
+    const res = await fetch(apiUrlForQuery(q), { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data && data.places) ? data.places : [];
+  }
 
-        let stars = '';
-        for (let i = 0; i < full; i++) stars += starFull();
-        if (hasHalf) stars += starHalf(p.id || p.slug);
-        for (let i = 0; i < empty; i++) stars += starEmpty();
+  // ---------- Render ----------
+  function renderList(rawPlaces) {
+    const places = (rawPlaces || []).map((p) => {
+      const rating = parseNumber(p.rating) ?? 0;
+      const slug = p.slug || `place-${p.atl_place_id || Math.random().toString(36).slice(2)}`;
+      return {
+        id: p.atl_place_id,
+        slug,
+        title: p.title || '',
+        img: buildImageUrl(p.img),
+        rating,
+        reviewCount: parseNumber(p.review_count) || 0,
+        categories: Array.isArray(p.categories)
+          ? p.categories
+          : String(p.categories || '').split(','),
+        isVerified: !!p.is_atl_verified,
+        openStatus: p.open_status || '',
+        openNow: !!p.open_now_status,
+        reviewLink: p.review_link || null,
+      };
+    });
 
-        const cats = p.categories
-          .map((c) => titleCase(String(c).trim()))
-          .filter(Boolean)
-          .join(' • ');
+    let html = '';
+    for (const p of places) {
+      const full = Math.floor(p.rating);
+      const hasHalf = (p.rating - full) >= 0.5 ? 1 : 0;
+      const empty = Math.max(0, 5 - full - hasHalf);
 
-        html += `
+      let stars = '';
+      for (let i = 0; i < full; i++) stars += starFull();
+      if (hasHalf) stars += starHalf(p.id || p.slug);
+      for (let i = 0; i < empty; i++) stars += starEmpty();
+
+      const cats = p.categories
+        .map((c) => titleCase(String(c).trim()))
+        .filter(Boolean)
+        .join(' • ');
+
+      html += `
 <li class="search-item">
   <img class="search-result-thumb" src="${p.img}" alt="${escapeHtml(p.title)}" />
   <div class="search-result-info">
     <div class="search-result-name">${escapeHtml(p.title)}</div>
+
     <div class="search-result-rating" aria-label="Rating" id="${escapeAttr(p.slug)}-rating">
       <div class="search-result-rating-label">${p.rating.toFixed(1)}</div>
       <span class="search-result-stars" aria-label="${p.rating.toFixed(1)} out of 5 stars">
@@ -107,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ${p.reviewCount.toLocaleString()}
       </span>
     </div>
+
     <div class="search-result-category">${escapeHtml(cats)}</div>
     ${p.isVerified ? `<p class="vetted-badge">(Verified by ATL Locals)</p>` : ``}
   </div>
@@ -131,20 +141,62 @@ document.addEventListener('DOMContentLoaded', () => {
       Read Full Review
     </a>` : ``}
 </li>`;
-      }
+    }
 
-      listEl.innerHTML = html || '';
-    })
-    .catch((err) => {
+    listEl.innerHTML = html || '';
+    // optional: expose for debugging
+    window.ATL_LAST_RESULTS = places;
+  }
+
+  async function reloadResultsForQuery(q, { updateUrl = true } = {}) {
+    try {
+      const data = await fetchPlaces(q);
+      renderList(data);
+
+      // keep URL in sync with the map script; harmless if both do it
+      if (updateUrl) {
+        const url = new URL(window.location.href);
+        if ((q || '').trim()) url.searchParams.set('q', q.trim());
+        else url.searchParams.delete('q');
+        history.replaceState(null, '', url.toString());
+      }
+    } catch (err) {
       console.error('Failed to load results:', err);
-      listEl.innerHTML = ''; // keep it empty on error
+      listEl.innerHTML = '';
+    }
+  }
+
+  // ---------- Initial load (respect ?q=...) ----------
+  const initialQ = new URLSearchParams(window.location.search).get('q') || '';
+  reloadResultsForQuery(initialQ, { updateUrl: false });
+
+  // ---------- Search listeners (same selectors as map) ----------
+  function bindSearchHandler(inputSelector, buttonSelector) {
+    const input = document.querySelector(inputSelector);
+    const button = document.querySelector(buttonSelector);
+    if (!input || !button) return;
+
+    const run = () => {
+      const q = input.value.trim();
+      reloadResultsForQuery(q);
+    };
+
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      run();
     });
 
-  // Basic HTML escaping helpers to keep things safe in template literals
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, (m) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[m]));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        run();
+      }
+    });
   }
-  function escapeAttr(str) { return escapeHtml(str).replace(/\s+/g, '-'); }
+
+  // Hook up your existing inputs
+  bindSearchHandler('#top-search-input', '#top-search-btn'); // top white bar
+  bindSearchHandler('.map-search-input', '.map-search-btn'); // filter search row
+  bindSearchHandler('.search-map-input', '.direction-icon'); // legacy hook (if present)
 });
+

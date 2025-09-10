@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from .models import db, BlogCategory, MyUser, BlogPost, NewsPost
 from datetime import datetime
+from .search_service import search_places 
 
 
 main = Blueprint('main', __name__)
@@ -1138,6 +1139,26 @@ def api_atl_places():
     Later you can replace this with a DB-backed query.
     """
     return jsonify(search_results)
+
+@main.route("/api/search/places")
+def api_search_places():
+    """
+    Dedicated search endpoint. Frontend can hit this with ?q=...
+    You can evolve the internals in search_service.py without touching this.
+    """
+    q = (request.args.get("q") or "").strip()
+
+    # Toggle this if you want "browse mode" on empty queries.
+    SHOW_ALL_ON_EMPTY = False
+
+    results = search_places(q, search_results, show_all_on_empty=SHOW_ALL_ON_EMPTY)
+
+    return jsonify({
+        "query": q,
+        "count": len(results),
+        "total": len(results),
+        "places": results,
+    })
 
 # News -> "/news" (kept as its own endpoint)
 @main.route("/news")

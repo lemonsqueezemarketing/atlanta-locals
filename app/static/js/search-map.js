@@ -1,3 +1,4 @@
+// search-map.js
 console.log('search-map.js loaded for /search-map route');
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -53,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Separate overlapping markers a bit if they share coords
-  const dupCount = {};
+  let dupCount = {};
   function jitterIfDuplicate(lat, lng, dx = 0.00025, dy = 0.00018) {
     const key = `${lat.toFixed(6)},${lng.toFixed(6)}`;
     dupCount[key] = (dupCount[key] || 0) + 1;
@@ -63,94 +64,113 @@ document.addEventListener('DOMContentLoaded', function () {
     return [lat, lng];
   }
 
-  // ----- Load from Flask API (fallback to window.ATL_PLACES if present) -----
+  // Layer for (re)plotting
+  const markersLayer = L.layerGroup().addTo(map);
+
+  // ---------- API helpers ----------
   async function loadPlaces() {
+    // Initial load of *all* places, with fallback to injected window.ATL_PLACES
     try {
       const res = await fetch('/api/atl-places', { headers: { 'Accept': 'application/json' } });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data && data.places) ? data.places : [];
     } catch (e) {
       console.warn('Falling back to window.ATL_PLACES:', e);
       return Array.isArray(window.ATL_PLACES) ? window.ATL_PLACES : [];
     }
   }
 
-  // ----- Fetch → normalize → plot -----
-  const markersLayer = L.layerGroup().addTo(map);
+  function urlForQuery(q) {
+    return q ? `/api/search/places?q=${encodeURIComponent(q)}` : `/api/atl-places`;
+  }
 
-  loadPlaces()
-    .then(raw => {
-      const places = (raw || [])
-        .map(p => {
-          const lat = parseNumber(p.lat);
-          const lng = parseNumber(p.lng);
-          if (lat == null || lng == null) return null; // skip bad coords
+  async function fetchForQuery(q) {
+    const res = await fetch(urlForQuery((q || '').trim()), { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data && data.places) ? data.places : [];
+  }
 
-          return {
-            id: p.atl_place_id,
-            name: p.title,
-            categoryKey: pickIconKey(p.categories),
-            address: p.address,
-            lat, lng,
-            rating: parseNumber(p.rating),
-            reviews: parseNumber(p.review_count) || 0,
-            verified: !!p.is_atl_verified,
-            status: p.open_status,          // "open", "temporarily closed", etc.
-            openNow: !!p.open_now_status
-          };
-        })
-        .filter(Boolean);
+  // ---------- Plotter (clears + redraws) ----------
+  function plotPlaces(raw) {
+    // reset duplicate-tracker for jitter each redraw
+    dupCount = {};
+    markersLayer.clearLayers();
 
-      places.forEach(p => {
-        const [lat, lng] = jitterIfDuplicate(p.lat, p.lng);
-        const icon = iconMap[p.categoryKey] || iconMap.default;
-        const badge = p.verified ? '<span class="map-badge">Verified ATL Local</span>' : '';
-        const closed = p.status ? `<div class="map-closed">${p.status}</div>` : '';
-        const addr = p.address ? `<div class="popup-addr">${p.address}</div>` : '';
+    (raw || []).forEach(p => {
+      const lat = parseNumber(p.lat);
+      const lng = parseNumber(p.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-        const popup = `
-          <div class="popup">
-            <div class="popup-title">${p.name} ${badge}</div>
-            ${addr}
-            <div class="popup-meta">⭐ ${p.rating ?? ''} • ${Number(p.reviews).toLocaleString()} reviews</div>
-            ${closed}
-          </div>
-        `;
+      const key = pickIconKey(p.categories);
+      const icon = iconMap[key] || iconMap.default;
 
-        L.marker([lat, lng], { icon }).addTo(markersLayer).bindPopup(popup);
-      });
+      const name   = p.title || p.name || '';
+      const badge  = (p.is_atl_verified || p.verified) ? '<span class="map-badge">Verified ATL Local</span>' : '';
+      const addr   = p.address ? `<div class="popup-addr">${p.address}</div>` : '';
+      const rating = p.rating ?? '';
+      const reviews = Number(p.review_count ?? p.reviews ?? 0).toLocaleString();
+      const status = p.open_status ? `<div class="map-closed">${p.open_status}</div>` : '';
 
-      if (places.length) {
-        map.fitBounds(markersLayer.getBounds(), { padding: [24, 24] });
-      }
-    })
-    .catch(err => {
-      console.error('Failed to load places:', err);
+      const popup = `
+        <div class="popup">
+          <div class="popup-title">${name} ${badge}</div>
+          ${addr}
+          <div class="popup-meta">⭐ ${rating} • ${reviews} reviews</div>
+          ${status}
+        </div>
+      `;
+
+      const [jLat, jLng] = jitterIfDuplicate(lat, lng);
+      L.marker([jLat, jLng], { icon }).addTo(markersLayer).bindPopup(popup);
     });
 
-  // ----- Existing search handlers (still alerts for now) -----
-  function bindSearchHandler(inputSelector, buttonSelector) {
-    const input = document.querySelector(inputSelector);
-    const button = document.querySelector(buttonSelector);
-
-    if (input && button) {
-      button.addEventListener('click', () => {
-        const query = input.value.trim();
-        if (query) alert(`You searched: ${query}`);
-      });
-
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const query = input.value.trim();
-          if (query) alert(`You searched: ${query}`);
-        }
-      });
+    if (markersLayer.getLayers().length) {
+      map.fitBounds(markersLayer.getBounds(), { padding: [24, 24] });
     }
   }
 
-  // Hook up your existing inputs
-  bindSearchHandler('.search-map-input', '.direction-icon');
-  bindSearchHandler('.map-search-input', '.map-search-btn');
-  bindSearchHandler('#top-search-input', '#top-search-btn');
+  // ---------- Initial load (all places) ----------
+  loadPlaces()
+    .then(plotPlaces)
+    .catch(err => console.error('Failed to load places:', err));
+
+  // ---------- Search handlers (click + Enter) ----------
+  async function reloadMapForQuery(q) {
+    try {
+      const places = await fetchForQuery(q);
+      plotPlaces(places);
+    } catch (err) {
+      console.error('Search fetch failed:', err);
+    }
+  }
+
+  function bindSearchHandler(inputSelector, buttonSelector) {
+    const input = document.querySelector(inputSelector);
+    const button = document.querySelector(buttonSelector);
+    if (!input || !button) return;
+
+    const run = () => {
+      const query = input.value.trim();
+      reloadMapForQuery(query);
+    };
+
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      run();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        run();
+      }
+    });
+  }
+
+  // Hook up your existing inputs (kept exactly as before)
+  bindSearchHandler('.search-map-input', '.direction-icon'); // legacy hook (if present)
+  bindSearchHandler('.map-search-input', '.map-search-btn'); // filter search row
+  bindSearchHandler('#top-search-input', '#top-search-btn'); // top white bar
 });
