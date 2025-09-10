@@ -883,7 +883,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"650 Ponce de Leon Ave NE, Atlanta, GA 30308",
+        "lat":"33.775006",
+        "lng":" -84.365838",
     },
 
     {
@@ -897,7 +900,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"1020 White St SW, Atlanta, GA 30310",
+        "lat":"33.7368",
+        "lng":"-84.4216",
 
     },
 
@@ -913,7 +919,10 @@ search_results = [
         "is_atl_verified":False,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"1020 White St SW, Atlanta, GA 30310",
+        "lat":"33.7368",
+        "lng":"-84.4216",
     },
 
     {
@@ -927,7 +936,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"1020 White St SW, Atlanta, GA 30310",
+        "lat":"33.7368",
+        "lng":"-84.4216",
     },
 
     {
@@ -941,7 +953,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"406 Moreland Ave NE, Atlanta, GA 30307",
+        "lat":"33.7599",
+        "lng":"-84.3494",
     },
 
     {
@@ -955,7 +970,10 @@ search_results = [
         "is_atl_verified":False,
         "review_link":None,
         "open_status":"closed",
-        "open_now_status":False
+        "open_now_status":False,
+        "address":"337 Moreland Ave NE, Atlanta, GA 30307",
+        "lat":"33.7608",
+        "lng":"-84.3499",
     },
 
     {
@@ -969,7 +987,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"882 Martin Luther King Jr Dr SW, Atlanta, GA 303148",
+        "lat":"33.7537,",
+        "lng":"-84.4163",
     },
 
     {
@@ -983,7 +1004,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"810 Martin Luther King Jr Dr SW, Atlanta, GA 30314",
+        "lat":"33.7489",
+        "lng":"-84.4141",
     },
 
     {
@@ -997,7 +1021,10 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"1107 Euclid Ave NE, Atlanta, GA 30307",
+        "lat":"33.7656",
+        "lng":"-84.3491",
     },
 
     {
@@ -1011,8 +1038,64 @@ search_results = [
         "is_atl_verified":True,
         "review_link":None,
         "open_status":"open",
-        "open_now_status":True
+        "open_now_status":True,
+        "address":"1133 Euclid Ave NE, Atlanta, GA 30307",
+        "lat":"33.7662",
+        "lng":"-84.3477",
     },
+
+    {
+        "atl_place_id":11,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Classic Fades Barbershop",
+        "slug":"classic_fades_barbershop",
+        "rating":5.0,
+        "review_count":94,
+        "categories":["barber","barbershop"],
+        "is_atl_verified":False,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True,
+        "address":"3479 Memorial Dr, Ste 1, Decatur, GA 30032 (inside Kroger/Belvedere Plaza)",
+        "lat":"33.752274",
+        "lng":"-84.269225",
+    },
+
+
+    {
+        "atl_place_id":12,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Dynamic Cuts Barbershop",
+        "slug":"dynamic_cuts_barbershop",
+        "rating":4.9,
+        "review_count":591,
+        "categories":["barber","barbershop"],
+        "is_atl_verified":False,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True,
+        "address":"4112 Redan Rd, Suite G, Stone Mountain, GA 30083",
+        "lat":"33.763737",
+        "lng":"-84.222301",
+    },
+
+
+    {
+        "atl_place_id":13,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"All Edge Barbershop & Salon",
+        "slug":"all_edge_barbershop_salon",
+        "rating":5.0,
+        "review_count":446,
+        "categories":["barber","barbershop"],
+        "is_atl_verified":False,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True,
+        "address":"4586 Memorial Dr, Decatur, GA 30032",
+        "lat":"33.7799099312",
+        "lng":"-84.2390579359",
+    },    
 
 
 ]
@@ -1047,6 +1130,14 @@ def home():
 def search_map():
     atl_places = search_results
     return render_template('search_map/search_home.html', atl_places=atl_places)
+
+@main.route('/api/atl-places', methods=['GET'])
+def api_atl_places():
+    """
+    Dev endpoint: serves the in-memory search_results list as JSON.
+    Later you can replace this with a DB-backed query.
+    """
+    return jsonify(search_results)
 
 # News -> "/news" (kept as its own endpoint)
 @main.route("/news")
