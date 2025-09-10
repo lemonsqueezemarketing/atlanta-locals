@@ -61,25 +61,26 @@
     <!-- Top Row: White nav bar on maroon background -->
     <nav class="menu-navbar" role="navigation">
       <!-- Left: Open in App button -->
-      <button class="btn-open-app" aria-label="Open in App" type="button">
+      <!-- <button class="btn-open-app" aria-label="Open in App" type="button">
         <span class="icon-phone" aria-hidden="true">
           <img src="{{ url_for('static', filename='images/icons/phone.svg') }}" alt="" />
         </span>
         <span class="btn-label">Open in App</span>
-      </button>
+      </button> -->
 
       <!-- Center: Atlanta Local logo -->
-      <div class="menu-logo">
+     <!-- <div class="menu-logo">
         <img src="{{ url_for('static', filename='images/atlanta-locals-logo-new.png') }}" alt="Atlanta Local Logo" />
       </div>
-
-      <!-- Right: Hamburger menu -->
+    -->
+      
+      <!-- Right: Hamburger menu-->
       <button class="menu-toggle" aria-label="Menu" aria-expanded="false" type="button">
        
-          <span id="menu-icon">☰</span>
+         <!-- <span id="menu-icon">☰</span> -->
         </span>
       </button>
-    </nav>
+    </nav> 
 
     <!-- Search bar (white, long rectangular) -->
     <form class="menu-search" id="top-search-form" role="search" onsubmit="return false;">
@@ -168,6 +169,107 @@
     </div>
   </div>
 </div>
+
+
+<!-- SEARCH RESULTS -->
+<div class="search-result-businesses">
+  <h2 class="search-result-title">Search Results</h2>
+  <hr class="search-result-divider" />
+
+    <ul class="search-result-list">
+      {% for atl_place in atl_places  %}
+        <!-- 1) Salata (4.0 stars) -->
+        <li class="search-item">
+          <img class="search-result-thumb" src="{{ url_for('static', filename=atl_place.img) }}" alt="{{atl_place.title}}" />
+          <div class="search-result-info">
+            <div class="search-result-name">{{ atl_place.title}}</div>
+            <div class="search-result-rating" aria-label="Rating" id="{{atl_place.slug}}-rating"> 
+            <div class="search-result-rating-label">{{ atl_place.rating}}</div>
+              {# rating -> full / half / empty #}
+              {% set rating = (atl_place.rating | float) %}
+              {% set full   = rating | int %}
+              {% set has_half = 1 if (rating - full) >= 0.5 else 0 %}
+              {% set empty  = 5 - full - has_half %}
+              
+              <span class="search-result-stars" aria-label="{{ '%.1f' % rating }} out of 5 stars">
+                {# full stars #}
+                {% for _ in range(full) %}
+                  <svg class="search-result-star full" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/>
+                  </svg>
+                {% endfor %}
+              
+                {# half star (if .5 or above) #}
+                {% if has_half %}
+                  <svg class="search-result-star half" viewBox="0 0 20 20" aria-hidden="true">
+                    <defs>
+                      <!-- unique clip so multiple items don't conflict -->
+                      <clipPath id="half-clip-{{ atl_place.atl_place_id }}">
+                        <rect x="0" y="0" width="10" height="20"></rect>  <!-- half of 20 -->
+                      </clipPath>
+                    </defs>
+                    <!-- base empty star -->
+                    <path class="star-empty" fill="#e0e0e0" d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/>
+                    <!-- gold half overlay -->
+                    <path class="star-fill"  fill="#ffb400" clip-path="url(#half-clip-{{ atl_place.atl_place_id }})"
+                          d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/>
+                  </svg>
+                {% endif %}
+              
+                {# empty stars #}
+                {% for _ in range(empty) %}
+                  <svg class="search-result-star empty" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M10 1.5l2.7 5.5 6.1.9-4.4 4.3 1 6.1L10 15.8 4.6 18.3l1-6.1L1.2 7.9l6.1-.9L10 1.5z"/>
+                  </svg>
+                {% endfor %}
+              </span>
+              
+              <span class="search-result-review-count" id="{{atl_place.slug}}-reviews">{{atl_place.review_count}}</span>
+            </div>
+            {% set cats = atl_place.categories %}
+            {% set cat_list = cats.split(',') if cats is string else cats %}
+            <div class="search-result-category">
+              {{ cat_list | map('trim') | map('title') | join(' • ') }}
+            </div>
+            {% if atl_place.is_atl_verified | default(false) %}
+              <p class="vetted-badge">(Verified by ATL Locals)</p>
+            {% endif %}
+          </div>
+          <div class="search-result-status">
+            <div class="status-row">
+              <span class="status-label">Open Status:</span>
+              <span class="status-pill" data-status="{{ atl_place.open_status }}">
+                {{ atl_place.open_status }}
+              </span>
+            </div>
+          
+            <div class="status-row">
+              <span class="status-label">Open Now:</span>
+              <span class="status-pill" data-open-now="{{ atl_place.open_now_status }}">
+                {{ atl_place.open_now_status }}
+              </span>
+            </div>
+          </div>
+          <a href="#" class=" btn read-more" target="_blank" rel="noopener noreferrer">Read Full Review</a>
+        </li>
+      {% endfor %}
+    
+    </ul>
+  
+  <!-- Simple pager (blog.js wires these up) -->
+  <div class="pager" data-blog-pager>
+    <button type="button" class="btn" data-blog-prev disabled>← Prev</button>
+    <span class="pager-label" data-blog-page-label>Page 1</span>
+    <button type="button" class="btn" data-blog-next>Next →</button>
+  </div>
+</div>
+
+<!-- CTA BUTTON -->
+<div class="search-results-cta">
+  <button class="search-results-cta-btn">View More Results</button>
+</div>
+
+
 
 <!-- HOT NEW BUSINESSES SECTION -->
 <div class="hot-new-businesses">

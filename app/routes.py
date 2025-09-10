@@ -871,6 +871,152 @@ dummy_newsposts = [
 
 ]
 
+search_results = [
+    {
+        "atl_place_id":1,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Salata",
+        "slug":"salata",
+        "rating":4,
+        "review_count":238,
+        "categories":["healthy","salad"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":2,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Gusto! Healthy Bowls & Wraps (West End)",
+        "slug":"gusto",
+        "rating":4.5,
+        "review_count":75,
+        "categories":["fast food","healthy bowls"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+
+    },
+
+
+    {
+        "atl_place_id":3,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Honeysuckle Gelato (West End)",
+        "slug":"honeysuckle",
+        "rating":4.6,
+        "review_count":30,
+        "categories":["ice cream shop"],
+        "is_atl_verified":False,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":4,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Sakera Sake Bar & Bottles (West End)",
+        "slug":"sakera",
+        "rating":4.9,
+        "review_count":50,
+        "categories":["bar","sake bar"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":5,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Starbucks (Moreland Ave NE)",
+        "slug":"starbucks_moreland",
+        "rating":4.2,
+        "review_count":735,
+        "categories":["coffee shop"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":6,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Tea'z Social",
+        "slug":"teaz_social",
+        "rating":4.9,
+        "review_count":238,
+        "categories":["tea house","cafe"],
+        "is_atl_verified":False,
+        "review_link":None,
+        "open_status":"closed",
+        "open_now_status":False
+    },
+
+    {
+        "atl_place_id":7,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Mr. Everything Cafe (MLK)",
+        "slug":"mr_everything_cafe_mlk",
+        "rating":4.3,
+        "review_count":238,
+        "categories":["cafe","fast casual"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":8,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Busy Bee Cafe",
+        "slug":"busy_bee_cafe",
+        "rating":4.0,
+        "review_count":238,
+        "categories":["soul food","restaurant"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":9,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"King Jai the Barber (Gentleman’s Refinery)",
+        "slug":"king_jai_barber",
+        "rating":4.8,
+        "review_count":81,
+        "categories":["barber","barbershop"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+    {
+        "atl_place_id":10,
+        "img":"media/blog/atlanta_local_main_image.JPG",
+        "title":"Liquid Wizdom",
+        "slug":"mr_everything_cafe_mlk",
+        "rating":4.8,
+        "review_count":24,
+        "categories":["juice shop"],
+        "is_atl_verified":True,
+        "review_link":None,
+        "open_status":"open",
+        "open_now_status":True
+    },
+
+
+]
+
 
 def admin_required(view_func):
     @wraps(view_func)
@@ -893,7 +1039,14 @@ def admin_required(view_func):
 @main.route("/")
 @main.route("/home")
 def home():
-    return render_template("search_map/search_home.html")
+    atl_places = search_results
+    return render_template("search_map/search_home.html", atl_places=atl_places)
+
+
+@main.route('/search-map')
+def search_map():
+    atl_places = search_results
+    return render_template('search_map/search_home.html', atl_places=atl_places)
 
 # News -> "/news" (kept as its own endpoint)
 @main.route("/news")
@@ -929,9 +1082,7 @@ def blog_detail(post_id):
 def about():
     return render_template('home/about.html')
 
-@main.route('/search-map')
-def search_map():
-    return render_template('search_map/search_home.html')
+
 
 @main.route('/directory')
 def directory():

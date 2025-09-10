@@ -222,7 +222,7 @@
 
 
 /* ============= Hot New Businesses (Yelp-style list) ============= */
-.hot-new-businesses {
+.hot-new-businesses, .search-result-businesses {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem 1.5rem 2rem; /* added horizontal padding */
@@ -230,26 +230,26 @@
   box-sizing: border-box;
 }
 
-.hot-title {
+.hot-title, .search-result-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #2d2d2d;
   margin: 0 0 0.5rem;
 }
 
-.hot-divider {
+.hot-divider, .search-result-divider {
   border: 0;
   border-top: 1px solid #e0e0e0;
   margin: 0 0 0.75rem;
 }
 
-.hot-list {
+.hot-list, .search-result-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.hot-item {
+.hot-item , .search-item{
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
@@ -257,7 +257,7 @@
   border-bottom: 1px solid #e6e6e6; /* thin gray line under each item */
 }
 
-.hot-thumb {
+.hot-thumb, .search-result-thumb {
   width: 64px;
   height: 64px;
   object-fit: cover;
@@ -266,19 +266,19 @@
   background: #f4f1ee;
 }
 
-.hot-info {
+.hot-info, .search-result-info {
   flex: 1;
   min-width: 0; /* allow truncation if needed */
 }
 
-.hot-name {
+.hot-name, .search-result-name {
   font-weight: 700;
   font-size: 1.05rem;
   color: #1f1f1f;
   margin-bottom: 0.25rem;
 }
 
-.hot-rating {
+.hot-rating, .search-result-rating {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -286,25 +286,91 @@
 }
 
 /* Stars */
-.hot-stars {
+.hot-stars, .search-result-stars {
   display: inline-flex;
   gap: 2px;
 }
 
-.hot-star {
+.hot-star, .search-result-star {
   width: 16px;
   height: 16px;
   fill: #ffb400; /* star gold */
 }
 
+.search-result-star.empty path { fill: #e0e0e0; }
+
+/* Numeric rating shown above the stars */
+.search-result-rating-label {
+  display: block;      /* force its own line */
+  font-weight: 700;    /* bold */
+  line-height: 1.1;
+  margin-bottom: 4px;  /* space before stars */
+  color: #1f1f1f;
+  font-variant-numeric: tabular-nums; /* neat number alignment */
+}
+
+.search-result-status {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;   /* stack rows vertically */
+  gap: 6px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;                 /* space between label and pill */
+  font-size: 0.95rem;
+}
+
+.status-label {
+  color: #555;
+  font-weight: 600;
+}
+
+/* Base pill look */
+.status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  border: 1px solid #e5e5e5;
+  background: #f6f6f6;
+  color: #222;
+  text-transform: capitalize;     /* “temporarily closed” -> “Temporarily Closed” */
+}
+
+/* OPTIONAL: Color accents without template logic */
+.status-pill[data-status="open" i],
+.status-pill[data-open-now="True"] {
+  color: #155724;
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.status-pill[data-status*="closed" i],
+.status-pill[data-open-now="False"] {
+  color: #8a1f1f;
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.status-pill[data-status="coming soon" i] {
+  color: #664d03;
+  background: #fff3cd;
+  border-color: #ffecb5;
+}
+
 /* Review count (manipulate by id if desired) */
-.hot-review-count {
+.hot-review-count, .search-result-review-count {
   font-size: 0.95rem;
   color: #333;
 }
 
 /* Category */
-.hot-category {
+.hot-category, .search-result-category {
   color: #777;
   font-size: 0.95rem;
 }
@@ -501,13 +567,13 @@
 
 
 /* CTA button under Hot New Businesses */
-.hot-cta {
+.hot-cta, .search-results-cta {
   max-width: 1200px;
   margin: 1.5rem auto 2rem;
   text-align: center;
 }
 
-.hot-cta-btn {
+.hot-cta-btn, .search-results-cta-btn {
   display: block;
   width: 100%;
   max-width: 320px;
@@ -714,7 +780,26 @@
   transition: background-color 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
 }
 
+.search-item .read-more {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.6rem 1.1rem;
+  background-color: #7A3B4E;   /* brand maroon */
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: background-color 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+
 .hot-item .read-more:hover {
+  background-color: #6b3343;
+  box-shadow: 0 6px 14px rgba(122, 59, 78, 0.25);
+}
+
+.search-item .read-more:hover {
   background-color: #6b3343;
   box-shadow: 0 6px 14px rgba(122, 59, 78, 0.25);
 }
@@ -723,7 +808,17 @@
   transform: translateY(1px);
 }
 
+.search-item .read-more:active {
+  transform: translateY(1px);
+}
+
+
 .hot-item .read-more:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 59, 78, 0.28);
+}
+
+.search-item .read-more:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(122, 59, 78, 0.28);
 }
@@ -755,8 +850,8 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .hot-thumb { width: 72px; height: 72px; }
-  .hot-name  { font-size: 1.1rem; }
+  .hot-thumb,.search-result-thumb { width: 72px; height: 72px; }
+  .hot-name, .search-result-name  { font-size: 1.1rem; }
 
   .mike-card {
     grid-template-columns: 1.2fr 1.8fr;
@@ -777,3 +872,92 @@
     font-size: 1.05rem;
   }
 }
+
+
+/* ===========================================
+   Mobile: stack search results (image left)
+   =========================================== */
+   @media (max-width: 480px) { /* tweak to 430px if you prefer */
+    /* Each result becomes a block card instead of a row */
+    .search-item {
+      display: block;
+      padding: 0.75rem 0;
+    }
+  
+    /* Classic media-object: float the thumb left */
+    .search-result-thumb {
+      float: left;
+      width: 64px;  /* keep your current size */
+      height: 64px;
+      margin: 2px 12px 8px 0; /* space to the right/bottom of image */
+    }
+  
+    /* Ensure the text block sits to the right of the floated image and stacks */
+    .search-result-info {
+      overflow: hidden;    /* establishes a new block formatting context to avoid wrap-under */
+    }
+  
+    /* Stack all children inside info one-per-line */
+    .search-result-info > * {
+      display: block;
+      margin-top: 6px;     /* gentle vertical rhythm */
+    }
+  
+    /* Force inline/flex bits to behave like blocks on mobile */
+    .search-result-rating { display: block; }
+    .search-result-stars { display: block; }
+    .search-result-status { display: block; }
+    .vetted-badge { display: inline-block; } /* keeps badge shape but still on its own line via rule above */
+  
+    /* Status rows: let each row be its own line; label + pill can sit inline */
+    .status-row { display: block; margin-top: 4px; }
+  
+    /* Clear the float at the end of the list item to prevent overlap with the next card */
+    .search-item::after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+  }
+/* ===========================================
+   Mobile: stack search results + smaller type
+   =========================================== */
+   @media (max-width: 480px) {
+    .search-item {
+      display: block;
+      padding: 0.65rem 0;
+    }
+  
+    .search-result-thumb {
+      float: left;
+      width: 64px;
+      height: 64px;
+      margin: 2px 12px 8px 0;
+    }
+  
+    .search-result-info {
+      overflow: hidden;            /* prevents wrap-under the float */
+    }
+    .search-result-info > * {      /* stack children */
+      display: block;
+      margin-top: 4px;
+    }
+  
+    /* Make text fit better on small screens */
+    .search-result-name { font-size: 0.95rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .search-result-rating-label { font-size: 0.90rem; margin-bottom: 2px; }
+    .search-result-stars { display: block; gap: 1px; }
+    .search-result-star { width: 12px; height: 12px; }
+    .search-result-category { font-size: 0.90rem; }
+    .vetted-badge { font-size: 0.75rem; }
+  
+    /* Status rows */
+    .search-result-status { margin-top: 4px; }
+    .status-row { display: block; margin-top: 4px; }
+    .status-label { font-size: 0.85rem; }
+    .status-pill { font-size: 0.75rem; padding: 2px 8px; }
+  
+    /* Clear float at end of each card */
+    .search-item::after { content: ""; display: block; clear: both; }
+  }
+  
