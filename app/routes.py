@@ -1,8 +1,11 @@
+import os
 from flask import Blueprint, render_template, request,abort, jsonify, current_app,redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
-from .models import db, BlogCategory, MyUser, BlogPost, NewsPost
+from .models import db, BlogCategory, MyUser, BlogPost,BlogContent ,NewsPost
+from .forms import BlogPostCreateForm, BlogPostUpdateForm, BlogContentForm
 from datetime import datetime
 from .search_service import search_places 
 
@@ -1102,6 +1105,7 @@ search_results = [
 ]
 
 
+
 def admin_required(view_func):
     @wraps(view_func)
     @login_required
@@ -1119,6 +1123,26 @@ def admin_required(view_func):
 
         return view_func(*args, **kwargs)
     return wrapped
+
+def _load_post_select_choices(form):
+    form.blog_cat_id.choices = [
+        (c.blog_cat_id, c.title) for c in BlogCategory.query.order_by(BlogCategory.title.asc()).all()
+    ]
+    form.author_id.choices = [
+        (u.my_user_id, f"{u.first_name} {u.last_name}") for u in MyUser.query.order_by(MyUser.first_name.asc()).all()
+    ]
+
+def _save_blog_image(file_storage):
+    """Save uploaded image to /static/media/blog and return DB-relative path, e.g. 'media/blog/foo.png'."""
+    if not file_storage or not getattr(file_storage, "filename", None):
+        return None
+    filename = secure_filename(file_storage.filename)
+    upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
+    os.makedirs(upload_dir, exist_ok=True)
+    file_storage.save(os.path.join(upload_dir, filename))
+    return f"media/blog/{filename}"
+
+
 
 @main.route("/")
 @main.route("/home")
@@ -1356,15 +1380,110 @@ def admin_blog_post():
     return render_template('admin/blog_list_view.html')
 
 
-@main.route('/admin/blog/create',methods=['GET', 'POST'])
+@main.route('/admin/blog/create', methods=['GET', 'POST'])
 @admin_required
 def admin_create_blog_post():
-    return render_template('admin/create_post.html')
+    post_form = BlogPostCreateForm()
+    content_form = BlogContentForm()
+    _load_post_select_choices(post_form)  # must set choices before validate_on_submit()
 
-@main.route('/admin/blogs/<int:post_id>', methods=['GET', 'POST'])
+    if request.method == 'POST':
+        if post_form.validate_on_submit() and content_form.validate_on_submit():
+            # BlogPost
+            image_rel = _save_blog_image(post_form.image.data)
+            post = BlogPost(
+                title=post_form.title.data.strip(),
+                slug=post_form.slug.data.strip(),
+                blog_cat_id=post_form.blog_cat_id.data,
+                author_id=post_form.author_id.data,
+                image=image_rel,  # required by model
+            )
+            db.session.add(post)
+            db.session.flush()  # get post.post_id
+
+            # BlogContent (1:1 required fields)
+            bc = BlogContent(post_id=post.post_id)
+            content_form.populate_obj(bc)  # field names match model columns
+            db.session.add(bc)
+
+            db.session.commit()
+            flash("Blog post created.", "success")
+            return redirect(url_for('main.admin_blog_post'))
+
+        flash("Please correct the errors below.", "error")
+
+    return render_template('admin/create_post.html',
+                           post_form=post_form,
+                           content_form=content_form)
+
+
+
+@main.route('/admin/blog-posts/<int:post_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_blog_detail(post_id):
-    return render_template('admin/read_update_post.html')
+    post = BlogPost.query.get_or_404(post_id)
+    bc = BlogContent.query.filter_by(post_id=post_id).first()
+
+    post_form = BlogPostUpdateForm(obj=post)
+    content_form = BlogContentForm(obj=bc) if bc else BlogContentForm()
+    _load_post_select_choices(post_form)  # populate category/author choices
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        # --- Delete ---
+        if action == 'delete':
+            try:
+                db.session.delete(post)  # cascades to BlogContent via FK/relationship
+                db.session.commit()
+                flash("Blog post deleted.", "success")
+            except Exception:
+                db.session.rollback()
+                flash("Failed to delete post.", "error")
+            return redirect(url_for('main.admin_blog_post'))
+
+        # --- Update ---
+        valid_post = post_form.validate_on_submit()
+        valid_content = content_form.validate_on_submit()
+
+        if valid_post and valid_content:
+            # Update BlogPost fields
+            post.title       = (post_form.title.data or '').strip()
+            post.slug        = (post_form.slug.data or '').strip()
+            post.blog_cat_id = post_form.blog_cat_id.data
+            post.author_id   = post_form.author_id.data
+
+            # Optional image replacement
+            image_rel = _save_blog_image(post_form.image.data)
+            if image_rel:
+                post.image = image_rel
+
+            # Ensure BlogContent row exists, then populate
+            if bc is None:
+                bc = BlogContent(post_id=post.post_id)
+                db.session.add(bc)
+            content_form.populate_obj(bc)
+
+            try:
+                db.session.commit()
+                flash("Blog post updated.", "success")
+                return redirect(url_for('main.admin_blog_detail', post_id=post.post_id))
+            except IntegrityError:
+                db.session.rollback()
+                flash("Title or slug already exists.", "error")
+            except Exception:
+                db.session.rollback()
+                flash("Failed to update post.", "error")
+        else:
+            flash("Please correct the errors below.", "error")
+
+    return render_template(
+        'admin/read_update_post.html',
+        post=post,
+        post_id=post.post_id,
+        post_form=post_form,
+        content_form=content_form
+    )
 
 
 @main.route('/admin/news',methods=['GET',])

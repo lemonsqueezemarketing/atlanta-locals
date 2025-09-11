@@ -1,3 +1,4 @@
+// static/js/admin_api.js
 (function () {
   const el = document.querySelector("[data-admin-list]");
   if (!el) return;
@@ -199,7 +200,36 @@
     }
   }
 
-  function renderActions() {
+  function renderActions(row) {
+    if (resource === "blog-posts" && row && row.post_id != null) {
+      const id = row.post_id;
+      // If your public route uses slugs, switch to `/blog/${row.slug}`
+      const viewHref = `/blog/${id}`;
+      const editHref = `/admin/blog-posts/${id}`;
+      const delAction = `/admin/blog-posts/${id}`;
+
+      // Pull CSRF token from a meta tag if present (add in admin_base.html: <meta name="csrf-token" content="{{ csrf_token() }}">)
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+
+      return `
+        <div class="row-actions" style="display:flex; gap:8px; align-items:center;">
+          <a href="${viewHref}" class="btn-link" target="_blank" rel="noopener">View</a>
+          <a href="${editHref}" class="btn-link">Edit</a>
+          <form method="POST"
+                action="${delAction}"
+                style="display:inline;"
+                onsubmit="return confirm('Delete post #${id}? This cannot be undone.');">
+            ${csrf ? `<input type="hidden" name="csrf_token" value="${csrf}">` : ""}
+            <input type="hidden" name="action" value="delete">
+            <button type="submit" class="btn-link danger" style="background:none;border:none;padding:0;cursor:pointer;">
+              Delete
+            </button>
+          </form>
+        </div>
+      `;
+    }
+
+    // Default for other resources (can be customized later)
     return `
       <a href="#" class="btn-link">View</a>
       <a href="#" class="btn-link">Edit</a>
