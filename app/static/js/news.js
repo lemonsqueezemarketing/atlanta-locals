@@ -11,7 +11,6 @@ console.log('news.js loaded for /news route');
     return `/static/${String(path).replace(/^\/+/, '')}`;
   }
 
-  // Simple HTML escaper for text we inject
   function escapeHtml(s) {
     if (s == null) return '';
     return String(s)
@@ -22,11 +21,27 @@ console.log('news.js loaded for /news route');
       .replace(/'/g, '&#039;');
   }
 
-  // Handles nested: post.content.content["section-1"]["paragraph-1"]
+  // Prefer new flat BlogContent fields; fall back to legacy nested
   function firstParagraph(post) {
     try {
       const c = post?.content;
-      const inner = c?.content || c; // tolerate either shape
+      if (!c) return '';
+
+      // ✅ FLAT (SQL) fields first
+      if (typeof c.section_1_paragraph_1 === 'string' && c.section_1_paragraph_1.trim()) {
+        return c.section_1_paragraph_1.trim();
+      }
+      const flatKeys = [
+        'section_1_paragraph_2',
+        'section_2_paragraph_1',
+        'section_3_paragraph_1'
+      ];
+      for (const k of flatKeys) {
+        if (typeof c[k] === 'string' && c[k].trim()) return c[k].trim();
+      }
+
+      // 🧯 Legacy nested (Mongo-style) fallback
+      const inner = c?.content || c;
       const s1 = inner?.['section-1'] || inner?.section1 || inner?.section_1 || inner?.section || null;
       const p1 = s1?.['paragraph-1'] || s1?.paragraph1 || s1?.paragraph || null;
       if (typeof p1 === 'string' && p1.trim()) return p1.trim();
@@ -53,14 +68,11 @@ console.log('news.js loaded for /news route');
       titleEl.textContent = post.title || 'Untitled';
     }
     if (descEl) {
-      const snippet =
-        (post?.content?.content?.['section-1']?.['paragraph-1']) ||
-        firstParagraph(post) ||
-        '';
+      const snippet = firstParagraph(post);
       descEl.textContent = snippet.length > 150 ? `${snippet.slice(0, 150)}…` : snippet;
     }
     if (linkEl) {
-      linkEl.href = `/news/${post.post_id}`;
+      linkEl.href = `/news/${post.slug ?? post.post_id ?? ''}`;
     }
   }
 
@@ -78,7 +90,7 @@ console.log('news.js loaded for /news route');
     ul.innerHTML = top.map((item, i) => {
       const rank  = i + 1;
       const title = escapeHtml(item?.title || 'Untitled');
-      const href  = `/news/${item?.post_id ?? ''}`;
+      const href  = `/news/${item?.slug ?? item?.post_id ?? ''}`;
       return `
         <li>
           <span class="most-read-rank">${rank}</span>
@@ -92,29 +104,21 @@ console.log('news.js loaded for /news route');
   function renderLatestNews(items) {
     const container = document.querySelector('[data-latest-news-list]');
     if (!container) return;
-  
+
     const top = (Array.isArray(items) ? items : []).slice(0, 3);
     if (!top.length) {
       container.innerHTML = `<div class="muted">No latest news available.</div>`;
       return;
     }
-  
+
     container.innerHTML = top.map(item => {
       const title  = escapeHtml(item?.title || 'Untitled');
-      const href   = `/news/${item?.post_id ?? ''}`;
+      const href   = `/news/${item?.slug ?? item?.post_id ?? ''}`;
       const imgSrc = item?.image_url || resolveImage(item?.image || '');
-  
-      // pull section-1.paragraph-1 (support both content or content.content)
-      let snippet = '';
-      try {
-        const c = item?.content;
-        const inner = c?.content || c;
-        const s1 = inner?.['section-1'] || inner?.section1 || inner?.section_1 || inner?.section || null;
-        const p1 = s1?.['paragraph-1'] || s1?.paragraph1 || s1?.paragraph || '';
-        if (typeof p1 === 'string') snippet = p1.trim();
-      } catch {}
-      const short = snippet.length > 150 ? `${escapeHtml(snippet.slice(0, 150))}…` : escapeHtml(snippet);
-  
+
+      const snippet = firstParagraph(item);
+      const short   = snippet.length > 150 ? `${escapeHtml(snippet.slice(0, 150))}…` : escapeHtml(snippet);
+
       return `
         <article class="news-card">
           <img src="${imgSrc}" alt="${title}">
@@ -127,7 +131,6 @@ console.log('news.js loaded for /news route');
       `;
     }).join('');
   }
-  
 
   // --- build URLs ---
   const params = new URLSearchParams();
@@ -137,7 +140,6 @@ console.log('news.js loaded for /news route');
   const postsURL        = `/api/v1/news-posts?${params.toString()}`;
   const mainURL         = `/api/v1/news-main?active=1&include_content=true`;
   const mostReadNewsURL = `/api/v1/analytics/most-read/news`;
-  // Ask the API for full content and only the top 3 latest
   const latestNewsURL   = `/api/v1/analytics/latest-news?include_content=true&per_page=3`;
 
   (async () => {
@@ -158,11 +160,6 @@ console.log('news.js loaded for /news route');
         console.log('[news] posts payload:', data);
         posts = Array.isArray(data.items) ? data.items
               : (Array.isArray(data.news) ? data.news : []);
-        if (posts.length) {
-          console.log('[news] posts list:', posts);
-        } else {
-          console.warn('[news] no posts found in response (checked `items` and `news`).');
-        }
       }
 
       // ----- Main story -----
@@ -171,34 +168,26 @@ console.log('news.js loaded for /news route');
         console.error('[news] main fetch failed', mainRes.status, await mainRes.text());
       } else {
         const payload = await mainRes.json();
-        console.log('[news] news_main payload:', payload);
         const first = Array.isArray(payload?.items) ? payload.items[0] : null;
         if (first) {
-          console.log('[news] news_main first item:', first);
-          mainItem = first.post || null;
-        } else {
-          console.warn('[news] no active main story found in payload.items');
+          mainItem = first.post || null; // server returns { news_main: {...}, post: {...} }
         }
       }
 
       // ----- Most Read News (top 10 from view; we will show 7) -----
-      if (!mostReadRes.ok) {
-        console.error('[news] most-read news fetch failed', mostReadRes.status, await mostReadRes.text());
-      } else {
+      if (mostReadRes.ok) {
         const mr = await mostReadRes.json();
-        const mostReadItems = Array.isArray(mr?.items) ? mr.items : [];
-        console.log('[news] most_read_news (top N):', mostReadItems);
-        renderMostRead(mostReadItems);
+        renderMostRead(Array.isArray(mr?.items) ? mr.items : []);
+      } else {
+        console.error('[news] most-read news fetch failed', mostReadRes.status, await mostReadRes.text());
       }
 
       // ----- Latest News (top 3, full content) -----
-      if (!latestNewsRes.ok) {
-        console.error('[news] latest news fetch failed', latestNewsRes.status, await latestNewsRes.text());
-      } else {
+      if (latestNewsRes.ok) {
         const ln = await latestNewsRes.json();
-        const latestNewsItems = Array.isArray(ln?.items) ? ln.items : [];
-        console.log('[news] latest_news_posts (top N):', latestNewsItems);
-        renderLatestNews(latestNewsItems);
+        renderLatestNews(Array.isArray(ln?.items) ? ln.items : []);
+      } else {
+        console.error('[news] latest news fetch failed', latestNewsRes.status, await latestNewsRes.text());
       }
 
       // Apply to DOM: main if present, else fallback to first post
@@ -209,4 +198,3 @@ console.log('news.js loaded for /news route');
     }
   })();
 })();
-

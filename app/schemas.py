@@ -119,6 +119,251 @@ my_user_list_out = MyUserOutSchema(many=True)
 my_user_create = MyUserCreateSchema()
 my_user_update = MyUserUpdateSchema()
 
+# ==============================
+# BlogContent Schemas (SQL model)
+# ==============================
+class BlogContentOutSchema(Schema):
+    blog_con_id = fields.Integer()
+    post_id     = fields.Integer()
+    yt_vid_id   = fields.String(allow_none=True)
+
+    # Section 1
+    section_1_title              = fields.String()
+    section_1_paragraph_1        = fields.String()
+    section_1_paragraph_2        = fields.String()
+    section_1_paragraph_3        = fields.String()
+    section_1_img                = fields.String(allow_none=True)
+    section_1_link_internal      = fields.String(allow_none=True)
+    section_1_link_external      = fields.String(allow_none=True)
+
+    # Section 2
+    section_2_title              = fields.String()
+    section_2_paragraph_1        = fields.String()
+    section_2_paragraph_2        = fields.String()
+    section_2_paragraph_3        = fields.String()
+    section_2_img                = fields.String(allow_none=True)
+    section_2_link_internal      = fields.String(allow_none=True)
+    section_2_link_external      = fields.String(allow_none=True)
+
+    # Section 3
+    section_3_title              = fields.String()
+    section_3_paragraph_1        = fields.String()
+    section_3_paragraph_2        = fields.String()
+    section_3_paragraph_3        = fields.String()
+    section_3_img                = fields.String(allow_none=True)
+    section_3_link_internal      = fields.String(allow_none=True)
+    section_3_link_external      = fields.String(allow_none=True)
+
+    # Section 4
+    section_4_title              = fields.String()
+    section_4_paragraph_1        = fields.String()
+    section_4_paragraph_2        = fields.String()
+    section_4_paragraph_3        = fields.String()
+    section_4_img                = fields.String(allow_none=True)
+    section_4_link_internal      = fields.String(allow_none=True)
+    section_4_link_external      = fields.String(allow_none=True)
+
+    # Section 5
+    section_5_title              = fields.String()
+    section_5_paragraph_1        = fields.String()
+    section_5_paragraph_2        = fields.String()
+    section_5_paragraph_3        = fields.String()
+    section_5_img                = fields.String(allow_none=True)
+    section_5_link_internal      = fields.String(allow_none=True)
+    section_5_link_external      = fields.String(allow_none=True)
+
+    # Section 6 (conclusion)
+    section_6_conclusion_title         = fields.String()
+    section_6_conclusion_paragraph_1   = fields.String()
+    section_6_conclusion_paragraph_2   = fields.String()
+    section_6_conclusion_paragraph_3   = fields.String()
+    section_6_conclusion_img           = fields.String(allow_none=True)
+    section_6_conclusion_link_internal = fields.String(allow_none=True)
+    section_6_conclusion_link_external = fields.String(allow_none=True)
+
+    # Section 7 (assoc-press)
+    section_7_assoc_press_title         = fields.String()
+    section_7_assoc_press_paragraph_1   = fields.String()
+    section_7_assoc_press_img           = fields.String(allow_none=True)
+    section_7_assoc_press_link_internal = fields.String(allow_none=True)
+    section_7_assoc_press_link_external = fields.String(allow_none=True)
+
+    # FAQs
+    faq_q_1 = fields.String()
+    faq_a_1 = fields.String()
+    faq_q_2 = fields.String()
+    faq_a_2 = fields.String()
+    faq_q_3 = fields.String()
+    faq_a_3 = fields.String()
+    faq_q_4 = fields.String(allow_none=True)
+    faq_a_4 = fields.String(allow_none=True)
+    faq_q_5 = fields.String(allow_none=True)
+    faq_a_5 = fields.String(allow_none=True)
+    faq_q_6 = fields.String(allow_none=True)
+    faq_a_6 = fields.String(allow_none=True)
+
+    created_at = fields.DateTime(allow_none=True)
+    updated_at = fields.DateTime(allow_none=True)
+
+
+blog_content_out = BlogContentOutSchema()
+blog_content_list_out = BlogContentOutSchema(many=True)
+
+class BlogContentCreateSchema(Schema):
+    yt_vid_id = fields.String(required=False, allow_none=True)
+
+    # Section 1 (required)
+    section_1_title              = fields.String(required=True)
+    section_1_paragraph_1        = fields.String(required=True)
+    section_1_paragraph_2        = fields.String(required=True)
+    section_1_paragraph_3        = fields.String(required=True)
+    section_1_img                = fields.String(allow_none=True)
+    section_1_link_internal      = fields.String(allow_none=True)
+    section_1_link_external      = fields.String(allow_none=True)
+
+    # Section 2 (required)
+    section_2_title              = fields.String(required=True)
+    section_2_paragraph_1        = fields.String(required=True)
+    section_2_paragraph_2        = fields.String(required=True)
+    section_2_paragraph_3        = fields.String(required=True)
+    section_2_img                = fields.String(allow_none=True)
+    section_2_link_internal      = fields.String(allow_none=True)
+    section_2_link_external      = fields.String(allow_none=True)
+
+    # Section 3 (required)
+    section_3_title              = fields.String(required=True)
+    section_3_paragraph_1        = fields.String(required=True)
+    section_3_paragraph_2        = fields.String(required=True)
+    section_3_paragraph_3        = fields.String(required=True)
+    section_3_img                = fields.String(allow_none=True)
+    section_3_link_internal      = fields.String(allow_none=True)
+    section_3_link_external      = fields.String(allow_none=True)
+
+    # Section 4 (required)
+    section_4_title              = fields.String(required=True)
+    section_4_paragraph_1        = fields.String(required=True)
+    section_4_paragraph_2        = fields.String(required=True)
+    section_4_paragraph_3        = fields.String(required=True)
+    section_4_img                = fields.String(allow_none=True)
+    section_4_link_internal      = fields.String(allow_none=True)
+    section_4_link_external      = fields.String(allow_none=True)
+
+    # Section 5 (required)
+    section_5_title              = fields.String(required=True)
+    section_5_paragraph_1        = fields.String(required=True)
+    section_5_paragraph_2        = fields.String(required=True)
+    section_5_paragraph_3        = fields.String(required=True)
+    section_5_img                = fields.String(allow_none=True)
+    section_5_link_internal      = fields.String(allow_none=True)
+    section_5_link_external      = fields.String(allow_none=True)
+
+    # Section 6 (conclusion, required)
+    section_6_conclusion_title         = fields.String(required=True)
+    section_6_conclusion_paragraph_1   = fields.String(required=True)
+    section_6_conclusion_paragraph_2   = fields.String(required=True)
+    section_6_conclusion_paragraph_3   = fields.String(required=True)
+    section_6_conclusion_img           = fields.String(allow_none=True)
+    section_6_conclusion_link_internal = fields.String(allow_none=True)
+    section_6_conclusion_link_external = fields.String(allow_none=True)
+
+    # Section 7 (assoc-press, required)
+    section_7_assoc_press_title         = fields.String(required=True)
+    section_7_assoc_press_paragraph_1   = fields.String(required=True)
+    section_7_assoc_press_img           = fields.String(allow_none=True)
+    section_7_assoc_press_link_internal = fields.String(allow_none=True)
+    section_7_assoc_press_link_external = fields.String(allow_none=True)
+
+    # FAQs (1–3 required; 4–6 optional)
+    faq_q_1 = fields.String(required=True)
+    faq_a_1 = fields.String(required=True)
+    faq_q_2 = fields.String(required=True)
+    faq_a_2 = fields.String(required=True)
+    faq_q_3 = fields.String(required=True)
+    faq_a_3 = fields.String(required=True)
+    faq_q_4 = fields.String(allow_none=True)
+    faq_a_4 = fields.String(allow_none=True)
+    faq_q_5 = fields.String(allow_none=True)
+    faq_a_5 = fields.String(allow_none=True)
+    faq_q_6 = fields.String(allow_none=True)
+    faq_a_6 = fields.String(allow_none=True)
+blog_content_create = BlogContentCreateSchema()
+
+class BlogContentUpdateSchema(Schema):
+    yt_vid_id = fields.String(required=False, allow_none=True)
+
+    # All fields optional for partial updates; if present, allow empty=None
+    section_1_title              = fields.String()
+    section_1_paragraph_1        = fields.String()
+    section_1_paragraph_2        = fields.String()
+    section_1_paragraph_3        = fields.String()
+    section_1_img                = fields.String(allow_none=True)
+    section_1_link_internal      = fields.String(allow_none=True)
+    section_1_link_external      = fields.String(allow_none=True)
+
+    section_2_title              = fields.String()
+    section_2_paragraph_1        = fields.String()
+    section_2_paragraph_2        = fields.String()
+    section_2_paragraph_3        = fields.String()
+    section_2_img                = fields.String(allow_none=True)
+    section_2_link_internal      = fields.String(allow_none=True)
+    section_2_link_external      = fields.String(allow_none=True)
+
+    section_3_title              = fields.String()
+    section_3_paragraph_1        = fields.String()
+    section_3_paragraph_2        = fields.String()
+    section_3_paragraph_3        = fields.String()
+    section_3_img                = fields.String(allow_none=True)
+    section_3_link_internal      = fields.String(allow_none=True)
+    section_3_link_external      = fields.String(allow_none=True)
+
+    section_4_title              = fields.String()
+    section_4_paragraph_1        = fields.String()
+    section_4_paragraph_2        = fields.String()
+    section_4_paragraph_3        = fields.String()
+    section_4_img                = fields.String(allow_none=True)
+    section_4_link_internal      = fields.String(allow_none=True)
+    section_4_link_external      = fields.String(allow_none=True)
+
+    section_5_title              = fields.String()
+    section_5_paragraph_1        = fields.String()
+    section_5_paragraph_2        = fields.String()
+    section_5_paragraph_3        = fields.String()
+    section_5_img                = fields.String(allow_none=True)
+    section_5_link_internal      = fields.String(allow_none=True)
+    section_5_link_external      = fields.String(allow_none=True)
+
+    section_6_conclusion_title         = fields.String()
+    section_6_conclusion_paragraph_1   = fields.String()
+    section_6_conclusion_paragraph_2   = fields.String()
+    section_6_conclusion_paragraph_3   = fields.String()
+    section_6_conclusion_img           = fields.String(allow_none=True)
+    section_6_conclusion_link_internal = fields.String(allow_none=True)
+    section_6_conclusion_link_external = fields.String(allow_none=True)
+
+    section_7_assoc_press_title         = fields.String()
+    section_7_assoc_press_paragraph_1   = fields.String()
+    section_7_assoc_press_img           = fields.String(allow_none=True)
+    section_7_assoc_press_link_internal = fields.String(allow_none=True)
+    section_7_assoc_press_link_external = fields.String(allow_none=True)
+
+    faq_q_1 = fields.String()
+    faq_a_1 = fields.String()
+    faq_q_2 = fields.String()
+    faq_a_2 = fields.String()
+    faq_q_3 = fields.String()
+    faq_a_3 = fields.String()
+    faq_q_4 = fields.String(allow_none=True)
+    faq_a_4 = fields.String(allow_none=True)
+    faq_q_5 = fields.String(allow_none=True)
+    faq_a_5 = fields.String(allow_none=True)
+    faq_q_6 = fields.String(allow_none=True)
+    faq_a_6 = fields.String(allow_none=True)
+blog_content_update = BlogContentUpdateSchema()
+
+
+
+
+
 # ======================================================
 # BlogPost Schemas
 # ======================================================
@@ -130,10 +375,15 @@ class BlogPostOutSchema(Schema):
     author_id         = fields.Integer()
     image             = fields.String()
     content_mongo_id  = fields.String(allow_none=True)
+    # 👇 now strongly typed to SQL BlogContent fields
+    content           = fields.Nested(BlogContentOutSchema, required=False)
+
     created_at        = fields.DateTime(allow_none=True)
     updated_at        = fields.DateTime(allow_none=True)
     author_first_name = fields.Function(lambda o: getattr(o.author, "first_name", None))
     category_title    = fields.Function(lambda o: getattr(o.category, "title", None))
+
+
 
 blog_post_out = BlogPostOutSchema()
 blog_post_list_out = BlogPostOutSchema(many=True)
@@ -148,8 +398,11 @@ class BlogPostCreateSchema(Schema):
     author_id         = fields.Integer(required=True)
     image             = fields.String(required=True)
     content_mongo_id  = fields.String(allow_none=True)
+    
     # ✅ allow the JSON you send from the form
-    content           = fields.Dict(required=False)
+    #content           = fields.Dict(required=False)
+    # 👇 now strongly typed to SQL BlogContent fields
+    content           = fields.Nested(BlogContentCreateSchema, required=False)
 
     @validates("title")
     def _v_title(self, v, **kwargs):
@@ -180,7 +433,9 @@ class BlogPostUpdateSchema(Schema):
     image             = fields.String()
     content_mongo_id  = fields.String(allow_none=True)
     # ✅ allow partial updates that include content
-    content           = fields.Dict(required=False)
+    #content           = fields.Dict(required=False)
+    # 👇 partial updates allowed
+    content           = fields.Nested(BlogContentUpdateSchema, required=False)    
 
     @validates("title")
     def _v_title(self, v, **kwargs):
@@ -204,6 +459,9 @@ class BlogPostUpdateSchema(Schema):
                 raise ValidationError("Image path too long (max 300).")
 
 blog_post_update = BlogPostUpdateSchema()
+
+
+
 
 # ======================================================
 # NewsPost Schemas

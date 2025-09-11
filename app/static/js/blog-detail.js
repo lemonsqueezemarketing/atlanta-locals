@@ -1,10 +1,12 @@
-console.log('blog-detail.js file loaded');
+// static/js/blog-detail.js
+console.log('blog-detail.js loaded (slug-based)');
 
 (() => {
   // --- helpers ---
   const $ = (sel, root = document) => root.querySelector(sel);
 
   function formatPostDate(dateString) {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
       month: 'long',
@@ -32,24 +34,59 @@ console.log('blog-detail.js file loaded');
       .replace(/'/g, '&#039;');
   }
 
-  // Article sections (1–6)
-  function renderArticleSection(post, sectionKey) {
-    const inner = post?.content?.content || post?.content || {};
-    const section = inner?.[sectionKey];
-    if (!section) return '';
+  // ---------- RENDERERS (SQL BlogContent field names) ----------
+// --- Watch Now (YouTube) from content.yt_vid_id ---
+function renderWatchNow(post) {
+  const wrap = document.querySelector('.section-4-watch-now');
+  if (!wrap) return;
+
+  const target = wrap.querySelector('.watch-now-video');
+  if (!target) return;
+
+  const ytId = post?.content?.yt_vid_id;
+  if (!ytId) {
+    // Hide the section entirely if there is no video id
+    wrap.style.display = 'none';
+    return;
+  }
+
+  target.innerHTML = `
+    <iframe width="100%" height="500"
+      src="https://www.youtube.com/embed/${encodeURIComponent(ytId)}"
+      title="YouTube video player"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>
+  `;
+}
+
+  // Generic section renderer for section_1..section_5 and section_6_conclusion
+  function renderSection(content, basePrefix) {
+    if (!content || !basePrefix) return '';
+    const titleKey = `${basePrefix}_title`;
+
+    // Collect paragraph_x keys under the base prefix
+    const paraRegex = new RegExp(`^${basePrefix}_paragraph_(\\d+)$`);
+    const paras = Object.keys(content)
+      .map(k => {
+        const m = k.match(paraRegex);
+        return m ? { idx: Number(m[1]), key: k } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.idx - b.idx);
+
+    if (!content[titleKey] && paras.length === 0) return '';
 
     let html = `
       <hr class="section-divider" />
       <div class="section-content">
-        <h3 class="section-title">${escapeHtml(section.title)}</h3>
+        ${content[titleKey] ? `<h3 class="section-title">${escapeHtml(content[titleKey])}</h3>` : ''}
     `;
 
-    Object.keys(section)
-      .filter(k => k.startsWith('paragraph-'))
-      .sort((a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]))
-      .forEach(k => {
-        html += `<p>${escapeHtml(section[k])}</p>`;
-      });
+    paras.forEach(p => {
+      html += `<p>${escapeHtml(content[p.key])}</p>`;
+    });
 
     html += `
       </div>
@@ -58,42 +95,11 @@ console.log('blog-detail.js file loaded');
     return html;
   }
 
-  function renderMostReadGrid(items) {
-    const container = document.querySelector('.section-12-most-read .most-read-list');
-    if (!container) return;
-  
-    const top = (Array.isArray(items) ? items : []).slice(0, 7); // trim if you want fewer
-    if (!top.length) {
-      container.innerHTML = `
-        <div class="most-read-item">
-          <a class="most-read-link" href="#">No data yet.</a>
-        </div>`;
-      return;
-    }
-  
-    container.innerHTML = top.map((item, i) => {
-      const title = escapeHtml(item?.title || `Post ${i + 1}`);
-      const href  = `/blog/${item?.post_id ?? ''}`;
-      const img   = item?.image_url || resolveImage(item?.image || 'images/post_img_1.png');
-      return `
-        <div class="most-read-item">
-          <img src="${img}" alt="${title}">
-          <a href="${href}" class="most-read-link">${title}</a>
-        </div>
-      `;
-    }).join('');
-  }
-  
-  
-
-  // Section 7
-  function renderAssocPressSection(post) {
-    const inner = post?.content?.content || post?.content || {};
-    const s7 = inner['section-7-assoc-press'];
-    if (!s7) return '';
-
-    const title = escapeHtml(s7.title || '');
-    const text  = escapeHtml(s7['paragraph-1'] || '');
+  function renderAssocPress(content) {
+    if (!content) return '';
+    const title = escapeHtml(content.section_7_assoc_press_title || '');
+    const text  = escapeHtml(content.section_7_assoc_press_paragraph_1 || '');
+    if (!title && !text) return '';
 
     return `
       <hr class="section-divider" />
@@ -105,17 +111,31 @@ console.log('blog-detail.js file loaded');
     `;
   }
 
-  // Section 8 (FAQs)
-  function renderFaqSection(post) {
-    const inner = post?.content?.content || post?.content || {};
-    const faqs = inner['section-8-faqs'] || inner['sectition-8-faqs'] || [];
-    const title = escapeHtml(post?.title || 'This Article');
+  function renderFaqs(content, articleTitle) {
+    if (!content) return '';
+    const qRegex = /^faq_q_(\d+)$/;
+    const aRegex = /^faq_a_(\d+)$/;
 
-    if (!Array.isArray(faqs) || faqs.length === 0) return '';
+    const qs = {};
+    const as = {};
+    for (const k of Object.keys(content)) {
+      const qm = k.match(qRegex);
+      if (qm) qs[qm[1]] = content[k];
+      const am = k.match(aRegex);
+      if (am) as[am[1]] = content[k];
+    }
 
-    const itemsHtml = faqs.map((f, i) => {
-      const q = escapeHtml(f?.question || `Question ${i + 1}`);
-      const a = escapeHtml(f?.answer || '');
+    const idxs = Object.keys(qs)
+      .concat(Object.keys(as))
+      .filter((v, i, arr) => arr.indexOf(v) === i)
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    if (idxs.length === 0) return '';
+
+    const itemsHtml = idxs.map(i => {
+      const q = escapeHtml(qs[String(i)] || `Question ${i}`);
+      const a = escapeHtml(as[String(i)] || '');
       return `
         <div class="faq-item">
           <button class="faq-question" type="button" data-faq-idx="${i}">
@@ -131,7 +151,7 @@ console.log('blog-detail.js file loaded');
     return `
       <hr class="section-divider" />
       <div class="section-content">
-        <h2 class="faq-title">FAQs About ${title}</h2>
+        <h2 class="faq-title">FAQs About ${escapeHtml(articleTitle || 'This Article')}</h2>
         ${itemsHtml}
       </div>
       <hr class="section-divider" />
@@ -149,14 +169,41 @@ console.log('blog-detail.js file loaded');
     });
   }
 
+  function renderMostReadGrid(items) {
+    const container = document.querySelector('.section-12-most-read .most-read-list');
+    if (!container) return;
+
+    const top = (Array.isArray(items) ? items : []).slice(0, 7);
+    if (!top.length) {
+      container.innerHTML = `
+        <div class="most-read-item">
+          <a class="most-read-link" href="#">No data yet.</a>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = top.map((item, i) => {
+      const title = escapeHtml(item?.title || `Post ${i + 1}`);
+      const href  = item?.slug ? `/blog/${encodeURIComponent(item.slug)}` : '#';
+      const img   = item?.image_url || resolveImage(item?.image || 'images/post_img_1.png');
+      return `
+        <div class="most-read-item">
+          <a href="${href}">
+            <img src="${img}" alt="${title}">
+          </a>
+          <a href="${href}" class="most-read-link">${title}</a>
+        </div>
+      `;
+    }).join('');
+  }
+
   // Build HTML for Section 10 "Read Next"
   function buildReadNextHTML(posts) {
     const items = Array.isArray(posts) ? posts : [];
     const trackHtml = items.map((p, i) => {
       const title = escapeHtml(p.title || `Post ${i + 1}`);
       const img   = p.image_url || resolveImage(p.image || '');
-      const id    = p.post_id ?? p.id ?? '';
-      const href  = id ? `/blog/${id}` : '#';
+      const href  = p.slug ? `/blog/${encodeURIComponent(p.slug)}` : '#';
 
       return `
         <div class="carousel-item">
@@ -188,7 +235,6 @@ console.log('blog-detail.js file loaded');
     track.innerHTML = trackHtml;
     dots.innerHTML  = dotsHtml;
 
-    // Simple carousel behavior (click dots + auto-rotate)
     let currentIndex = 0;
     const totalItems = track.children.length;
 
@@ -205,7 +251,6 @@ console.log('blog-detail.js file loaded');
       dot.addEventListener('click', () => updateCarousel(index));
     });
 
-    // Auto-rotation
     let auto = null;
     function startAuto() {
       stopAuto();
@@ -228,11 +273,11 @@ console.log('blog-detail.js file loaded');
     if (totalItems > 1) startAuto();
   }
 
-// Inject and wire related section
+  // Inject and wire related section
   function renderRelatedArticles(items) {
     const container = document.querySelector('.section-13-related .related-list');
     if (!container) return;
-  
+
     const list = Array.isArray(items) ? items.slice(0, 4) : [];
     if (!list.length) {
       container.innerHTML = `
@@ -242,11 +287,11 @@ console.log('blog-detail.js file loaded');
       `;
       return;
     }
-  
-    container.innerHTML = list.map((item, i) => {
+
+    container.innerHTML = list.map((item) => {
       const title = escapeHtml(item?.title || 'Untitled');
       const img   = item?.image_url || resolveImage(item?.image || '');
-      const href  = `/blog/${item?.post_id ?? ''}`;
+      const href  = item?.slug ? `/blog/${encodeURIComponent(item.slug)}` : '#';
       return `
         <div class="related-item">
           <a href="${href}">
@@ -257,152 +302,133 @@ console.log('blog-detail.js file loaded');
       `;
     }).join('');
   }
-  
 
-  // Fill the page with a single post
-  function applyMainToDom(post){
+  // ---------- MAIN DOM POPULATION ----------
+
+  function applyMainToDom(post) {
     if (!post) return;
 
     const imgEl   = document.querySelector('.article-img img');
-    const newsCatEl = document.querySelector('.article-category');
-    const newsTitleEl = document.querySelector('.article-title');
-    const newsAuthorEl = document.querySelector('.article-meta');
-    const newsDateCreatedEl = document.querySelector('.aricle-date-created'); // note: class name kept as in HTML
-    const newsSection1El = document.querySelector('.section-1-article-deats');
-    const newsSection2El = document.querySelector('.section-2-article-deats');
-    const newsSection3El = document.querySelector('.section-3-article-deats');
-    const newsSection4El = document.querySelector('.section-4-article-deats');
-    const newsSection5El = document.querySelector('.section-5-article-deats');
-    const newsSection6El = document.querySelector('.section-6-article-deats');
-    const newsSection7El = document.querySelector('.section-7-assoc-press');
-    const newsSection8El = document.querySelector('.section-8-article-faqs');
+    const catEl   = document.querySelector('.article-category');
+    const titleEl = document.querySelector('.article-title');
+    const authorEl = document.querySelector('.article-meta');
+    const createdEl = document.querySelector('.aricle-date-created'); // class name kept as-is
+
+    const s1El = document.querySelector('.section-1-article-deats');
+    const s2El = document.querySelector('.section-2-article-deats');
+    const s3El = document.querySelector('.section-3-article-deats');
+    const s4El = document.querySelector('.section-4-article-deats');
+    const s5El = document.querySelector('.section-5-article-deats');
+    const s6El = document.querySelector('.section-6-article-deats');
+    const s7El = document.querySelector('.section-7-assoc-press');
+    const s8El = document.querySelector('.section-8-article-faqs');
+
     const commentCountEl = document.querySelector('.comment-count');
 
     const imgSrc = post.image_url || resolveImage(post.image || '');
-
     if (imgEl) {
       imgEl.src = imgSrc || '';
       imgEl.alt = post.title || 'Story image';
     }
-    if (newsCatEl){
-      newsCatEl.textContent = post.category_title || 'Untitled';
-    }
-    if (newsTitleEl){
-      newsTitleEl.textContent = post.title || 'Untitled';
-    }
-    if (newsAuthorEl){
-      newsAuthorEl.textContent = `By ${post.author_first_name}` || 'Unknown';
-    }
-    if (newsDateCreatedEl){
-      newsDateCreatedEl.textContent = formatPostDate(post.created_at) || 'Unknown';
+    if (catEl)   catEl.textContent   = post.category_title || '';
+    if (titleEl) titleEl.textContent = post.title || 'Untitled';
+    if (authorEl) authorEl.textContent = post.author_first_name ? `By ${post.author_first_name}` : '';
+    if (createdEl) createdEl.textContent = formatPostDate(post.created_at) || '';
+
+    // render watch now
+    renderWatchNow(post);
+    const content = post.content || {};
+
+    if (s1El) s1El.innerHTML = renderSection(content, 'section_1');
+    if (s2El) s2El.innerHTML = renderSection(content, 'section_2');
+    if (s3El) s3El.innerHTML = renderSection(content, 'section_3');
+    if (s4El) s4El.innerHTML = renderSection(content, 'section_4');
+    if (s5El) s5El.innerHTML = renderSection(content, 'section_5');
+    if (s6El) s6El.innerHTML = renderSection(content, 'section_6_conclusion');
+    if (s7El) s7El.innerHTML = renderAssocPress(content);
+    if (s8El) {
+      s8El.innerHTML = renderFaqs(content, post.title);
+      wireFaqToggles(s8El);
     }
 
-    if (newsSection1El){ newsSection1El.innerHTML = renderArticleSection(post, 'section-1'); }
-    if (newsSection2El){ newsSection2El.innerHTML = renderArticleSection(post, 'section-2'); }
-    if (newsSection3El){ newsSection3El.innerHTML = renderArticleSection(post, 'section-3'); }
-    if (newsSection4El){ newsSection4El.innerHTML = renderArticleSection(post, 'section-4'); }
-    if (newsSection5El){ newsSection5El.innerHTML = renderArticleSection(post, 'section-5'); }
-    if (newsSection6El){ newsSection6El.innerHTML = renderArticleSection(post, 'section-6-conclusion'); }
-    if (newsSection7El){ newsSection7El.innerHTML = renderAssocPressSection(post); }
-    if (newsSection8El){
-      newsSection8El.innerHTML = renderFaqSection(post);
-      wireFaqToggles(newsSection8El);
-    }
-
-    if (commentCountEl){
+    if (commentCountEl) {
       const comments = post?.analytics?.comments ?? 0;
       commentCountEl.textContent = `(${comments} comments)`;
     }
   }
 
-  // ---- fetch & init ----
-  const pathParts = window.location.pathname.split('/');
-  const blogId = pathParts[pathParts.length - 1];
-  const postURL = `/api/v1/blog-posts/${blogId}`;
-  const readNextURL = `/api/v1/blog/${blogId}/read-next`;
-  const mostReadBlogURL = `/api/v1/analytics/most-read/blog`;
-  const relatedURL = `/api/v1/blog/${blogId}/related`;
+  // ---------- FETCH & INIT (slug-first) ----------
 
-  console.log(postURL);
-  console.log(readNextURL);
-  console.log(relatedURL);
+  // get last non-empty path segment as slug
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const slug = decodeURIComponent(pathParts[pathParts.length - 1] || '');
+
+  // API endpoints:
+  // - main post by slug (includes content)
+  //   ✅ Correct endpoint shape: /api/v1/blog-posts/<ident>
+  const postURLBySlug = `/api/v1/blog-posts/${encodeURIComponent(slug)}?include_content=true`;
+  const mostReadBlogURL = `/api/v1/analytics/most-read/blog`;
 
   (async () => {
     try {
-      const [postRes, readNextRes, mostReadRes, relatedRes] = await Promise.all([
-        fetch(postURL,     { headers: { 'Accept': 'application/json' } }),
-        fetch(readNextURL, { headers: { 'Accept': 'application/json' } }),
-        fetch(mostReadBlogURL, { headers: { 'Accept': 'application/json' } }),
-        fetch(relatedURL,      { headers: { 'Accept': 'application/json' } }),
-      ]);
-
-      let post = null;
+      // 1) Fetch the main post by slug
+      const postRes = await fetch(postURLBySlug, { headers: { 'Accept': 'application/json' } });
       if (!postRes.ok) {
-        console.error('[blog] post fetch failed', postRes.status, await postRes.text());
-      } else {
-        const data = await postRes.json();
-        console.log('[blog] post payload:', data);
-        post = data;
+        console.error('[blog] post (by slug) fetch failed', postRes.status, await postRes.text());
+        return;
       }
+      const post = await postRes.json();
+      console.log('[blog] post payload (slug):', post);
 
-      let readNext = [];
-      if (!readNextRes.ok) {
-        console.error('[readNext] fetch failed', readNextRes.status, await readNextRes.text());
-      } else {
-        const data = await readNextRes.json(); // { items: [...], count: n }
-        console.log('[readNext] payload:', data);
-        readNext = Array.isArray(data.items) ? data.items : [];
-        if (readNext.length) {
-          console.log('[readNext] items:', readNext);
-        } else {
-          console.warn('[readNext] no items in response.');
-        }
-      }
-      
+      // Render the main article immediately
+      applyMainToDom(post);
 
-        // after Promise.all([... mostReadBlogURL ...]) resolves:
-        let mostReadItems = [];
-        if (!mostReadRes.ok) {
-        console.error('[blog-detail] most-read fetch failed', mostReadRes.status, await mostReadRes.text());
-        } else {
+      // 2) Fire off dependent requests that need the numeric id
+      const postId = post?.post_id;
+      const readNextURL = postId ? `/api/v1/blog/${postId}/read-next` : null;
+      const relatedURL  = postId ? `/api/v1/blog/${postId}/related`   : null;
+
+      const fetches = [
+        fetch(mostReadBlogURL, { headers: { 'Accept': 'application/json' } }),
+        readNextURL ? fetch(readNextURL, { headers: { 'Accept': 'application/json' } }) : Promise.resolve(null),
+        relatedURL  ? fetch(relatedURL,  { headers: { 'Accept': 'application/json' } }) : Promise.resolve(null),
+      ];
+
+      const [mostReadRes, readNextRes, relatedRes] = await Promise.all(fetches);
+
+      // Most Read
+      if (mostReadRes && mostReadRes.ok) {
         const mr = await mostReadRes.json();
-        mostReadItems = Array.isArray(mr?.items) ? mr.items : [];
-        console.log('[blog-detail] most-read items:', mostReadItems);
-        }
-        
+        const mostReadItems = Array.isArray(mr?.items) ? mr.items : [];
+        renderMostReadGrid(mostReadItems);
+      } else if (mostReadRes) {
+        console.error('[most-read] fetch failed', mostReadRes.status, await mostReadRes.text());
+      }
 
-        // after Promise.all([... relatedURL ...]) resolves:
-        let relatedItems = [];
+      // Read Next
+      if (readNextRes) {
+        if (!readNextRes.ok) {
+          console.error('[readNext] fetch failed', readNextRes.status, await readNextRes.text());
+        } else {
+          const data = await readNextRes.json();
+          const readNext = Array.isArray(data.items) ? data.items : [];
+          renderReadNextCarousel(readNext);
+        }
+      }
+
+      // Related
+      if (relatedRes) {
         if (!relatedRes.ok) {
           console.error('[related] fetch failed', relatedRes.status, await relatedRes.text());
         } else {
-          const data = await relatedRes.json(); // { items: [...], count: n }
-          console.log('[related] payload:', data);
-          relatedItems = Array.isArray(data.items) ? data.items : [];
-          if (relatedItems.length) {
-            console.log('[related] items:', relatedItems);
-          } else {
-            console.warn('[related] no items in response.');
-          }
+          const data = await relatedRes.json();
+          const relatedItems = Array.isArray(data.items) ? data.items : [];
+          renderRelatedArticles(relatedItems);
         }
-              // render "Read Next" carousel
-      renderReadNextCarousel(readNext);
-
-      renderMostReadGrid(mostReadItems);
-      renderRelatedArticles(relatedItems);
-
-
-
-
-      // render main article
-      applyMainToDom(post || null);
-
-
-      
+      }
 
     } catch (err) {
       console.warn('error loading blog detail:', err);
     }
   })();
-
 })();

@@ -21,11 +21,34 @@ console.log('blog.js loaded for /blog route');
       .replace(/'/g, '&#039;');
   }
 
-  // Handles nested: post.content.content["section-1"]["paragraph-1"]
+  /**
+   * Extract a first paragraph snippet from the post content.
+   * Supports the new flat BlogContent shape (section_1_paragraph_1)
+   * and falls back to the older nested {content: {'section-1': {'paragraph-1': ...}}} shape.
+   */
   function firstParagraph(post) {
     try {
       const c = post?.content;
-      const inner = c?.content || c; // tolerate either shape
+      if (!c) return '';
+
+      // ✅ Prefer new flat BlogContent fields
+      if (typeof c.section_1_paragraph_1 === 'string' && c.section_1_paragraph_1.trim()) {
+        return c.section_1_paragraph_1.trim();
+      }
+
+      // Fallbacks: try other first paragraphs if present
+      const flatKeys = [
+        'section_1_paragraph_1',
+        'section_1_paragraph_2',
+        'section_2_paragraph_1',
+        'section_3_paragraph_1'
+      ];
+      for (const k of flatKeys) {
+        if (typeof c[k] === 'string' && c[k].trim()) return c[k].trim();
+      }
+
+      // 🧯 Legacy nested (Mongo-style) content support
+      const inner = c?.content || c;
       const s1 = inner?.['section-1'] || inner?.section1 || inner?.section_1 || inner?.section || null;
       const p1 = s1?.['paragraph-1'] || s1?.paragraph1 || s1?.paragraph || null;
       if (typeof p1 === 'string' && p1.trim()) return p1.trim();
@@ -39,7 +62,7 @@ console.log('blog.js loaded for /blog route');
   (async () => {
     const params = new URLSearchParams();
     params.set('per_page', '10');
-    params.set('include_content', 'true');
+    params.set('include_content', 'true'); // NOTE: server should return BlogContent for lists in backlog
     const blogURL = `/api/v1/analytics/latest-blog?${params.toString()}`;
     try {
       console.log('[blog] (debug) fetching:', blogURL);
@@ -93,18 +116,11 @@ console.log('blog.js loaded for /blog route');
 
     const html = posts.map(item => {
       const title  = escapeHtml(item?.title || 'Untitled');
-      const href   = `/blog/${item?.post_id ?? ''}`; // adjust if your route differs
+      const href   = `/blog/${item?.slug ?? ''}`; // ✅ slug route
       const imgSrc = item?.image_url || resolveImage(item?.image || '');
 
-      // pull section-1.paragraph-1 (support both content or content.content)
-      let snippet = '';
-      try {
-        const c = item?.content;
-        const inner = c?.content || c;
-        const s1 = inner?.['section-1'] || inner?.section1 || inner?.section_1 || inner?.section || null;
-        const p1 = s1?.['paragraph-1'] || s1?.paragraph1 || s1?.paragraph || '';
-        if (typeof p1 === 'string') snippet = p1.trim();
-      } catch {}
+      // ✅ Use flat BlogContent first, fallback to legacy nested
+      const snippet = firstParagraph(item);
       const short = snippet.length > 150 ? `${escapeHtml(snippet.slice(0, 150))}…` : escapeHtml(snippet);
 
       return `
@@ -144,7 +160,7 @@ console.log('blog.js loaded for /blog route');
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('per_page', String(state.perPage));
-    params.set('include_content', 'true');
+    params.set('include_content', 'true'); // 🔔 expects BlogContent on list; server backlog if missing
 
     const url = `/api/v1/analytics/latest-blog?${params.toString()}`;
     console.log('[blog] fetching (paged):', url);
@@ -197,4 +213,3 @@ console.log('blog.js loaded for /blog route');
   // initial load
   loadPage(1);
 })();
-

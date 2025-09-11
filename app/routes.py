@@ -1160,19 +1160,37 @@ def api_search_places():
         "places": results,
     })
 
-# News -> "/news" (kept as its own endpoint)
 @main.route("/news")
 def news():
     return render_template("news/index.html")
 
-@main.route('/news/<int:news_id>')
-def news_detail(news_id):
+# Numeric -> redirect to slug (validate it’s a news item)
+@main.route("/news/<int:news_id>")
+def news_detail_numeric(news_id):
+    news = NewsPost.query.get_or_404(news_id)
+    return redirect(url_for("main.news_detail_slug", slug=news.post.slug), code=301)
 
-    return render_template('news/news_detail.html')
+# Primary SEO-friendly slug route
+@main.route("/news/<slug>")
+def news_detail_slug(slug):
+    # template JS calls /api/v1/news-posts/<slug>
+    return render_template("news/news_detail.html", slug=slug)
 
 @main.route('/blog')
 def blog():
     return render_template('blog/index.html')
+
+# Back-compat: numeric route redirects to slug (place this FIRST)
+@main.route('/blog/<int:post_id>')
+def blog_detail(post_id):
+    post = BlogPost.query.get_or_404(post_id)
+    return redirect(url_for('main.blog_detail_slug', slug=post.slug), code=301)
+
+# SEO-friendly slug route (primary)
+@main.route('/blog/<slug>')
+def blog_detail_slug(slug):
+    # Template fetches via JS from /api/v1/blog-posts/slug/<slug>?include_content=true
+    return render_template('blog/blog_detail.html', slug=slug)
 
 @main.route('/companies')
 def company_home():
@@ -1184,10 +1202,7 @@ def company_detail(company_id):
 
     return render_template('company_profile/compay_profile_detailview.html')
 
-@main.route('/blog/<int:post_id>')
-def blog_detail(post_id):
 
-    return render_template('blog/blog_detail.html')
 
 
 @main.route('/about')

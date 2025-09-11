@@ -3,20 +3,16 @@ from flask import Blueprint, request, jsonify, current_app, url_for, json
 from flask.views import MethodView
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, and_, text
+from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash  # ⬅️ add check_password_hash
+from flask_login import login_user, current_user   # ⬅️ add current_user
 
-from .models import (
-    db,
-    BlogCategory,
-    MyUser,
-    BlogPost,
-    NewsPost,
-    NewsMain,
-    PostAnalytics,
-    BlogContent,   # ⬅️ SQL content model (1:1 with BlogPost)
-)
+
+
+
+from .models import db, BlogCategory, MyUser, BlogPost, NewsPost, NewsMain, PostAnalytics
 from .schemas import (
     # BlogCategory
     blog_category_out,
@@ -51,11 +47,6 @@ from .schemas import (
     # Optional combined
     blog_post_with_analytics_out,
     blog_post_with_analytics_list_out,
-    # BlogContent (SQL)
-    blog_content_out,
-    blog_content_list_out,
-    blog_content_create,
-    blog_content_update,
 )
 
 api_bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
@@ -100,6 +91,7 @@ class GuardedMethodView(MethodView):
         if view is None and method == "HEAD":
             view = getattr(self, "get", None)
         assert view is not None, f"Unimplemented method {method}"
+        # wrap the view function with any method-specific decorators
         for dec in self.decorators_by_method.get(method, []):
             view = dec(view)
         return view(*args, **kwargs)
@@ -128,6 +120,88 @@ ADMIN_ALL = {
 def _json_error(message, status=400):
     return jsonify({"error": message}), status
 
+def _get_mongo():
+    """Return the configured Mongo DB handle or None."""
+    return getattr(current_app, "mongo_db", None)
+
+def _mongo_collection():
+    """Return the collection used for blog/news content, or None."""
+    mongo = getattr(current_app, "mongo_db", None)
+    return mongo["blog_content"] if mongo is not None else None
+
+def _is_valid_objectid(s: str) -> bool:
+    try:
+        ObjectId(str(s))
+        return True
+    except Exception:
+        return False
+
+def _fetch_mongo_json(content_id):
+    """Fetch and return raw JSON stored in Mongo by _id (string/ObjectId)."""
+    col = _mongo_collection()
+    if col is None or not content_id:
+        return None
+    try:
+        doc = col.find_one({"_id": ObjectId(str(content_id))})
+        if not doc:
+            return None
+        doc.pop("_id", None)  # hide internal id
+        return doc
+    except Exception as e:
+        current_app.logger.error(f"Error fetching MongoDB content: {e}")
+        return None
+
+def _insert_mongo_json(payload: dict):
+    """
+    Insert JSON payload into Mongo and return inserted_id as a str.
+    - Strips accidental/empty post_id to avoid unique-index collisions.
+    - Logs and re-raises DuplicateKeyError so the caller can return a clean 409.
+    - Logs and re-raises unexpected exceptions for higher-level handling.
+    """
+    col = _mongo_collection()
+    if col is None:
+        return None
+
+    # Defensive copy & cleanup
+    doc = dict(payload or {})
+    # If a unique index exists on post_id, inserting multiple docs with post_id: null
+    # will cause E11000. Strip empty/None so partial/sparse index won't trip.
+    if doc.get("post_id") in (None, "", "null"):
+        doc.pop("post_id", None)
+
+    try:
+        result = col.insert_one(doc)
+        return str(result.inserted_id)
+    except DuplicateKeyError as e:
+        current_app.logger.warning("Mongo DuplicateKeyError on blog_content insert: %s", e)
+        raise
+    except Exception as e:
+        current_app.logger.error("Error inserting MongoDB content: %s", e, exc_info=True)
+        raise
+def _update_mongo_json(existing_id, payload: dict):
+    """Update if existing_id valid; else insert new. Returns (content_id_str, created_new)."""
+    col = _mongo_collection()
+    if col is None:
+        return None, False
+    if existing_id and _is_valid_objectid(existing_id):
+        oid = ObjectId(str(existing_id))
+        col.update_one({"_id": oid}, {"$set": payload or {}}, upsert=False)
+        return str(oid), False
+    new_id = _insert_mongo_json(payload or {})
+    return new_id, True
+
+def _news_main_post(nm: NewsMain):
+    """
+    Safely resolve the related BlogPost for a NewsMain row.
+    Uses the relationship if present on the model; falls back to querying by post_id.
+    """
+    bp = getattr(nm, "post", None)
+    if bp is not None:
+        return bp
+    if nm.post_id is not None:
+        return BlogPost.query.get(nm.post_id)
+    return None
+
 def _analytics_dict(pa: PostAnalytics | None):
     """Return a small dict of analytics counters (or zeroes)."""
     if not pa:
@@ -138,60 +212,6 @@ def _analytics_dict(pa: PostAnalytics | None):
         "comments": pa.comments or 0,
         "shares": pa.shares or 0,
     }
-
-def _news_main_post(nm: NewsMain):
-    """Resolve the related BlogPost for a NewsMain row."""
-    bp = getattr(nm, "post", None)
-    if bp is not None:
-        return bp
-    if nm.post_id is not None:
-        return BlogPost.query.get(nm.post_id)
-    return None
-
-def _find_blog_post(ident: str) -> BlogPost | None:
-    """Return BlogPost by numeric id or slug."""
-    if str(ident).isdigit():
-        return BlogPost.query.get(int(ident))
-    return BlogPost.query.filter_by(slug=str(ident)).first()
-
-def _require_blog_post(ident: str) -> BlogPost:
-    bp = _find_blog_post(ident)
-    if not bp:
-        # Keep 404 behavior like get_or_404
-        from flask import abort
-        abort(404, description="BlogPost not found.")
-    return bp
-
-def _find_news_blogpost(ident: str) -> BlogPost | None:
-    """
-    Resolve a News post by either numeric id (post_id) or slug.
-    Returns the underlying BlogPost row if it has a NewsPost twin.
-    """
-    if str(ident).isdigit():
-        np = NewsPost.query.get(int(ident))
-        return np.post if np else None
-    bp = BlogPost.query.filter_by(slug=str(ident)).first()
-    if not bp:
-        return None
-    return bp if NewsPost.query.get(bp.post_id) else None
-
-def _require_news_blogpost(ident: str) -> BlogPost:
-    bp = _find_news_blogpost(ident)
-    if not bp:
-        from flask import abort
-        abort(404, description="NewsPost not found.")
-    return bp
-
-def _get_content_row(post_id: int) -> BlogContent | None:
-    return BlogContent.query.filter_by(post_id=post_id).first()
-
-def _embed_content_if_requested(bp: BlogPost, data: dict, include_content: bool):
-    if not include_content:
-        return
-    bc = _get_content_row(bp.post_id)
-    if bc is not None:
-        # dump returns the flat content object you want
-        data["content"] = blog_content_out.dump(bc)
 
 # ======================================================
 # BlogCategory (CRUD)
@@ -331,6 +351,7 @@ class MyUserListAPI(GuardedMethodView):
         if errors:
             return _json_error(errors, 400)
 
+        # 🔑 hash password before saving
         password = payload.pop("password", None)
         if not password:
             return _json_error("Password is required.", 400)
@@ -431,6 +452,7 @@ class AuthLoginAPI(GuardedMethodView):
         if not user.is_active:
             return _json_error("User account is inactive.", 403)
 
+        # 🔓 log in the user (Flask-Login session)
         login_user(user, remember=True)
 
         return jsonify({
@@ -439,98 +461,7 @@ class AuthLoginAPI(GuardedMethodView):
         }), 200
 
 # ======================================================
-# BlogContent (CRUD, SQL; 1:1 BlogPost)
-# ======================================================
-class BlogContentListAPI(GuardedMethodView):
-    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
-    def get(self):
-        """List content rows (paginated)."""
-        page = request.args.get("page", default=1, type=int)
-        per_page = request.args.get("per_page", default=20, type=int)
-        paged = BlogContent.query.order_by(BlogContent.updated_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
-        data = blog_content_list_out.dump(paged.items)
-        return jsonify({
-            "items": data,
-            "page": paged.page,
-            "per_page": paged.per_page,
-            "total": paged.total,
-            "pages": paged.pages
-        }), 200
-
-    def post(self):
-        """Create content for a post (enforces 1:1)."""
-        payload = request.get_json(silent=True) or {}
-        errors = blog_content_create.validate(payload)
-        if errors:
-            return _json_error(errors, 400)
-
-        post_id = payload["post_id"]
-        if not BlogPost.query.get(post_id):
-            return _json_error("BlogPost not found for given post_id.", 404)
-
-        if _get_content_row(post_id):
-            return _json_error("Content already exists for this post_id.", 409)
-
-        bc = BlogContent(post_id=post_id, content=payload.get("content"))
-        db.session.add(bc)
-        db.session.commit()
-        return blog_content_out.dump(bc), 201
-
-
-class BlogContentItemAPI(GuardedMethodView):
-    decorators_by_method = PUBLIC_READ_ADMIN_WRITE
-    def get(self, post_id: int):
-        bc = _get_content_row(post_id)
-        if not bc:
-            return _json_error("Content row not found.", 404)
-        return blog_content_out.dump(bc), 200
-
-    def put(self, post_id: int):
-        payload = request.get_json(silent=True) or {}
-        errors = blog_content_create.validate({"post_id": post_id, **payload})
-        if errors:
-            return _json_error(errors, 400)
-
-        if not BlogPost.query.get(post_id):
-            return _json_error("BlogPost not found for given post_id.", 404)
-
-        bc = _get_content_row(post_id)
-        if not bc:
-            bc = BlogContent(post_id=post_id, content=payload.get("content"))
-            db.session.add(bc)
-        else:
-            bc.content = payload.get("content")
-
-        db.session.commit()
-        return blog_content_out.dump(bc), 200
-
-    def patch(self, post_id: int):
-        payload = request.get_json(silent=True) or {}
-        errors = blog_content_update.validate(payload)
-        if errors:
-            return _json_error(errors, 400)
-
-        bc = _get_content_row(post_id)
-        if not bc:
-            return _json_error("Content row not found.", 404)
-
-        if "content" in payload:
-            bc.content = payload["content"]
-        db.session.commit()
-        return blog_content_out.dump(bc), 200
-
-    def delete(self, post_id: int):
-        bc = _get_content_row(post_id)
-        if not bc:
-            return _json_error("Content row not found.", 404)
-        db.session.delete(bc)
-        db.session.commit()
-        return jsonify({"status": "deleted", "post_id": post_id}), 200
-
-# ======================================================
-# BlogPost (CRUD + SQL BlogContent)
+# BlogPost (CRUD + Mongo content)
 # ======================================================
 class BlogPostListAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
@@ -559,19 +490,19 @@ class BlogPostListAPI(GuardedMethodView):
         else:
             items = blog_post_list_out.dump(paged.items)
 
+        for item in items:
+            item.pop("content_mongo_id", None)
+
         for i, row in enumerate(paged.items):
-            # Hide legacy field if present in schema
-            items[i].pop("content_mongo_id", None)
             items[i]["image_url"] = url_for("static", filename=row.image) if row.image else None
             if not include_analytics:
                 items[i]["analytics"] = _analytics_dict(getattr(row, "analytics", None))
 
         if include_content:
             for i, row in enumerate(paged.items):
-                bc = _get_content_row(row.post_id)
-                if bc is not None:
-                    # ✅ FIX: don’t .get("content"); dump returns the flat object we want
-                    items[i]["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(row.content_mongo_id)
+                if content is not None:
+                    items[i]["content"] = content
 
         return jsonify({
             "items": items,
@@ -582,14 +513,15 @@ class BlogPostListAPI(GuardedMethodView):
         }), 200
 
     def post(self):
-        # Accept multipart form (for file + JSON)
-        if request.content_type and request.content_type.startswith("multipart/form-data"):
+        # ✅ Accept multipart form (for file + JSON)
+        if request.content_type.startswith("multipart/form-data"):
             image_file = request.files.get("image")
             payload_raw = request.form.get("payload")
             if not payload_raw:
                 return _json_error("Missing payload in multipart form", 400)
             payload = json.loads(payload_raw)
         else:
+            # Fallback if sent as pure JSON (no file)
             payload = request.get_json(silent=True) or {}
             image_file = None
 
@@ -603,7 +535,7 @@ class BlogPostListAPI(GuardedMethodView):
         if not MyUser.query.get(payload["author_id"]):
             return _json_error("author_id not found.", 404)
 
-        # Save image file (if provided)
+        # ✅ Save image file (if provided)
         if image_file:
             filename = secure_filename(image_file.filename)
             upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
@@ -611,7 +543,7 @@ class BlogPostListAPI(GuardedMethodView):
             image_file.save(os.path.join(upload_dir, filename))
             payload["image"] = f"media/blog/{filename}"
 
-        # Pull out content for SQL
+        # Pull out content for Mongo
         content = payload.pop("content", None)
 
         # Create SQL blog post
@@ -623,35 +555,46 @@ class BlogPostListAPI(GuardedMethodView):
             db.session.rollback()
             return _json_error("Title or slug already exists.", 409)
 
-        # Save BlogContent if provided
-        if content is not None:
-            if _get_content_row(post.post_id):
-                return _json_error("Content already exists for this post_id.", 409)
-            bc = BlogContent(post_id=post.post_id, content=content)
-            db.session.add(bc)
-            db.session.commit()
+        # Save to Mongo if needed
+        if content:
+            col = _mongo_collection()
+            if col is None:
+                return _json_error("MongoDB is not configured but 'content' was provided.", 503)
+            content["post_id"] = post.post_id
+            try:
+                inserted_id = col.insert_one(content).inserted_id
+                post.content_mongo_id = str(inserted_id)
+                db.session.commit()
+            except Exception as e:
+                current_app.logger.error(f"Mongo insert error: {e}")
+                return _json_error("Failed to save content to MongoDB.", 500)
 
         # Build response
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
-        if content is not None:
+
+        if content:
+            content.pop("post_id", None)
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
             data["content"] = content
-        else:
-            bc = _get_content_row(post.post_id)
-            if bc is not None:
-                data["content"] = blog_content_out.dump(bc)
+        elif post.content_mongo_id:
+            embedded = _fetch_mongo_json(post.content_mongo_id)
+            if embedded:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
+                data["content"] = embedded
+
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
         return data, 201
-
-
 class BlogPostItemAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
 
-    def get(self, ident: str):
+    def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        post = _require_blog_post(ident)
+        post = BlogPost.query.get_or_404(post_id)
         data = (blog_post_with_analytics_out.dump(post)
                 if include_analytics
                 else blog_post_out.dump(post))
@@ -660,15 +603,19 @@ class BlogPostItemAPI(GuardedMethodView):
         if not include_analytics:
             data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
 
-        _embed_content_if_requested(post, data, include_content)
-        # Hide legacy field if present in schema
-        data.pop("content_mongo_id", None)
+        if include_content:
+            content = _fetch_mongo_json(post.content_mongo_id)
+            if content is not None:
+                if "_id" in content:
+                    content["_id"] = str(content["_id"])
+                data["content"] = content
+
         return data, 200
 
-    def put(self, ident: str):
-        post = _require_blog_post(ident)
+    def put(self, post_id: int):
+        post = BlogPost.query.get_or_404(post_id)
 
-        if request.content_type and request.content_type.startswith("multipart/form-data"):
+        if request.content_type.startswith("multipart/form-data"):
             image_file = request.files.get("image")
             payload_raw = request.form.get("payload")
             if not payload_raw:
@@ -689,7 +636,7 @@ class BlogPostItemAPI(GuardedMethodView):
 
         content = payload.pop("content", None)
 
-        # Handle file save
+        # ✅ Handle file save
         if image_file:
             filename = secure_filename(image_file.filename)
             upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
@@ -699,20 +646,17 @@ class BlogPostItemAPI(GuardedMethodView):
         elif "image" in payload:
             post.image = payload["image"]
 
-        # Update core fields
         post.title = payload["title"]
         post.slug = payload["slug"]
         post.blog_cat_id = payload["blog_cat_id"]
         post.author_id = payload["author_id"]
 
-        # Update SQL content
+        # ✅ Update Mongo content
         if content is not None:
-            bc = _get_content_row(post.post_id)
-            if bc is None:
-                bc = BlogContent(post_id=post.post_id, content=content)
-                db.session.add(bc)
-            else:
-                bc.content = content
+            if _mongo_collection() is None:
+                return _json_error("MongoDB is not configured but 'content' was provided.", 503)
+            new_id, _ = _update_mongo_json(post.content_mongo_id, content)
+            post.content_mongo_id = new_id
 
         try:
             db.session.commit()
@@ -722,20 +666,25 @@ class BlogPostItemAPI(GuardedMethodView):
 
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
-        if content is not None:
+
+        if content:
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
             data["content"] = content
-        else:
-            bc = _get_content_row(post.post_id)
-            if bc is not None:
-                data["content"] = blog_content_out.dump(bc)
+        elif post.content_mongo_id:
+            embedded = _fetch_mongo_json(post.content_mongo_id)
+            if embedded is not None:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
+                data["content"] = embedded
+
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
-        data.pop("content_mongo_id", None)
         return data, 200
 
-    def patch(self, ident: str):
-        post = _require_blog_post(ident)
+    def patch(self, post_id: int):
+        post = BlogPost.query.get_or_404(post_id)
 
-        if request.content_type and request.content_type.startswith("multipart/form-data"):
+        if request.content_type.startswith("multipart/form-data"):
             image_file = request.files.get("image")
             payload_raw = request.form.get("payload")
             if not payload_raw:
@@ -756,7 +705,7 @@ class BlogPostItemAPI(GuardedMethodView):
 
         content = payload.pop("content", None)
 
-        # Handle file save / direct image updates
+        # ✅ Handle file save
         if image_file:
             filename = secure_filename(image_file.filename)
             upload_dir = os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], "blog")
@@ -766,17 +715,15 @@ class BlogPostItemAPI(GuardedMethodView):
         elif "image" in payload:
             post.image = payload["image"]
 
-        for field in ["title", "slug", "blog_cat_id", "author_id"]:
+        for field in ["title", "slug", "blog_cat_id", "author_id", "content_mongo_id"]:
             if field in payload:
                 setattr(post, field, payload[field])
 
         if content is not None:
-            bc = _get_content_row(post.post_id)
-            if bc is None:
-                bc = BlogContent(post_id=post.post_id, content=content)
-                db.session.add(bc)
-            else:
-                bc.content = content
+            if _mongo_collection() is None:
+                return _json_error("MongoDB is not configured but 'content' was provided.", 503)
+            new_id, _ = _update_mongo_json(post.content_mongo_id, content)
+            post.content_mongo_id = new_id
 
         try:
             db.session.commit()
@@ -786,27 +733,32 @@ class BlogPostItemAPI(GuardedMethodView):
 
         data = blog_post_out.dump(post)
         data["image_url"] = url_for("static", filename=post.image) if post.image else None
-        if content is not None:
+
+        if content:
+            if "_id" in content:
+                content["_id"] = str(content["_id"])
             data["content"] = content
-        else:
-            bc = _get_content_row(post.post_id)
-            if bc is not None:
-                data["content"] = blog_content_out.dump(bc)
+        elif post.content_mongo_id:
+            embedded = _fetch_mongo_json(post.content_mongo_id)
+            if embedded is not None:
+                if "_id" in embedded:
+                    embedded["_id"] = str(embedded["_id"])
+                data["content"] = embedded
+
         data["analytics"] = _analytics_dict(getattr(post, "analytics", None))
-        data.pop("content_mongo_id", None)
         return data, 200
 
-    def delete(self, ident: str):
-        post = _require_blog_post(ident)
-        # Delete SQL content (if exists)
-        bc = _get_content_row(post.post_id)
-        if bc is not None:
-            db.session.delete(bc)
+    def delete(self, post_id: int):
+        post = BlogPost.query.get_or_404(post_id)
+        col = _mongo_collection()
+        if post.content_mongo_id and col is not None and _is_valid_objectid(post.content_mongo_id):
+            try:
+                col.delete_one({"_id": ObjectId(post.content_mongo_id)})
+            except Exception:
+                pass
         db.session.delete(post)
         db.session.commit()
-        return jsonify({"status": "deleted", "post_id": post.post_id}), 200
-
-
+        return jsonify({"status": "deleted", "post_id": post_id}), 200
 # ======================================================
 # Latest Blog (paginated, newest first)
 # ======================================================
@@ -814,7 +766,7 @@ class LatestBlogAPI(GuardedMethodView):
     def get(self):
         """
         Return latest blog posts (newest first) with the SAME paging shape
-        as /api/v1/blog-posts.
+        as /api/v1/blog-posts so the existing pager in blog.js keeps working.
         Supports:
           - ?page=, ?per_page=
           - ?include_content=true|false
@@ -828,22 +780,26 @@ class LatestBlogAPI(GuardedMethodView):
         query = BlogPost.query.order_by(BlogPost.created_at.desc())
         paged = query.paginate(page=page, per_page=per_page, error_out=False)
 
+        # Base serialization (like BlogPostListAPI)
         if include_analytics:
             items = blog_post_with_analytics_list_out.dump(paged.items)
         else:
             items = blog_post_list_out.dump(paged.items)
 
+        # Hide internal content id + add browser image_url
         for i, row in enumerate(paged.items):
             items[i].pop("content_mongo_id", None)
             items[i]["image_url"] = url_for("static", filename=row.image) if row.image else None
+
             if not include_analytics:
                 items[i]["analytics"] = _analytics_dict(getattr(row, "analytics", None))
 
+        # Optional: embed Mongo content
         if include_content:
             for i, row in enumerate(paged.items):
-                bc = _get_content_row(row.post_id)
-                if bc is not None:
-                    items[i]["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(row.content_mongo_id)
+                if content is not None:
+                    items[i]["content"] = content
 
         return jsonify({
             "items": items,
@@ -854,12 +810,14 @@ class LatestBlogAPI(GuardedMethodView):
         }), 200
 
 # ---------------------------------------------------------
-# BlogPostReadNextAPI (accepts id or slug)
+# BlogPostReadNextAPI
+# Returns up to the next N blog posts for the "Read Next" carousel.
+# Excludes the current post_id and orders by BlogPost.created_at (desc).
 # ---------------------------------------------------------
 class BlogPostReadNextAPI(GuardedMethodView):
-    def get(self, ident: str):
+    def get(self, post_id: int):
         """
-        GET /api/v1/blog/<ident>/read-next
+        GET /api/v1/blog/<post_id>/read-next
         Query params:
           - limit (int, default 3)
           - include_content=true|false (default false)
@@ -871,11 +829,13 @@ class BlogPostReadNextAPI(GuardedMethodView):
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        bp_current = _require_blog_post(ident)
+        # Ensure the current blog post exists
+        _ = BlogPost.query.get_or_404(post_id)
 
+        # Other blog posts, newest first (exclude current)
         rows = (
             BlogPost.query
-            .filter(BlogPost.post_id != bp_current.post_id)
+            .filter(BlogPost.post_id != post_id)
             .order_by(BlogPost.created_at.desc())
             .limit(limit)
             .all()
@@ -884,13 +844,13 @@ class BlogPostReadNextAPI(GuardedMethodView):
         items = []
         for bp in rows:
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)
+            row.pop("content_mongo_id", None)  # hide internal id
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
 
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
@@ -902,12 +862,15 @@ class BlogPostReadNextAPI(GuardedMethodView):
         return jsonify({"items": items, "count": len(items)}), 200
 
 # ---------------------------------------------------------
-# BlogPostRelatedAPI (accepts id or slug)
+# BlogPostRelatedAPI
+# Returns up to N related blog posts (same category as current),
+# excluding the current post_id. Results are BlogPost-shaped objects
+# (with image_url and analytics), optionally with content.
 # ---------------------------------------------------------
 class BlogPostRelatedAPI(GuardedMethodView):
-    def get(self, ident: str):
+    def get(self, post_id: int):
         """
-        GET /api/v1/blog/<ident>/related
+        GET /api/v1/blog/<post_id>/related
         Query params:
           - limit (int, default 4)
           - include_content=true|false (default false)
@@ -919,12 +882,14 @@ class BlogPostRelatedAPI(GuardedMethodView):
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        bp_current = _require_blog_post(ident)
+        # Ensure current blog post exists; get its category for "related" logic
+        bp_current = BlogPost.query.get_or_404(post_id)
         cat_id = bp_current.blog_cat_id
 
+        # Other blog posts in SAME category (exclude current), newest first
         rows = (
             BlogPost.query
-            .filter(BlogPost.post_id != bp_current.post_id)
+            .filter(BlogPost.post_id != post_id)
             .filter(BlogPost.blog_cat_id == cat_id)
             .order_by(BlogPost.created_at.desc())
             .limit(limit)
@@ -934,13 +899,13 @@ class BlogPostRelatedAPI(GuardedMethodView):
         items = []
         for bp in rows:
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)
+            row.pop("content_mongo_id", None)  # hide internal id
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
 
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
@@ -952,7 +917,7 @@ class BlogPostRelatedAPI(GuardedMethodView):
         return jsonify({"items": items, "count": len(items)}), 200
 
 # ======================================================
-# NewsPost (1:1 with BlogPost) — item accepts id or slug
+# NewsPost (1:1 with BlogPost)
 # ======================================================
 class NewsPostListAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
@@ -969,14 +934,14 @@ class NewsPostListAPI(GuardedMethodView):
         for news in paged.items:
             bp = news.post
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)
+            row.pop("content_mongo_id", None)  # hide from public list view
+            # include browser-ready image URL
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
-
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
-
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
+            # analytics (inline or zeroes)
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
             else:
@@ -1012,97 +977,94 @@ class NewsPostListAPI(GuardedMethodView):
 
         data = blog_post_out.dump(bp)
         data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
-        bc = _get_content_row(bp.post_id)
-        if bc is not None:
-            data["content"] = blog_content_out.dump(bc)
+        embedded = _fetch_mongo_json(bp.content_mongo_id)
+        if embedded is not None:
+            data["content"] = embedded
         data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
         return data, 201
 
 
 class NewsPostItemAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
-    def get(self, ident: str):
+    def get(self, post_id: int):
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        bp = _require_news_blogpost(ident)
+        news = NewsPost.query.get_or_404(post_id)
+        bp = news.post
         data = blog_post_out.dump(bp)
         data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
         if include_content:
-            bc = _get_content_row(bp.post_id)
-            if bc is not None:
-                data["content"] = blog_content_out.dump(bc)
+            content = _fetch_mongo_json(bp.content_mongo_id)
+            if content is not None:
+                data["content"] = content
 
         if include_analytics:
             data.update(_analytics_dict(getattr(bp, "analytics", None)))
         else:
             data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
 
-        data.pop("content_mongo_id", None)
         return data, 200
 
-    def put(self, ident: str):
-        """NewsPost rows are thin; PUT just echoes current BlogPost shape."""
+    def put(self, post_id: int):
         payload = request.get_json(silent=True) or {}
         errors = news_post_update.validate(payload)
         if errors:
             return _json_error(errors, 400)
 
-        bp = _require_news_blogpost(ident)
+        # Ensure exists
+        news = NewsPost.query.get_or_404(post_id)
+        bp = news.post
         data = blog_post_out.dump(bp)
         data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
-        bc = _get_content_row(bp.post_id)
-        if bc is not None:
-            data["content"] = blog_content_out.dump(bc)
+        embedded = _fetch_mongo_json(bp.content_mongo_id)
+        if embedded is not None:
+            data["content"] = embedded
         data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
-        data.pop("content_mongo_id", None)
         return data, 200
 
-    def patch(self, ident: str):
+    def patch(self, post_id: int):
         payload = request.get_json(silent=True) or {}
         errors = news_post_update.validate(payload)
         if errors:
             return _json_error(errors, 400)
 
-        bp = _require_news_blogpost(ident)
+        news = NewsPost.query.get_or_404(post_id)
+        bp = news.post
         data = blog_post_out.dump(bp)
         data["image_url"] = url_for("static", filename=bp.image) if bp.image else None
-        bc = _get_content_row(bp.post_id)
-        if bc is not None:
-            data["content"] = blog_content_out.dump(bc)
+        embedded = _fetch_mongo_json(bp.content_mongo_id)
+        if embedded is not None:
+            data["content"] = embedded
         data["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
-        data.pop("content_mongo_id", None)
         return data, 200
 
-    def delete(self, ident: str):
-        # delete the NewsPost row only
-        if str(ident).isdigit():
-            news = NewsPost.query.get_or_404(int(ident))
-        else:
-            bp = BlogPost.query.filter_by(slug=str(ident)).first()
-            if not bp:
-                return _json_error("NewsPost not found.", 404)
-            news = NewsPost.query.get_or_404(bp.post_id)
+    def delete(self, post_id: int):
+        news = NewsPost.query.get_or_404(post_id)
         db.session.delete(news)
         db.session.commit()
-        return jsonify({"status": "deleted", "news_post_id": news.post_id}), 200
+        return jsonify({"status": "deleted", "news_post_id": post_id}), 200
 
 # ---------------------------------------------------------
-# NewsPostReadNextAPI (accepts id or slug)
+# NewsPostReadNextAPI
+# Returns up to the next N news posts for the "Read Next" carousel.
+# Excludes the current post_id and orders by BlogPost.created_at (desc).
 # ---------------------------------------------------------
 class NewsPostReadNextAPI(GuardedMethodView):
-    def get(self, ident: str):
+    def get(self, post_id: int):
         limit = request.args.get("limit", default=3, type=int)
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        bp_current = _require_news_blogpost(ident)
+        # Ensure the current news post exists (pk = BlogPost.post_id)
+        _ = NewsPost.query.get_or_404(post_id)
 
+        # Other news posts, newest first (pull fields from BlogPost)
         rows = (
             BlogPost.query
             .join(NewsPost, NewsPost.post_id == BlogPost.post_id)
-            .filter(BlogPost.post_id != bp_current.post_id)
+            .filter(BlogPost.post_id != post_id)
             .order_by(BlogPost.created_at.desc())
             .limit(limit)
             .all()
@@ -1111,13 +1073,13 @@ class NewsPostReadNextAPI(GuardedMethodView):
         items = []
         for bp in rows:
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)
+            row.pop("content_mongo_id", None)  # hide internal id
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
 
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
@@ -1129,21 +1091,27 @@ class NewsPostReadNextAPI(GuardedMethodView):
         return jsonify({"items": items, "count": len(items)}), 200
 
 # ---------------------------------------------------------
-# NewsPostRelatedAPI (accepts id or slug)
+# NewsPostRelatedAPI
+# Returns up to N related news posts (same category as current),
+# excluding the current post_id. Results are BlogPost-shaped objects
+# (with image_url and analytics), optionally with content.
 # ---------------------------------------------------------
 class NewsPostRelatedAPI(GuardedMethodView):
-    def get(self, ident: str):
+    def get(self, post_id: int):
         limit = request.args.get("limit", default=4, type=int)
         include_content = request.args.get("include_content", default="false").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
 
-        bp_current = _require_news_blogpost(ident)
+        # Ensure current news post exists and fetch its BlogPost (for category)
+        news = NewsPost.query.get_or_404(post_id)
+        bp_current = news.post
         cat_id = bp_current.blog_cat_id
 
+        # Other news posts in the SAME category (exclude current), newest first
         rows = (
             BlogPost.query
             .join(NewsPost, NewsPost.post_id == BlogPost.post_id)
-            .filter(BlogPost.post_id != bp_current.post_id)
+            .filter(BlogPost.post_id != post_id)
             .filter(BlogPost.blog_cat_id == cat_id)
             .order_by(BlogPost.created_at.desc())
             .limit(limit)
@@ -1157,9 +1125,9 @@ class NewsPostRelatedAPI(GuardedMethodView):
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
 
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
@@ -1183,6 +1151,7 @@ class NewsMainListAPI(GuardedMethodView):
 
         query = NewsMain.query
 
+        # Optional: filter current active window when active=1/true
         if active_only is not None and str(active_only).lower() in ("1", "true", "yes"):
             today = func.current_date()
             query = query.filter(and_(NewsMain.start_date <= today, NewsMain.end_date >= today))
@@ -1194,16 +1163,18 @@ class NewsMainListAPI(GuardedMethodView):
 
         items = []
         for nm in paged.items:
-            bp = _news_main_post(nm)
+            bp = _news_main_post(nm)  # robust resolution even if relationship missing
             nm_row = news_main_out.dump(nm)
             post_row = blog_post_out.dump(bp) if bp else {}
-            post_row.pop("content_mongo_id", None)
+            post_row.pop("content_mongo_id", None)  # hide from public list view
+            # add browser-ready image URL for nested post
             if bp and bp.image:
                 post_row["image_url"] = url_for("static", filename=bp.image)
             if include_content and bp:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    post_row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    post_row["content"] = content
+            # tack on analytics for nested post
             post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
             items.append({
                 "news_main": nm_row,
@@ -1224,6 +1195,7 @@ class NewsMainListAPI(GuardedMethodView):
         if errors:
             return _json_error(errors, 400)
 
+        # Ensure BlogPost exists
         post_id = payload["post_id"]
         bp = BlogPost.query.get(post_id)
         if not bp:
@@ -1240,12 +1212,14 @@ class NewsMainListAPI(GuardedMethodView):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+            # Likely UNIQUE window or EXCLUDE overlap violation
             return _json_error("Could not create NewsMain (constraint violation: overlapping window or duplicate).", 409)
 
         data = {
             "news_main": news_main_out.dump(nm),
             "post": blog_post_out.dump(bp)
         }
+        # include image_url & analytics on nested post
         if bp and bp.image:
             data["post"]["image_url"] = url_for("static", filename=bp.image)
         data["post"]["analytics"] = _analytics_dict(getattr(bp, "analytics", None))
@@ -1263,11 +1237,10 @@ class NewsMainItemAPI(GuardedMethodView):
         if bp and bp.image:
             post_row["image_url"] = url_for("static", filename=bp.image)
         if include_content and bp:
-            bc = _get_content_row(bp.post_id)
-            if bc is not None:
-                post_row["content"] = blog_content_out.dump(bc)
+            content = _fetch_mongo_json(bp.content_mongo_id)
+            if content is not None:
+                post_row["content"] = content
         post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
-        post_row.pop("content_mongo_id", None)
         return {"news_main": nm_row, "post": post_row}, 200
 
     def put(self, news_main_id: int):
@@ -1278,6 +1251,7 @@ class NewsMainItemAPI(GuardedMethodView):
 
         nm = NewsMain.query.get_or_404(news_main_id)
 
+        # Allow re-pointing and window updates
         if "post_id" in payload and payload["post_id"] is not None:
             bp = BlogPost.query.get(payload["post_id"])
             if not bp:
@@ -1302,10 +1276,10 @@ class NewsMainItemAPI(GuardedMethodView):
         if bp and bp.image:
             post_row["image_url"] = url_for("static", filename=bp.image)
         post_row["analytics"] = _analytics_dict(getattr(bp, "analytics", None)) if bp else _analytics_dict(None)
-        post_row.pop("content_mongo_id", None)
         return {"news_main": news_main_out.dump(nm), "post": post_row}, 200
 
     def patch(self, news_main_id: int):
+        # Same behavior as PUT for partial updates
         return self.put(news_main_id)
 
     def delete(self, news_main_id: int):
@@ -1320,6 +1294,7 @@ class NewsMainItemAPI(GuardedMethodView):
 class PostAnalyticsListAPI(GuardedMethodView):
     decorators_by_method = PUBLIC_READ_ADMIN_WRITE
     def get(self):
+        """List analytics rows (paginated)."""
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=50, type=int)
 
@@ -1336,6 +1311,7 @@ class PostAnalyticsListAPI(GuardedMethodView):
         }), 200
 
     def post(self):
+        """Create analytics row for a post (1:1)."""
         payload = request.get_json(silent=True) or {}
         errors = post_analytics_create.validate(payload)
         if errors:
@@ -1345,6 +1321,7 @@ class PostAnalyticsListAPI(GuardedMethodView):
         if not BlogPost.query.get(post_id):
             return _json_error("BlogPost not found for given post_id.", 404)
 
+        # enforce uniqueness at app level too
         if PostAnalytics.query.filter_by(post_id=post_id).first():
             return _json_error("Analytics already exists for this post_id.", 409)
 
@@ -1403,12 +1380,14 @@ class PostAnalyticsItemAPI(GuardedMethodView):
 # ======================================================
 class MostReadBlogAPI(GuardedMethodView):
     def get(self):
+        """Return rows from atllocal_db.v_most_read_blog_posts (read-only)."""
         sql = text("""
             SELECT post_id, title, slug, image, blog_cat_id, author_id,
                    created_at, views, likes, comments, shares
             FROM atllocal_db.v_most_read_blog_posts
         """)
         rows = db.session.execute(sql).mappings().all()
+        # add image_url for convenience
         out = []
         for r in rows:
             row = dict(r)
@@ -1419,6 +1398,7 @@ class MostReadBlogAPI(GuardedMethodView):
 
 class MostReadNewsAPI(GuardedMethodView):
     def get(self):
+        """Return rows from atllocal_db.v_most_read_news_posts (read-only)."""
         sql = text("""
             SELECT post_id, title, slug, image, blog_cat_id, author_id,
                    created_at, views, likes, comments, shares
@@ -1437,16 +1417,18 @@ class LatestNewsAPI(GuardedMethodView):
     def get(self):
         """
         Return latest news posts as FULL post objects (like /api/v1/news-posts),
-        enriched with SQL BlogContent, image_url, and analytics.
+        enriched with Mongo 'content', 'image_url', and 'analytics'.
         """
         include_content = request.args.get("include_content", default="true").lower() in ("1", "true", "yes")
         include_analytics = request.args.get("include_analytics", default="false").lower() in ("1", "true", "yes")
         per_page = request.args.get("per_page", type=int)
 
+        # Pull the latest post IDs from the SQL view (already ordered in the view).
         sql = text("""SELECT post_id FROM atllocal_db.v_latest_news_posts""")
         rows = db.session.execute(sql).mappings().all()
         post_ids = [r["post_id"] for r in rows]
 
+        # Respect ?per_page= if provided (helps the /news page show top N)
         if per_page is not None and per_page > 0:
             post_ids = post_ids[:per_page]
 
@@ -1456,15 +1438,20 @@ class LatestNewsAPI(GuardedMethodView):
             if not bp:
                 continue
 
+            # Serialize like NewsPost list items (BlogPost-shaped)
             row = blog_post_out.dump(bp)
-            row.pop("content_mongo_id", None)
+            row.pop("content_mongo_id", None)  # hide internal id
+
+            # Image URL for browser
             row["image_url"] = url_for("static", filename=bp.image) if bp.image else None
 
+            # Mongo content (optional)
             if include_content:
-                bc = _get_content_row(bp.post_id)
-                if bc is not None:
-                    row["content"] = blog_content_out.dump(bc)
+                content = _fetch_mongo_json(bp.content_mongo_id)
+                if content is not None:
+                    row["content"] = content
 
+            # Analytics
             if include_analytics:
                 row.update(_analytics_dict(getattr(bp, "analytics", None)))
             else:
@@ -1500,24 +1487,11 @@ api_bp.add_url_rule(
     view_func=MyUserItemAPI.as_view("user_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
 )
-
 # Auth
 api_bp.add_url_rule(
     "/auth/login",
     view_func=AuthLoginAPI.as_view("auth_login"),
     methods=["POST"],
-)
-
-# BlogContent (SQL)
-api_bp.add_url_rule(
-    "/blog-content",
-    view_func=BlogContentListAPI.as_view("blog_content_list"),
-    methods=["GET", "POST"],
-)
-api_bp.add_url_rule(
-    "/blog-content/<int:post_id>",
-    view_func=BlogContentItemAPI.as_view("blog_content_item"),
-    methods=["GET", "PUT", "PATCH", "DELETE"],
 )
 
 # BlogPost
@@ -1526,9 +1500,8 @@ api_bp.add_url_rule(
     view_func=BlogPostListAPI.as_view("blog_post_list"),
     methods=["GET", "POST"],
 )
-# Accept ID or slug on the same endpoint
 api_bp.add_url_rule(
-    "/blog-posts/<ident>",
+    "/blog-posts/<int:post_id>",
     view_func=BlogPostItemAPI.as_view("blog_post_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
 )
@@ -1547,19 +1520,20 @@ api_bp.add_url_rule(
     methods=["GET"],
 )
 
-# Blog "Read Next" (accepts id or slug)
+# Blog "Read Next"
 api_bp.add_url_rule(
-    "/blog/<ident>/read-next",
+    "/blog/<int:post_id>/read-next",
     view_func=BlogPostReadNextAPI.as_view("blog_post_read_next"),
     methods=["GET"],
 )
 
-# Blog Related (same category; accepts id or slug)
+# Blog Related (same category)
 api_bp.add_url_rule(
-    "/blog/<ident>/related",
+    "/blog/<int:post_id>/related",
     view_func=BlogPostRelatedAPI.as_view("blog_post_related"),
     methods=["GET"],
 )
+
 
 # NewsPost
 api_bp.add_url_rule(
@@ -1567,26 +1541,26 @@ api_bp.add_url_rule(
     view_func=NewsPostListAPI.as_view("news_post_list"),
     methods=["GET", "POST"],
 )
-# Accept ID or slug
 api_bp.add_url_rule(
-    "/news-posts/<ident>",
+    "/news-posts/<int:post_id>",
     view_func=NewsPostItemAPI.as_view("news_post_item"),
     methods=["GET", "PUT", "PATCH", "DELETE"],
 )
 
-# Read-Next (accepts id or slug)
+# Read-Next
 api_bp.add_url_rule(
-    "/news/<ident>/read-next",
+    "/news/<int:post_id>/read-next",
     view_func=NewsPostReadNextAPI.as_view("news_post_read_next"),
     methods=["GET"],
 )
 
-# Related News (same category; accepts id or slug)
+# Related News (same category)
 api_bp.add_url_rule(
-    "/news/<ident>/related",
+    "/news/<int:post_id>/related",
     view_func=NewsPostRelatedAPI.as_view("news_post_related"),
     methods=["GET"],
 )
+
 
 # NewsMain
 api_bp.add_url_rule(
@@ -1612,7 +1586,7 @@ api_bp.add_url_rule(
     methods=["GET", "PATCH", "DELETE"],
 )
 
-# Most-read / Latest News (views)
+
 api_bp.add_url_rule(
     "/analytics/most-read/news",
     view_func=MostReadNewsAPI.as_view("most_read_news"),

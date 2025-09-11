@@ -1,3 +1,25 @@
+.section-4-watch-now {
+  background-color: #ffffff;
+  padding: 2rem 1.5rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.watch-now-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #7e1e2b; /* LSM gold brand */
+  margin-bottom: 1rem;
+}
+
+.watch-now-video iframe {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .section-5-article-main {
   display: flex;
   flex-direction: column;

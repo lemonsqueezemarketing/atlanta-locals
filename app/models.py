@@ -83,9 +83,116 @@ class BlogPost(db.Model):
     author   = db.relationship("MyUser",      back_populates="posts")
     news     = db.relationship("NewsPost",    back_populates="post", uselist=False, cascade="all, delete-orphan")
     analytics = db.relationship("PostAnalytics", back_populates="post", uselist=False, cascade="all, delete-orphan")  
+    content  = db.relationship("BlogContent", back_populates="post", uselist=False,cascade="all, delete-orphan",passive_deletes=True,lazy="joined",)
 
     def __repr__(self):
         return f"<BlogPost {self.slug}>"
+
+class BlogContent(db.Model):
+    __tablename__ = "blog_content"
+    __table_args__ = (
+        db.UniqueConstraint("post_id", name="blog_content_post_id_unique"),
+        db.Index("blog_content_post_id_idx", "post_id"),
+        {"schema": SCHEMA},
+    )
+
+    blog_con_id = db.Column(db.Integer, primary_key=True)
+
+    # FK → blog_post.post_id (ON DELETE CASCADE in DB)
+    post_id = db.Column(
+        db.Integer,
+        db.ForeignKey(f"{SCHEMA}.blog_post.post_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    yt_vid_id = db.Column(db.String(20), server_default="4AaaTmxpJe8")
+
+    # ========= Section 1 (required text) =========
+    section_1_title       = db.Column(db.String(255), nullable=False)
+    section_1_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_1_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_1_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_1_img             = db.Column(db.String(300))
+    section_1_link_internal   = db.Column(db.String(300))
+    section_1_link_external   = db.Column(db.String(300))
+
+    # ========= Section 2 (required text) =========
+    section_2_title       = db.Column(db.String(255), nullable=False)
+    section_2_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_2_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_2_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_2_img             = db.Column(db.String(300))
+    section_2_link_internal   = db.Column(db.String(300))
+    section_2_link_external   = db.Column(db.String(300))
+
+    # ========= Section 3 (required text) =========
+    section_3_title       = db.Column(db.String(255), nullable=False)
+    section_3_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_3_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_3_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_3_img             = db.Column(db.String(300))
+    section_3_link_internal   = db.Column(db.String(300))
+    section_3_link_external   = db.Column(db.String(300))
+
+    # ========= Section 4 (required text) =========
+    section_4_title       = db.Column(db.String(255), nullable=False)
+    section_4_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_4_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_4_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_4_img             = db.Column(db.String(300))
+    section_4_link_internal   = db.Column(db.String(300))
+    section_4_link_external   = db.Column(db.String(300))
+
+    # ========= Section 5 (required text) =========
+    section_5_title       = db.Column(db.String(255), nullable=False)
+    section_5_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_5_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_5_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_5_img             = db.Column(db.String(300))
+    section_5_link_internal   = db.Column(db.String(300))
+    section_5_link_external   = db.Column(db.String(300))
+
+    # ===== Section 6 (conclusion, required) =====
+    section_6_conclusion_title       = db.Column(db.String(255), nullable=False)
+    section_6_conclusion_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_6_conclusion_paragraph_2 = db.Column(db.Text,        nullable=False)
+    section_6_conclusion_paragraph_3 = db.Column(db.Text,        nullable=False)
+    section_6_conclusion_img             = db.Column(db.String(300))
+    section_6_conclusion_link_internal   = db.Column(db.String(300))
+    section_6_conclusion_link_external   = db.Column(db.String(300))
+
+    # ===== Section 7 (assoc-press, required) =====
+    section_7_assoc_press_title       = db.Column(db.String(255), nullable=False)
+    section_7_assoc_press_paragraph_1 = db.Column(db.Text,        nullable=False)
+    section_7_assoc_press_img             = db.Column(db.String(300))
+    section_7_assoc_press_link_internal   = db.Column(db.String(300))
+    section_7_assoc_press_link_external   = db.Column(db.String(300))
+
+    # ===== Section 8 (FAQs) =====
+    # Q/A 1–3 required
+    faq_q_1 = db.Column(db.Text, nullable=False)
+    faq_a_1 = db.Column(db.Text, nullable=False)
+    faq_q_2 = db.Column(db.Text, nullable=False)
+    faq_a_2 = db.Column(db.Text, nullable=False)
+    faq_q_3 = db.Column(db.Text, nullable=False)
+    faq_a_3 = db.Column(db.Text, nullable=False)
+    # Q/A 4–6 optional
+    faq_q_4 = db.Column(db.Text)
+    faq_a_4 = db.Column(db.Text)
+    faq_q_5 = db.Column(db.Text)
+    faq_a_5 = db.Column(db.Text)
+    faq_q_6 = db.Column(db.Text)
+    faq_a_6 = db.Column(db.Text)
+
+    # Audit columns
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # ORM link back to BlogPost
+    post = db.relationship("BlogPost", back_populates="content", lazy="joined", uselist=False)
+
+    def __repr__(self):
+        return f"<BlogContent blog_con_id={self.blog_con_id} post_id={self.post_id}>"
 
 
 class NewsPost(db.Model):
